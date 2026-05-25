@@ -1,0 +1,16 @@
+step,quantity,value_billions_usd,formula_or_source,notes
+1_inputs,corporate_profits_iva_ccadj_2024,3759.2,NIPA Z.1 F.3,BEA convention: includes BOTH C-corps and S-corps
+1_inputs,proprietors_income_iva_ccadj_2024,2035.3,NIPA Z.1 F.3,Sole proprietors and partnerships; mix of labor and capital
+1_inputs,rental_income_persons_ccadj_2024,1072.3,NIPA Z.1 F.3,Non-corporate by definition
+1_inputs,net_interest_misc_2024,197.1,NIPA Z.1 F.3,Mostly flows to households or non-corp entities
+2_assumption,proprietors_capital_share,0.50,Smith-Yagan-Zidar 2019 (passthrough split),Symmetric SYZ rule averages to ~50% capital across the population
+2_assumption,scorp_share_of_BEA_corporate_profits,0.20,IRS SOI corporate statistics (~$700-800B S-corp / $3.76T total CP),S-corps are passthroughs at the tax level (no CIT) but BEA puts them in the corporate profits line
+3_derived,proprietors_income_capital_portion,1017.65,= 2035.3 * 0.50,
+3_derived,scorp_profits_estimate,751.84,= 3759.2 * 0.20,Subtracted from numerator because S-corps don't pay CIT
+3_derived,c_corp_profits_estimate,3007.36,= 3759.2 * (1 - 0.20),Numerator: capital income subject to CIT
+3_derived,total_capital_income_broad,6046.21,= 3759.2 + 1017.65 + 1072.3 + 197.1,Denominator: all capital-income components flowing to taxable agents
+4_kappa_narrow,c_corp_share_of_capital_income,0.4974,= 3007.36 / 6046.21,Narrow definition: S-corps subtracted from numerator. Conceptually correct because the model routes passthrough_equity flow separately from the kappa_corp wedge.
+4_kappa_inclusive,BEA_corporate_share_of_capital_income,0.6217,= 3759.2 / 6046.21,Inclusive definition: BEA's CP line as numerator; double-counts S-corps as both 'corp profits' and 'passthrough' flow
+5_chosen,kappa_corp,0.50,narrow definition rounded to 0.50,Adopted in scenario_params.yaml on 2026-05-04
+6_sensitivity,kappa_corp_low,0.45,strict narrow with higher S-corp share,
+6_sensitivity,kappa_corp_high,0.65,upward adjustment for AI-specific software/IP concentration in C-corps,

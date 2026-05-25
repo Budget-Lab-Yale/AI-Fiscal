@@ -1,0 +1,60 @@
+# R
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+!AI-Fiscal.Rproj
+
+# Python (if used for auxiliary tooling)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Data — never commit raw microdata or intermediate matched files
+data/tax_data
+data/matched/*
+!data/matched/.gitkeep
+
+# results/aggregates/: track only the canonical *_latest.xlsx bundles
+# (mirrored on every run by 08 and 09). Timestamp-vintaged xlsx and
+# the CSV/PDF artifacts are local archival and stay out of git to
+# prevent indefinite repo bloat.
+results/aggregates/*
+!results/aggregates/*_latest.xlsx
+!results/aggregates/.gitkeep
+
+# results/figures/: publishable PNG/PDF figure suite from 10_figures.R.
+# Figures are deliverables — track them.
+
+# Large outputs
+output/
+*.rds
+*.parquet
+*.feather
+*.csv.gz
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Claude Code per-user state — skills, settings, and history are all
+# per-user / per-machine and should not travel via this repo.
+.claude/
+
+# scripts/: SBATCH templates and ad-hoc shell wrappers carry
+# user-specific paths (Roberts node mount, personal scratch dirs)
+# and shouldn't travel via the repo. README references the SLURM
+# workflow conceptually; reproducers adapt their own scripts/.
+scripts/
+
+# Logs
+*.log
+slurm-*.out
+logs/
+
+# Perf harness output (regenerable; tracked harness lives in tests/perf/)
+tests/perf/last_run.csv
+tests/perf/profvis.html

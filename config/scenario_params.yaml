@@ -1,0 +1,159 @@
+# Central parameter file for AI fiscal simulation (v0.1.0 release build).
+#
+# This file is the single source of truth for every tunable parameter.
+# Every leaf parameter carries two metadata siblings:
+#   <param>_status: one of (sourced | preliminary | derived | choice)
+#   <param>_source: short citation or pointer to a calibration receipt.
+#
+# Status taxonomy:
+#   sourced     — pinned from primary source; safe to publish.
+#   preliminary — anchored to data/literature, but verify against source
+#                 before publishing.
+#   derived     — computed in code from other parameters; included on the
+#                 parameter_index sheet for traceability.
+#   choice      — run-time knob (no calibration concept).
+#
+# The publishable .xlsx bundle (results/aggregates/ai_fiscal_publishable_*.xlsx)
+# auto-generates a parameter_index sheet plus calibration_receipts sheets
+# from this file on every run.
+#
+# code/02_params.R::load_params() validates that every required key
+# below is present and aborts with a list of any gaps.
+
+baseline_year: 2030
+baseline_year_status: choice
+baseline_year_source: "Match Karger 5-yr horizon; microsim aged to 2030."
+
+# ---------------------------------------------------------------------
+# CBO baseline real-GDP growth path (publication 62105: 2025 = 1.9%,
+# 2026 = 2.2%, 2027+ = 1.8% flat). The Tax-Simulator aging pipeline
+# grows the PUF/SCF microsim to baseline_year along this same path, so
+# tax_units_<baseline_year>.csv is the no-AI level. gy (derived in
+# code/02_params.R) is the multiplicative AI bump applied on top.
+# ---------------------------------------------------------------------
+cbo_baseline:
+  horizon_start_year: 2025
+  horizon_start_year_status: choice
+  horizon_start_year_source: "Karger 2026 (NBER w35046) 5-yr horizon base."
+
+  g_2026: 0.022
+  g_2026_status: sourced
+  g_2026_source: "CBO 2025 Budget and Economic Outlook (publication 62105), Table 1, real GDP growth for 2026."
+
+  g_2027plus: 0.018
+  g_2027plus_status: sourced
+  g_2027plus_source: "CBO 2025 Budget and Economic Outlook (publication 62105), Table 1, real GDP growth for 2027 and onward (held flat at 1.8%/yr)."
+
+  gdp_baseline_year_B: 37391
+  gdp_baseline_year_B_status: sourced
+  gdp_baseline_year_B_source: "CBO 2025 Budget and Economic Outlook (publication 62105), 2030 nominal GDP."
+
+  rev_to_gdp_baseline_year: 0.177
+  rev_to_gdp_baseline_year_status: sourced
+  rev_to_gdp_baseline_year_source: "CBO 2025 Budget and Economic Outlook (publication 62105), Table 1, 2030 total federal revenue as a share of GDP."
+
+  cit_to_gdp_baseline_year: 0.013
+  cit_to_gdp_baseline_year_status: sourced
+  cit_to_gdp_baseline_year_source: "CBO 2025 Budget and Economic Outlook (publication 62105), Table 1, 2030 federal corporate-tax revenue as a share of GDP."
+
+# ---------------------------------------------------------------------
+# Shock targets — Karger et al. 2026 (NBER w35046), 5-yr horizon to
+# baseline_year.
+#   s1           = period-1 capital share = 1 - (post-shock labor share)
+#   r_ai_annual  = median 2030 annualized GDP growth rate under AI
+#
+# Variant codes S / M / R map to Karger Slow / Moderate / Rapid. The
+# release pipeline always loops over all three variants.
+# ---------------------------------------------------------------------
+shock:
+  baseline_labor_share: 0.555
+  baseline_labor_share_status: sourced
+  baseline_labor_share_source: "Karger 2026 (NBER w35046) Table 39, Total column, 2025."
+
+  variants:
+    S:                          # Slow:     2030 labor 55.0%; AI GDP CAGR 2.0%/yr
+      s1: 0.450
+      s1_status: sourced
+      s1_source: "1 - Karger Table 39 2030 labor share for Slow (55.0%)."
+      r_ai_annual: 0.020
+      r_ai_annual_status: sourced
+      r_ai_annual_source: "Karger 2026 (NBER w35046) Table 19, Slow scenario, median 2030 annualized GDP growth rate."
+    M:                          # Moderate: 2030 labor 53.8%; AI GDP CAGR 2.6%/yr
+      s1: 0.462
+      s1_status: sourced
+      s1_source: "1 - Karger Table 39 2030 labor share for Moderate (53.8%)."
+      r_ai_annual: 0.026
+      r_ai_annual_status: sourced
+      r_ai_annual_source: "Karger 2026 (NBER w35046) Table 19, Moderate scenario, median 2030 annualized GDP growth rate."
+    R:                          # Rapid:    2030 labor 51.3%; AI GDP CAGR 3.3%/yr
+      s1: 0.487
+      s1_status: sourced
+      s1_source: "1 - Karger Table 39 2030 labor share for Rapid (51.3%)."
+      r_ai_annual: 0.033
+      r_ai_annual_status: sourced
+      r_ai_annual_source: "Karger 2026 (NBER w35046) Table 19, Rapid scenario, median 2030 annualized GDP growth rate."
+
+# ---------------------------------------------------------------------
+# Magnitude of the S2/S3 dispersion shift, tied to the productivity
+# shock g_y. The release pipeline loops over labor scenarios {S0, S2,
+# S3}; this scalar controls the S2/S3 bite.
+#   sigma_S2 = 1 - k * g_y   (compressive)
+#   sigma_S3 = 1 + k * g_y   (expansive)
+# k = 1 is the literal proportional-to-g_y mapping. Aborts at run time
+# if sigma <= 0.
+# ---------------------------------------------------------------------
+labor_inequality:
+  k: 1.0
+  k_status: preliminary
+  k_source: "Literal proportional-to-g_y mapping; see docs/k_calibration_memo.md. Sensitivity range [0.5, 2]."
+
+# ---------------------------------------------------------------------
+# Passthrough labor / capital split (Smith-Yagan-Zidar 2019). At each
+# tax unit, partition active S-corp / partnership profit at the wage
+# threshold W*; treat passive profit separately. Labor share absorbed
+# into YiL; capital share into YiK. SYZ apply W* directly at the
+# tax-unit level, so no owner-manager n-bar adjustment is applied.
+# ---------------------------------------------------------------------
+passthrough:
+  wage_threshold_percentile: 99.99
+  wage_threshold_percentile_status: preliminary
+  wage_threshold_percentile_source: "Smith-Yagan-Zidar 2019 active-profit split, tax-unit-level threshold."
+
+  wage_threshold_conditioning: positive_wages
+  wage_threshold_conditioning_status: choice
+  wage_threshold_conditioning_source: "'positive_wages' matches the W-2 universe per SYZ."
+
+  active_below_capital_share: 0.25
+  active_below_capital_share_status: preliminary
+  active_below_capital_share_source: "Smith-Yagan-Zidar 2019: 25% of below-W* active profit -> capital."
+
+  active_above_capital_share: 0.75
+  active_above_capital_share_status: preliminary
+  active_above_capital_share_source: "Smith-Yagan-Zidar 2019: 75% of above-W* active profit -> capital."
+
+  passive_capital_share: 0.75
+  passive_capital_share_status: preliminary
+  passive_capital_share_source: "Smith-Yagan-Zidar 2019: 75% of passive profit -> capital."
+
+# ---------------------------------------------------------------------
+# Corporate leakage (Step D, macro bolt-on).
+# Corporate tax operates upstream of household realizations. The AI CIT
+# delta is pinned by calibrating a single scale factor eta against the
+# CBO baseline-year CIT level:
+#
+#   eta := tau_cit * (K0$ * kappa_corp) /
+#          (cbo_baseline.cit_to_gdp_baseline_year * gdp_baseline_year_B$)
+#   delta_R_CIT = tau_cit * kappa_corp * X / eta
+#
+# eta absorbs both the household-realized-vs-pre-realization wedge and
+# the statutory-vs-effective gap. Algebraically delta_R_CIT / X =
+# CBO_CIT_baseline / K0$. The full X flows to households.
+# ---------------------------------------------------------------------
+corporate:
+  kappa_corp: 0.50
+  kappa_corp_status: preliminary
+  kappa_corp_source: "NIPA 2024 Z.1 F.3 narrow C-corp share (S-corps stripped from numerator). See calibration_receipts_kappa_corp sheet. Sensitivity [0.45, 0.65]."
+
+  cit_statutory: 0.21
+  cit_statutory_status: sourced
+  cit_statutory_source: "TCJA federal C-corp rate (IRC §11)."

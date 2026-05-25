@@ -1,0 +1,44 @@
+# SOI / DFA calibration for the R4 retirement cascade — see the
+# "Retirement flow treatment" section of docs/ai_fiscal_methodology.md
+# for the derivations. National constants extracted from TY 2022
+# tabulations.
+#
+# Consumed by code/04_allocate_capital.R::map_to_income_types(). R4
+# derives the taxable-share weights t_P, t_I from s_P*tau_P and
+# s_I*tau_I (r_R is loaded for diagnostic completeness but unused
+# under R4 — the full retirement slice is treated as realized).
+
+calibration_year: 2022
+calibration_year_status: choice
+calibration_year_source: "Most recent SOI Pub 1304 vintage (TY 2022, filing year 2023) at the time R2 was wired."
+
+# Realization rate: fraction of household retirement wealth that
+# becomes gross distribution flow in a year. Numerator: gross pension
+# + IRA distributions (SOI Pub 1304 Table 1.4 row 9 cols c48/c49 +
+# SOI IRA Bulletin Table 1 row 6 col c11). Denominator: DB + DC
+# pension entitlements (DFA 2022Q4) + IRA EOY FMV (SOI IRA Bulletin
+# Table 1 row 6 col c13).
+r_R: 0.0492
+r_R_status: sourced
+r_R_source: "($1,528.4B + $499.2B) / ($16.8T + $11.5T + $12.9T). Build: see Table 2 in docs/ai_fiscal_methodology.md."
+
+# Pension share of non-SS gross retirement distributions.
+s_P: 0.7538
+s_P_status: sourced
+s_P_source: "$1,528.4B / ($1,528.4B + $499.2B). SOI Pub 1304 Table 1.4 (pensions gross) + SOI IRA Bulletin Table 1 (IRA gross)."
+
+s_I: 0.2462
+s_I_status: derived
+s_I_source: "1 - s_P."
+
+# Taxable share of pension distributions.
+tau_P: 0.5965
+tau_P_status: sourced
+tau_P_source: "$911.7B / $1,528.4B. SOI Pub 1304 Table 1.4 row 9 cols c50/c51 over c48/c49."
+
+# Taxable share of IRA distributions. Gross denominator uses SOI IRA
+# Bulletin withdrawals column (Form 1099-R, ex-Roth conversions); this
+# convention shifts tau_I by 1–2 pp vs the Form 1040 line 4a basis.
+tau_I: 0.8770
+tau_I_status: sourced
+tau_I_source: "$437.8B / $499.2B. SOI Pub 1304 Table 1.4 row 9 cols c46/c47 over SOI IRA Bulletin Table 1 row 6 col c11."

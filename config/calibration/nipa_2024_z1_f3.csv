@@ -1,0 +1,10 @@
+component,units,2023,2024,source_table,source_url
+total_national_income,billions_usd,22988.4,24472.9,Federal Reserve Z.1 Table F.3,https://www.federalreserve.gov/releases/z1/20250313/html/f3.htm
+compensation_of_employees,billions_usd,14190.2,15227.4,Federal Reserve Z.1 Table F.3,https://www.federalreserve.gov/releases/z1/20250313/html/f3.htm
+proprietors_income_iva_ccadj,billions_usd,1949.0,2035.3,Federal Reserve Z.1 Table F.3,https://www.federalreserve.gov/releases/z1/20250313/html/f3.htm
+rental_income_persons_ccadj,billions_usd,989.1,1072.3,Federal Reserve Z.1 Table F.3,https://www.federalreserve.gov/releases/z1/20250313/html/f3.htm
+corporate_profits_iva_ccadj,billions_usd,3546.5,3759.2,Federal Reserve Z.1 Table F.3,https://www.federalreserve.gov/releases/z1/20250313/html/f3.htm
+net_interest_misc_payments,billions_usd,319.9,197.1,Federal Reserve Z.1 Table F.3,https://www.federalreserve.gov/releases/z1/20250313/html/f3.htm
+corporate_profits_pretax_no_adj,billions_usd,,4179.2,BEA NIPA Table 1.12 (Profits before tax),https://fred.stlouisfed.org/graph/?g=15To
+taxes_on_corporate_income_total,billions_usd,,680.3,BEA NIPA (federal+state+local accruals),https://fred.stlouisfed.org/series/B075RC1Q027SBEA
+federal_corporate_income_tax_receipts,billions_usd,,491.7,BEA NIPA federal-only accrual basis 2024,https://fred.stlouisfed.org/series/FCTAX

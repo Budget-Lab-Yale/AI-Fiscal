@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "AI-Fiscal: AI labor-to-capital shift fiscal microsimulation"
+abstract: >
+  AI-Fiscal estimates the federal-revenue and distributional consequences
+  of an AI-driven shift in factor income shares (labor to capital), built
+  on the Budget Lab Tax-Simulator microsimulation. Inputs are calibrated
+  against Karger et al. 2026 (NBER w35046) AI-adoption trajectories; the
+  pipeline routes the implied capital flow across tax units (Smith-Yagan-
+  Zidar pass-through split) and across income types, then runs Tax-
+  Simulator to produce per-cell revenue and distributional deltas.
+type: software
+authors:
+  - family-names: Iselin
+    given-names: John
+    affiliation: "The Budget Lab at Yale"
+    # orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"  # TODO: add ORCID
+  - family-names: Nunn
+    given-names: Ryan
+    affiliation: "The Budget Lab at Yale"
+    # orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"  # TODO: add ORCID
+version: 0.1.0
+date-released: "2026-05-21"
+url: "https://github.com/Budget-Lab-Yale/AI-Fiscal"
+license: MIT
+keywords:
+  - "fiscal policy"
+  - "AI economics"
+  - "tax microsimulation"
+  - "factor shares"
+  - "labor capital income"
+  - "Tax-Simulator"
+# Zenodo DOI deferred to v0.2.0+ per release plan (decision noted in
+# docs/release_plan_v0_1.md). When the GitHub→Zenodo integration is
+# enabled, add a `doi:` field here and bump to v0.1.1.
