@@ -1,7 +1,7 @@
 # Per-cell macro / shock parameters table for the publishable bundle.
 # One row per (variant, share_mode, labor_scenario). Realization is not
 # included — it doesn't change macro params, so a per-cell row would
-# duplicate. Sigma is labor-scenario specific: NA for S0 / S1, and
+# duplicate. Sigma is labor-scenario specific: NA for S0, and
 # (1 -/+ k * g_y) for S2 / S3.
 
 suppressPackageStartupMessages({
@@ -11,7 +11,6 @@ suppressPackageStartupMessages({
 .sigma_for_labor <- function(scenario, k, gy) {
   switch(scenario,
     "S0" = NA_real_,
-    "S1" = NA_real_,
     "S2" = 1 - k * gy,
     "S3" = 1 + k * gy,
     NA_real_

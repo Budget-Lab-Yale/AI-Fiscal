@@ -18,11 +18,19 @@ source("code/00_utils.R")
 source("code/06_build_counterfactual.R")  # tax_data_vintage()
 
 # Resolve the latest Tax-Simulator output vintage under a scratch root.
-# Default matches the Roberts-local override of output_roots.yaml.
+# `scratch_root` must be supplied or set via the AI_FISCAL_SCRATCH_ROOT
+# env var; there is no built-in default — point this at the scratch
+# directory configured in your local Tax-Simulator output_roots.yaml.
 latest_tax_sim_vintage <- function(
-  scratch_root = "/nfs/roberts/project/pi_nrs36/ji252/scratch/tax_sim",
+  scratch_root = Sys.getenv("AI_FISCAL_SCRATCH_ROOT", unset = ""),
   version      = "v1"
 ) {
+  if (!nzchar(scratch_root)) {
+    cli::cli_abort(c(
+      "{.arg scratch_root} not provided and {.envvar AI_FISCAL_SCRATCH_ROOT} not set.",
+      i = "Set {.envvar AI_FISCAL_SCRATCH_ROOT} to the scratch root your Tax-Simulator output_roots.yaml writes into."
+    ))
+  }
   parent <- file.path(scratch_root, "model_data", "Tax-Simulator", version)
   if (!dir.exists(parent)) {
     cli::cli_abort(c(
@@ -1021,8 +1029,8 @@ build_atr_decile <- function(output_root, runscript_path, year,
       "Capital flow allocated to LTCG, GROSS ($B). 70% of public-equity allocation.",
       "In-year realized LTCG under V1 (mechanical): equals X_ltcg_gross_B by definition. X is sized off the on-1040 realized base; re-applying r would double-count.",
       "Pre-cascade retirement slice ($B). Computed as X_to_units minus the sum of the four non-retirement aggregates above. Equals Σ w · X_retirement_dc_ira after the within-unit allocation.",
-      "Portion of the retirement slice realized this year as taxable pension + IRA distributions ($B). Equals the full slice under R4 (income-flow framing). This is the F aggregate from the cascade.",
-      "Portion of the retirement slice that does not enter current-year expanded_inc or IIT ($B). = X_retirement_slice_B - X_retirement_realized_B. Zero under R4 by construction."
+      "Portion of the retirement slice realized this year as taxable pension + IRA distributions ($B). Equals the full slice under R1 (income-flow framing). This is the F aggregate from the cascade.",
+      "Portion of the retirement slice that does not enter current-year expanded_inc or IIT ($B). = X_retirement_slice_B - X_retirement_realized_B. Zero under R1 by construction."
     )
   )
   # Defensive invariant: the three vectors must be the same length, or
@@ -1092,7 +1100,7 @@ write_excel_bundle <- function(out_dir, year, rev, gini, shares, inc,
 aggregate_tax_sim_output <- function(
   output_root    = latest_tax_sim_vintage(),
   runscript_path = file.path(
-    "/nfs/roberts/project/pi_nrs36/ji252/Repositories/Tax-Simulator",
+    Sys.getenv("TAX_SIMULATOR_DIR", unset = NA_character_),
     "config", "runscripts", "private", "ai_fiscal.csv"
   ),
   year           = NULL,

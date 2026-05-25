@@ -1,16 +1,16 @@
-# SOI / DFA calibration for the R4 retirement cascade — see the
+# SOI / DFA calibration for the R1 retirement cascade — see the
 # "Retirement flow treatment" section of docs/ai_fiscal_methodology.md
 # for the derivations. National constants extracted from TY 2022
 # tabulations.
 #
-# Consumed by code/04_allocate_capital.R::map_to_income_types(). R4
+# Consumed by code/04_allocate_capital.R::map_to_income_types(). R1
 # derives the taxable-share weights t_P, t_I from s_P*tau_P and
 # s_I*tau_I (r_R is loaded for diagnostic completeness but unused
-# under R4 — the full retirement slice is treated as realized).
+# under R1 — the full retirement slice is treated as realized).
 
 calibration_year: 2022
 calibration_year_status: choice
-calibration_year_source: "Most recent SOI Pub 1304 vintage (TY 2022, filing year 2023) at the time R2 was wired."
+calibration_year_source: "Most recent SOI Pub 1304 vintage (TY 2022, filing year 2023)."
 
 # Realization rate: fraction of household retirement wealth that
 # becomes gross distribution flow in a year. Numerator: gross pension

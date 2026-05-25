@@ -54,7 +54,7 @@ load_tax_units <- function(year, data_dir = "data/tax_data") {
       cli::cli_warn(c(
         "Tax-Data vintage has wealth columns not in {.code .ASSET_KNOWN}.",
         x = "Unrecognized: {.field {unknown}}.",
-        i = "Loaded but excluded from the asset-base allocation. Add to {.code .ASSET_KNOWN} (and likely {.code .ASSET_BASES$all_assets} / {.code non_housing}) in {.path code/00_utils.R} to include."
+        i = "Loaded but excluded from the asset-base allocation. Add to {.code .ASSET_KNOWN} (and likely {.code .ASSET_BASE_ALL_ASSETS}) in {.path code/00_utils.R} to include."
       ))
     }
   }

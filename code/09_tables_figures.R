@@ -907,7 +907,7 @@ write_publishable_excel_bundle <- function(out_dir, year,
 assemble_deliverables <- function(
   year           = NULL,
   runscript_path = file.path(
-    "/nfs/roberts/project/pi_nrs36/ji252/Repositories/Tax-Simulator",
+    Sys.getenv("TAX_SIMULATOR_DIR", unset = NA_character_),
     "config", "runscripts", "private", "ai_fiscal.csv"
   ),
   agg_dir        = "results/aggregates",

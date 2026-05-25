@@ -74,14 +74,14 @@ source("code/00_utils.R")
 
 .RETIREMENT_CAL_KEYS <- c("r_R", "s_P", "s_I", "tau_P", "tau_I")
 
-# Load the R4 retirement cascade calibration — see Table 2 of
+# Load the R1 retirement cascade calibration — see Table 2 of
 # docs/ai_fiscal_methodology.md.
 load_retirement_calibration <- function(path = "config/retirement_calibration.yaml") {
   if (!file.exists(path)) {
     cli::cli_abort(c(
       "Retirement calibration file not found.",
       x = "Looked for {.path {path}}.",
-      i = "Required for the R4 cascade; restore the file from git history if missing."
+      i = "Required for the R1 cascade; restore the file from git history if missing."
     ))
   }
   cal <- yaml::read_yaml(path)

@@ -13,7 +13,7 @@
 # Behavior is fixed (no spec flags):
 #   * Loop  : 3 shock variants (S, M, R) × 2 share modes (R, F) × 3 labor
 #             scenarios (S0, S2, S3) × V1 realization = 18 cells.
-#   * Retirement cascade : R4 (income-flow).
+#   * Retirement cascade : R1 (income-flow).
 #   * Asset base         : all_assets.
 #   * Realization        : V1 (mechanical, all gains realized in-year).
 #   * Decomposition      : on. Each cell runs three Tax-Simulator
@@ -79,7 +79,7 @@ default_runscript_path <- function() {
     # Per-income-type aggregates of the capital flow X_to_units (all in
     # $B). X_retirement_slice_B is the residual: X_to_units minus the
     # four non-retirement income-type aggregates equals Σ w·X_retirement_dc_ira.
-    # Under R4 the realized aggregate equals the slice by construction.
+    # Under R1 the realized aggregate equals the slice by construction.
     income_types_B <- list(
       X_qualified_div_B        = agg_B("X_qualified_div"),
       X_taxable_int_B          = agg_B("X_taxable_int"),
@@ -96,7 +96,7 @@ default_runscript_path <- function() {
        income_types_B$X_passthrough_ordinary_B +
        income_types_B$X_ltcg_gross_B)
     income_types_B$X_retirement_realized_B   <- (m$retirement_F %||% 0) / 1e9
-    # Snap floating-point noise to zero — under R4 the realized aggregate
+    # Snap floating-point noise to zero — under R1 the realized aggregate
     # equals the slice by construction.
     unreal <- income_types_B$X_retirement_slice_B - income_types_B$X_retirement_realized_B
     income_types_B$X_retirement_unrealized_B <-
@@ -182,7 +182,7 @@ build_ai_fiscal_runs <- function(specs,
                       share_mode = parts[2])
     sb <- allocate_capital(dt_split, p,
                            asset_map_path = "config/asset_to_income_map.csv")
-    sb <- apply_realization(sb, p)
+    sb <- apply_realization(sb)
     list(params = p, step_b = sb)
   })
   names(per_variant) <- unique_keys

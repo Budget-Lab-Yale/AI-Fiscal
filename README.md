@@ -21,7 +21,7 @@ A single 18-cell grid, hard-coded into the orchestrator:
 | Share mode      | R, F                     | R = reallocate (Karger), F = fixed labor-capital split |
 | Labor scenario  | S0, S2, S3               | Proportional, Compressive, Expansive |
 | Realization     | V1                       | Mechanical (all gains realized in-year) |
-| Retirement      | R4                       | Income-flow cascade (full slice realized) |
+| Retirement      | R1                       | Income-flow cascade (full slice realized) |
 | Asset base      | all_assets               | All wealth columns |
 
 Every run produces:
@@ -42,18 +42,17 @@ history (including those code paths) is on the `main` branch.
 
 ### Tax microsimulation data (Budget Lab PUF + SCF, merged)
 
-Pinned to a vintage:
-
-```
-/nfs/roberts/project/pi_nrs36/shared/model_data/Tax-Data/v1/<YYYYMMDDHH>
-```
+Reproducers need access to the Budget Lab Tax-Data vintage (PUF +
+SCF, merged). External readers without PUF access can use the
+synthetic fixture below for I/O / schema smoke tests.
 
 Per-year tax-unit files at `tax_data/baseline/tax_units_<year>.csv`
 carry PUF income/deduction columns plus SCF-imputed asset values.
 `code/01_load_data.R` strips the `value.` prefix and renames
 `dc → retirement` at load time so downstream code is schema-agnostic.
 
-Symlinked locally at `data/tax_data` (not committed).
+`data/tax_data` should symlink (or copy) the vintage into the
+project root. Not committed.
 
 #### Synthetic fixture (no PUF access)
 
@@ -115,7 +114,7 @@ tests/      # testthat suite (Rscript tests/testthat.R)
 | `01_load_data.R` | Load merged PUF + SCF tax-units; Smith-Yagan-Zidar passthrough split. |
 | `02_params.R` | Read `scenario_params.yaml`; derive `(gk, alpha)` from `(s1, gy, L0)` per variant + share mode. |
 | `03_shock_labor.R` | **Step A** — labor-income redistribution (S0 / S2 / S3). |
-| `04_allocate_capital.R` | **Step B** — CIT wedge + across-units allocation (all_assets) + within-unit map + R4 retirement cascade. |
+| `04_allocate_capital.R` | **Step B** — CIT wedge + across-units allocation (all_assets) + within-unit map + R1 retirement cascade. |
 | `05_realization.R` | **Step C** — V1 mechanical realization. |
 | `06_build_counterfactual.R` | Build the counterfactual tax-units dataset; write to `<Tax-Data vintage>/<scenario_id>/`. |
 | `07_run_tax_sim.R` | Invoke Tax-Simulator via `callr` in a clean R subprocess. |
@@ -219,7 +218,7 @@ present and aborts with a list of any gaps.
 | `passthrough` | wage-threshold + capital shares | Smith-Yagan-Zidar 2019, applied at the tax-unit level. |
 | `corporate` | `kappa_corp`, `cit_statutory` | Macro CIT wedge calibrated against the CBO baseline-year CIT level. |
 
-Retirement cascade calibration constants (R4) live in
+Retirement cascade calibration constants (R1) live in
 `config/retirement_calibration.yaml`. The kappa_corp calibration receipt
 lives in `config/calibration/` and is embedded as a sheet in every
 publishable bundle.

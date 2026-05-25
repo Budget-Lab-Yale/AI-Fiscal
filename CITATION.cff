@@ -20,7 +20,7 @@ authors:
     affiliation: "The Budget Lab at Yale"
     # orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"  # TODO: add ORCID
 version: 0.1.0
-date-released: "2026-05-21"
+date-released: "2026-05-25"
 url: "https://github.com/Budget-Lab-Yale/AI-Fiscal"
 license: MIT
 keywords:
@@ -30,6 +30,16 @@ keywords:
   - "factor shares"
   - "labor capital income"
   - "Tax-Simulator"
-# Zenodo DOI deferred to v0.2.0+ per release plan (decision noted in
-# docs/release_plan_v0_1.md). When the GitHub→Zenodo integration is
-# enabled, add a `doi:` field here and bump to v0.1.1.
+references:
+  - type: article
+    authors:
+      - family-names: Karger
+        given-names: E.
+      - family-names: Bredemeier
+        given-names: C.
+    title: "AI and the Macroeconomy: Productivity, Income, and Distribution"
+    year: 2026
+    institution:
+      name: "National Bureau of Economic Research"
+    number: "w35046"
+    url: "https://www.nber.org/papers/w35046"

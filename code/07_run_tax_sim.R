@@ -14,32 +14,30 @@ suppressPackageStartupMessages({
   library(yaml)
 })
 
-# Resolve the Tax-Simulator working tree. Order:
-#   1. TAX_SIMULATOR_DIR env var
-#   2. The pinned default that matches docs/README and 00_ai_fiscal_sim.R
-# Errors with a useful message if neither resolves to a valid tree.
+# Resolve the Tax-Simulator working tree from the TAX_SIMULATOR_DIR env
+# var. There is no default — public reproducers must point this at their
+# own clone of https://github.com/Budget-Lab-Yale/Tax-Simulator.
 tax_sim_root <- function() {
-  candidates <- c(
-    Sys.getenv("TAX_SIMULATOR_DIR", unset = ""),
-    "/nfs/roberts/project/pi_nrs36/ji252/Repositories/Tax-Simulator"
-  )
-  candidates <- candidates[nzchar(candidates)]
-
-  for (cand in candidates) {
-    ok <- dir.exists(cand) &&
-      file.exists(file.path(cand, "src", "main.R")) &&
-      dir.exists(file.path(cand, "config", "runscripts")) &&
-      file.exists(file.path(cand, "config", "interfaces", "output_roots.yaml")) &&
-      file.exists(file.path(cand, "config", "interfaces", "interface_versions.yaml"))
-    if (ok) return(normalizePath(cand, mustWork = TRUE))
+  cand <- Sys.getenv("TAX_SIMULATOR_DIR", unset = "")
+  if (!nzchar(cand)) {
+    cli::cli_abort(c(
+      "{.envvar TAX_SIMULATOR_DIR} is not set.",
+      i = "Clone {.url https://github.com/Budget-Lab-Yale/Tax-Simulator} and set {.envvar TAX_SIMULATOR_DIR} to its working tree."
+    ))
   }
-
-  cli::cli_abort(c(
-    "Tax-Simulator working tree not found.",
-    x = "Tried: {.path {candidates}}.",
-    i = "Set the {.envvar TAX_SIMULATOR_DIR} env var or clone Tax-Simulator at the default path.",
-    i = "A valid tree must contain {.path src/main.R}, {.path config/runscripts/}, and {.path config/interfaces/*.yaml}."
-  ))
+  ok <- dir.exists(cand) &&
+    file.exists(file.path(cand, "src", "main.R")) &&
+    dir.exists(file.path(cand, "config", "runscripts")) &&
+    file.exists(file.path(cand, "config", "interfaces", "output_roots.yaml")) &&
+    file.exists(file.path(cand, "config", "interfaces", "interface_versions.yaml"))
+  if (!ok) {
+    cli::cli_abort(c(
+      "{.envvar TAX_SIMULATOR_DIR} does not point at a valid Tax-Simulator tree.",
+      x = "Looked at {.path {cand}}.",
+      i = "A valid tree must contain {.path src/main.R}, {.path config/runscripts/}, and {.path config/interfaces/*.yaml}."
+    ))
+  }
+  normalizePath(cand, mustWork = TRUE)
 }
 
 # Compute the output_root that parse_globals() will write into, given a

@@ -7,7 +7,7 @@ test_that("sum(w * X_i) equals X_to_units", {
 })
 
 test_that("sum of per-income-type flows equals X_to_units", {
-  # Under R4 the retirement slice maps entirely to X_pens_gross +
+  # Under R1 the retirement slice maps entirely to X_pens_gross +
   # X_ira_gross (no deferred remainder). The taxable columns
   # X_pens_txbl / X_ira_txbl are components of the gross flows, not
   # separate masses.

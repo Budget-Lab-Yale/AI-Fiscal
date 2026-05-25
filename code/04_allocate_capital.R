@@ -20,7 +20,7 @@
 #      income types via config/asset_to_income_map.csv. Hard-coded
 #      fixed-income tax-exempt split: per-unit exempt_int / (txbl_int +
 #      exempt_int).
-#   6. Retirement cascade (R4, income-flow). Pool the full retirement
+#   6. Retirement cascade (R1, income-flow). Pool the full retirement
 #      slice (no r_R), route to units with positive baseline taxable
 #      retirement income weighted by SCF retirement wealth, split into
 #      taxable pension and taxable IRA only. See
@@ -35,7 +35,7 @@ suppressPackageStartupMessages({
 
 source("code/00_utils.R")
 
-# Taxable retirement-distribution columns used by the R4 cascade. R4's
+# Taxable retirement-distribution columns used by the R1 cascade. R1's
 # receiving set is conditioned on positive YiK retirement income.
 .RETIREMENT_TXBL_DIST_COLS <- c("txbl_ira_dist", "txbl_pens_dist")
 
@@ -148,7 +148,7 @@ allocate_within_unit <- function(dt) {
 }
 
 # Step 5b: map per-unit asset-class flows to taxable income types using
-# the share table at `asset_map_path`. Retirement flow follows the R4
+# the share table at `asset_map_path`. Retirement flow follows the R1
 # income-flow cascade. Returns a slim output table with id, weight, and
 # X_<type>.
 map_to_income_types <- function(dt, asset_map_path, params) {
@@ -168,7 +168,7 @@ map_to_income_types <- function(dt, asset_map_path, params) {
   dt[, X_passthrough_ordinary := X_passthrough_equity *
        pt$passthrough_ordinary]
 
-  apply_retirement_cascade_R4(dt, params)
+  apply_retirement_cascade_R1(dt, params)
 
   out_cols <- c("id", "weight",
                 "X_i", "X_qualified_div", "X_taxable_int", "X_tax_exempt_int",
@@ -180,7 +180,7 @@ map_to_income_types <- function(dt, asset_map_path, params) {
   out
 }
 
-# R4 = income-flow cascade. X_retirement_dc_ira is itself the increment
+# R1 = income-flow cascade. X_retirement_dc_ira is itself the increment
 # to realized taxable retirement income (no r_R conversion — X = gk · K0
 # is already built from a YiK base that includes realized, taxable
 # distributions, so the baseline realization rate is already encoded).
@@ -188,13 +188,13 @@ map_to_income_types <- function(dt, asset_map_path, params) {
 # taxable pension or IRA distributions, weighted by SCF retirement
 # wealth. Split into the two YiK retirement components using the
 # baseline taxable composition.
-apply_retirement_cascade_R4 <- function(dt, params) {
+apply_retirement_cascade_R1 <- function(dt, params) {
   cal <- params$retirement_cal
   needed <- c(.RETIREMENT_TXBL_DIST_COLS, "retirement")
   missing <- setdiff(needed, names(dt))
   if (length(missing)) {
     cli::cli_abort(c(
-      "R4 requires baseline taxable-distribution columns and SCF retirement wealth.",
+      "R1 requires baseline taxable-distribution columns and SCF retirement wealth.",
       x = "Not found: {.field {missing}}.",
       i = "Taxable cols are Form 1040 lines 4b/5b-equivalent; {.field retirement} is the SCF DC/IRA balance column."
     ))
@@ -211,7 +211,7 @@ apply_retirement_cascade_R4 <- function(dt, params) {
   denom      <- sum(dt$weight[has_dist] * ret_wealth[has_dist])
   if (denom <= 0) {
     cli::cli_abort(c(
-      "R4 cascade has no qualifying receivers (wealth × taxable-distribution mass = 0).",
+      "R1 cascade has no qualifying receivers (wealth × taxable-distribution mass = 0).",
       x = "{.code sum(weight * retirement, where = txbl_pens_dist + txbl_ira_dist > 0) = {denom}}.",
       i = "Check the merged baseline for tax-unit retirement wealth and taxable distributions."
     ))
@@ -223,7 +223,7 @@ apply_retirement_cascade_R4 <- function(dt, params) {
   T_I <- cal$s_I * cal$tau_I
   if ((T_P + T_I) <= 0) {
     cli::cli_abort(c(
-      "R4 calibration produces a zero taxable-share denominator.",
+      "R1 calibration produces a zero taxable-share denominator.",
       x = "{.code s_P*tau_P + s_I*tau_I = {T_P + T_I}}.",
       i = "Check {.path config/retirement_calibration.yaml} for sensible nonzero {.field s_P, s_I, tau_P, tau_I}."
     ))
@@ -231,7 +231,7 @@ apply_retirement_cascade_R4 <- function(dt, params) {
   t_P <- T_P / (T_P + T_I)
   t_I <- T_I / (T_P + T_I)
 
-  # Under R4 the gross and taxable PUF columns both go up by the same
+  # Under R1 the gross and taxable PUF columns both go up by the same
   # amount (no non-taxable piece is modeled).
   dt[, X_pens_txbl  := t_P * F_i]
   dt[, X_pens_gross := X_pens_txbl]

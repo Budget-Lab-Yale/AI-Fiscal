@@ -197,7 +197,7 @@ build_counterfactual <- function(dt_baseline, step_a_dt, step_b,
     dt <- .augment_kg_lt(dt, dt$X_ltcg_in_year,
                          baseline_cache$yh_default,
                          baseline_cache$basis_ratio)
-    # R4 retirement cascade: X_pens_gross == X_pens_txbl and
+    # R1 retirement cascade: X_pens_gross == X_pens_txbl and
     # X_ira_gross == X_ira_txbl (income-flow framing — no non-taxable
     # piece is modeled).
     dt[, gross_pens_dist := gross_pens_dist + X_pens_gross]
@@ -338,8 +338,8 @@ write_factor_channels <- function(dt_baseline, step_a_dt, step_b,
 }
 
 # Encoded scenario ID: ai_<variant>_<share_mode>_<labor>_<realization>,
-# e.g. ai_M_R_S0_V2 (Moderate shock, reallocating factor shares) and
-# ai_M_F_S0_V2 (same shock with the labor-capital share held at baseline).
+# e.g. ai_M_R_S0_V1 (Moderate shock, reallocating factor shares) and
+# ai_M_F_S0_V1 (same shock with the labor-capital share held at baseline).
 ai_fiscal_scenario_id <- function(variant, share_mode, labor_scenario,
                                   realization) {
   sprintf("ai_%s_%s_%s_%s", variant, share_mode, labor_scenario, realization)

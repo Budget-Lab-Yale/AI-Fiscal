@@ -1,14 +1,13 @@
-# Corporate parameter calibration — `kappa_corp` (and historical `cit_avoidance`)
+# Corporate parameter calibration — `kappa_corp`
 
 Snapshot of the NIPA-anchored calibration pass for
 `config/scenario_params.yaml::corporate.kappa_corp`. The CIT delta on
-the AI flow is now anchored by a single runtime-calibrated scale
-factor `eta_corp` (see `04_allocate_capital.R::compute_macro_targets`)
-that fits the simulated baseline-year CIT to CBO's published level.
-The legacy standalone `cit_avoidance` parameter has been retired —
-`eta_corp` absorbs both the avoidance wedge and the gap between the
-microsim's household-realized capital income and the pre-realization
-NIPA corporate base.
+the AI flow is anchored by a single runtime-calibrated scale factor
+`eta_corp` (see `04_allocate_capital.R::compute_macro_targets`) that
+fits the simulated baseline-year CIT to CBO's published level.
+`eta_corp` absorbs both the corporate-avoidance wedge and the gap
+between the microsim's household-realized capital income and the
+pre-realization NIPA corporate base.
 
 ## Files
 
@@ -19,10 +18,6 @@ NIPA corporate base.
   NIPA decomposition. Narrow (S-corps stripped from numerator) and
   inclusive (BEA convention) variants laid out so the chosen value is
   reproducible.
-- `cit_avoidance_calculation.csv` — **documentation only** (no longer
-  wired into the pipeline). Original derivation of the avoidance rate
-  from federal CIT receipts / C-corp pretax NIPA profits. The
-  avoidance wedge is now subsumed by `eta_corp`.
 - `validation_benchmarks.csv` — published benchmarks used by
   `code/11_validation.R` to spot-check the pinned vintage against
   CBO/Treasury (federal IIT, CIT, payroll, total revenue), IRS SOI

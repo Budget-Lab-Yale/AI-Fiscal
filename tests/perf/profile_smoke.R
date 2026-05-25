@@ -80,7 +80,7 @@ step_b <- time_it("allocate_capital",
                   allocate_capital(dt_split, params,
                                     asset_map_path = "config/asset_to_income_map.csv"))
 step_b <- time_it("apply_realization",
-                  apply_realization(step_b, params))
+                  apply_realization(step_b))
 bc <- time_it("compute_baseline_cache",
               compute_baseline_cache(dt_split))
 

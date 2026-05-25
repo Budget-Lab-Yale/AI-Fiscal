@@ -1087,7 +1087,7 @@ fig_atr_decile_by_growth <- function(atr_d, axes_sub, year) {
   out[, X_ltcg_unrealized_B := X_ltcg_gross_B - X_ltcg_realized_chosen_B]
   # Realized this year = ordinary-income + dividends + LTCG-realized
   # + retirement-realized. Excludes tax-exempt int (lawfully untaxed) and
-  # any unrealized residual (under V1/R4 the residual is zero).
+  # any unrealized residual (under V1/R1 the residual is zero).
   out[, X_realized_B := X_qualified_div_B + X_taxable_int_B +
         X_passthrough_ordinary_B + X_ltcg_realized_chosen_B +
         X_retirement_realized_B]
@@ -1505,7 +1505,7 @@ fig_x_etr_scatter_per_realization <- function(tbl, realization_code, year,
 assemble_figures <- function(
   year           = NULL,
   runscript_path = file.path(
-    "/nfs/roberts/project/pi_nrs36/ji252/Repositories/Tax-Simulator",
+    Sys.getenv("TAX_SIMULATOR_DIR", unset = NA_character_),
     "config", "runscripts", "private", "ai_fiscal.csv"
   ),
   agg_dir        = "results/aggregates",
