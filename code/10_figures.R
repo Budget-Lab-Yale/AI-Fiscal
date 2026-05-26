@@ -147,15 +147,6 @@ INSTRUMENT_LABEL <- c(
     )
 }
 
-# Heatmap / decomp variants need vertical gridlines too.
-# TODO: currently unused — apply to fig_sensitivity_heatmap / fig_decomp or drop.
-.fig_theme_grid <- function() {
-  .fig_theme() + ggplot2::theme(
-    panel.grid.major.x = ggplot2::element_line(color = YBL_GRID, linewidth = 0.3),
-    panel.grid.major.y = ggplot2::element_line(color = YBL_GRID, linewidth = 0.3)
-  )
-}
-
 .dollar_B <- function(x) {
   sign  <- ifelse(x < 0, "-", "")
   paste0(sign, "$", formatC(abs(x), format = "f", big.mark = ",", digits = 0), "B")
@@ -179,11 +170,6 @@ INSTRUMENT_LABEL <- c(
       strip.background.x = ggplot2::element_blank()
     )
   }
-}
-
-# TODO: currently unused — figs build pp labels inline via sprintf. Adopt this helper or drop.
-.pct_pp <- function(x, digits = 1) {
-  sprintf("%+.*f pp", digits, 100 * x)
 }
 
 .fig_caption <- function(year, extra = NULL) {
