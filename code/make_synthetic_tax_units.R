@@ -100,10 +100,37 @@ SYNTH_SEED <- 20260504L
 
 # Special-case columns where structural correctness matters more than
 # distributional realism. `id` must be unique; `weight` must be positive.
+# Joint constraints between columns (which the independent-column draw
+# can violate) are enforced after the independent draw.
 .apply_special_cases <- function(dt) {
   if ("id" %in% names(dt)) dt[, id := seq_len(.N)]
   if ("weight" %in% names(dt)) {
     dt[, weight := exp(rnorm(.N, mean = log(1000), sd = 1))]
+  }
+  .apply_joint_constraints(dt)
+}
+
+# Joint-constraint repairs. Independent per-column draws can produce
+# rows that violate constraints the pipeline (and Tax-Simulator) rely
+# on; this pass fixes them.
+#
+# Constraints enforced:
+#
+# - kg_lt != 0  =>  kg_lt_years_held non-NA AND kg_lt_basis non-NA.
+#   Tax-Simulator's calc_kg_cpi_ratio() rejects NA on either side for
+#   any non-zero kg_lt (gain or loss).
+#   build_counterfactual()::.augment_kg_lt only fills these for units
+#   receiving NEW LTCG flow, so a corrupted baseline persists into
+#   the counterfactual and trips test-counterfactual.R.
+.apply_joint_constraints <- function(dt) {
+  if (all(c("kg_lt", "kg_lt_years_held", "kg_lt_basis") %in% names(dt))) {
+    bad_yh <- !is.na(dt$kg_lt) & dt$kg_lt != 0 & is.na(dt$kg_lt_years_held)
+    bad_b  <- !is.na(dt$kg_lt) & dt$kg_lt != 0 & is.na(dt$kg_lt_basis)
+    # 5-year holding period and zero basis are arbitrary but well-formed
+    # defaults; the fixture has no economic content so the specific
+    # values don't matter, only that downstream code finds them non-NA.
+    if (any(bad_yh)) dt[bad_yh, kg_lt_years_held := 5L]
+    if (any(bad_b))  dt[bad_b,  kg_lt_basis := 0]
   }
   dt
 }

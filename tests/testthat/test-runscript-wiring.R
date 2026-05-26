@@ -32,6 +32,7 @@ with_fake_vintage <- function(expr) {
 }
 
 test_that("write_counterfactual_scenario mirrors baseline files as symlinks", {
+  skip_on_os("windows")  # file.symlink() requires admin / developer mode on Windows
   with_fake_vintage(function(vp) {
     cf <- data.table::data.table(id = 1L, value = 99)
     scenario_dir <- write_counterfactual_scenario(
@@ -49,6 +50,7 @@ test_that("write_counterfactual_scenario mirrors baseline files as symlinks", {
 })
 
 test_that("write_counterfactual_scenario refuses to overwrite without flag", {
+  skip_on_os("windows")  # file.symlink() requires admin / developer mode on Windows
   with_fake_vintage(function(vp) {
     cf <- data.table::data.table(id = 1L, value = 99)
     write_counterfactual_scenario(cf, 2030, "ai_M_R_S0_V1", vintage_paths = vp)
