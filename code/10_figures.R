@@ -332,15 +332,15 @@ fig_headline_revenue <- function(wide, year) {
                 realization, realization_label, total_with_macro_cit)]
   p <- ggplot2::ggplot(
     d,
-    ggplot2::aes(x = labor_label,
+    ggplot2::aes(x = variant_label,
                  y = total_with_macro_cit,
-                 fill = variant_label)
+                 fill = labor_label)
   ) +
     ggplot2::geom_col(position = ggplot2::position_dodge(width = 0.78),
                       width = 0.72) +
     ggplot2::geom_hline(yintercept = 0, color = YBL_TEXT, linewidth = 0.4) +
     ggplot2::facet_wrap(~ realization_label, ncol = length(unique(d$realization_label))) +
-    ggplot2::scale_fill_manual(values = PAL_VARIANT, name = "Shock variant") +
+    ggplot2::scale_fill_manual(values = PAL_LABOR, name = "Labor scenario") +
     ggplot2::scale_y_continuous(labels = .dollar_B) +
     ggplot2::labs(
       title    = "AI-fiscal revenue impact, all scenarios",
@@ -838,46 +838,27 @@ fig_share_mode_reallocation_delta <- function(wide, year) {
   list(plot = p, data = paired)
 }
 
-# Two-color fill for the paired ATR-definition bars. Keyed by label so
-# scale_fill_manual positions by name. Standard = level-shift in
-# Tax/Pretax; Extended = the same numerator over a denominator that
-# includes the full gross factor-income expansion (CIT not subtracted —
-# footnote in the figure).
-PAL_ATR_DEFN <- c("Standard"             = YBL_BLUE,
-                  "Extended denominator" = YBL_ORANGE)
-
 # ---------------------------------------------------------------------
 # 14. ΔATR by decile, one figure per (variant × labor × realization)
 # ---------------------------------------------------------------------
-# Two grouped bars per decile per scenario. Standard ΔATR uses the cf
-# pretax-income denominator; the extended-denominator variant replaces
-# the cf denominator with (baseline pretax + gross factor-income
-# expansion), giving a "share of new factor income not taxed" reading.
-# Caller passes one scenario's slice of `atr_decile` plus the (single)
-# row of `axes_per_scn` that names the variant / labor / realization,
-# so the title can carry the descriptive labels rather than the
-# internal codes. assemble_figures emits one of these per (variant ×
-# labor × realization) cell present in atr_decile.csv at share_mode=R.
+# One bar per decile per scenario. ΔATR uses the standard cf
+# pretax-income denominator: (cf tax / cf pretax) − (baseline tax /
+# baseline pretax). Caller passes one scenario's slice of `atr_decile`
+# plus the (single) row of `axes_per_scn` that names the variant /
+# labor / realization, so the title can carry the descriptive labels
+# rather than the internal codes. assemble_figures emits one of these
+# per (variant × labor × realization) cell present in atr_decile.csv
+# at share_mode=R.
 fig_atr_decile_one <- function(atr_d, axes_row, year) {
   if (!nrow(atr_d)) return(NULL)
   d <- copy(atr_d)
-  d[, atr_base     := tax_base_d_B / pretax_base_d_B]
-  d[, atr_cf_std   := tax_cf_d_B   / pretax_cf_d_B]
-  d[, atr_cf_ext   := tax_cf_d_B   / (pretax_base_d_B + dY_factor_d_B)]
+  d[, atr_base   := tax_base_d_B / pretax_base_d_B]
+  d[, atr_cf_std := tax_cf_d_B   / pretax_cf_d_B]
   d[!is.finite(atr_base),   atr_base   := NA_real_]
   d[!is.finite(atr_cf_std), atr_cf_std := NA_real_]
-  d[!is.finite(atr_cf_ext), atr_cf_ext := NA_real_]
-  d[, dATR_std := atr_cf_std - atr_base]
-  d[, dATR_ext := atr_cf_ext - atr_base]
+  d[, dATR := atr_cf_std - atr_base]
 
-  plot_d <- melt(
-    d[, .(decile, dATR_std, dATR_ext)],
-    id.vars = "decile", variable.name = "definition", value.name = "dATR"
-  )
-  plot_d[, definition := factor(
-    fifelse(definition == "dATR_std", "Standard", "Extended denominator"),
-    levels = c("Standard", "Extended denominator")
-  )]
+  plot_d <- d[, .(decile, dATR)]
   plot_d[, decile := factor(decile, levels = seq_len(10))]
 
   subtitle <- sprintf("%s shock, %s labor scenario (R, %s), FY %d",
@@ -886,18 +867,16 @@ fig_atr_decile_one <- function(atr_d, axes_row, year) {
                       axes_row$realization_label, year)
   caption  <- paste0(
     .fig_caption(year),
-    "\nStandard denominator = cf pretax income; Extended denominator = ",
-    "baseline pretax + gross factor expansion.\n",
+    "\nΔATR = (cf tax / cf pretax income) − (baseline tax / baseline ",
+    "pretax income).\n",
     "CIT omitted from denominator (consistent handling would require ",
     "allocating CIT in baseline as well)."
   )
 
   p <- ggplot2::ggplot(plot_d,
-                       ggplot2::aes(x = decile, y = dATR, fill = definition)) +
-    ggplot2::geom_col(position = ggplot2::position_dodge(width = 0.78),
-                      width = 0.72) +
+                       ggplot2::aes(x = decile, y = dATR)) +
+    ggplot2::geom_col(fill = YBL_BLUE, width = 0.72) +
     ggplot2::geom_hline(yintercept = 0, color = YBL_TEXT, linewidth = 0.4) +
-    ggplot2::scale_fill_manual(values = PAL_ATR_DEFN, name = NULL) +
     ggplot2::scale_y_continuous(
       labels = scales::label_percent(accuracy = 0.1)
     ) +
