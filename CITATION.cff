@@ -14,14 +14,13 @@ authors:
   - family-names: Iselin
     given-names: John
     affiliation: "The Budget Lab at Yale"
-    # orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"  # TODO: add ORCID
+    email: john.iselin@yale.edu
   - family-names: Nunn
     given-names: Ryan
     affiliation: "The Budget Lab at Yale"
-    # orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"  # TODO: add ORCID
 version: 0.1.0
 date-released: "2026-05-25"
-url: "https://github.com/Budget-Lab-Yale/AI-Fiscal"
+repository-code: "https://github.com/Budget-Lab-Yale/AI-Fiscal"
 license: MIT
 keywords:
   - "fiscal policy"
@@ -31,15 +30,42 @@ keywords:
   - "labor capital income"
   - "Tax-Simulator"
 references:
-  - type: article
+  - type: report
+    title: "Forecasting the Economic Effects of AI"
     authors:
       - family-names: Karger
-        given-names: E.
-      - family-names: Bredemeier
-        given-names: C.
-    title: "AI and the Macroeconomy: Productivity, Income, and Distribution"
+        given-names: Ezra
+      - family-names: Kuusela
+        given-names: Otto
+      - family-names: Abaluck
+        given-names: Jason
+      - family-names: Bryan
+        given-names: Kevin A.
+      - family-names: Halperin
+        given-names: Basil
+      - family-names: Jones
+        given-names: Todd R.
+      - family-names: Murphy
+        given-names: Connacher
+      - family-names: Trammell
+        given-names: Philip
+      - family-names: Reynolds
+        given-names: Matt
+      - family-names: Mayland
+        given-names: Dan
+      - family-names: Viswanathan
+        given-names: Ria
+      - family-names: Mittal
+        given-names: Ananaya
+      - family-names: Ceppas de Castro
+        given-names: Rebecca
+      - family-names: Rosenberg
+        given-names: Josh
+      - family-names: Tetlock
+        given-names: Philip
     year: 2026
-    institution:
+    publisher:
       name: "National Bureau of Economic Research"
     number: "w35046"
-    url: "https://www.nber.org/papers/w35046"
+    doi: "10.3386/w35046"
+    url: "https://doi.org/10.3386/w35046"
