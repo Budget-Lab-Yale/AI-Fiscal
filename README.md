@@ -124,6 +124,17 @@ step skips with a warning and the rest of the pipeline finishes
 normally — the BLSMM CSV / xlsx sheet / figures just won't be
 produced.
 
+### Environment variables
+
+The pipeline reads these env vars (CLI flags override where noted):
+
+| Variable | Read by | Purpose |
+|---|---|---|
+| `TAX_SIMULATOR_DIR` | `code/07_run_tax_sim.R` | Path to a Tax-Simulator working tree. Required. |
+| `BLSMM_DIR` | `code/15_blsmm_debt_gdp.R` | Path to a Budget Lab Small Macro Model clone. Optional — step skips with a warning when unset. |
+| `AI_FISCAL_SCRATCH_ROOT` | `code/08_aggregate.R` | Scratch root configured in your local Tax-Simulator `config/interfaces/output_roots.yaml`. Read only by the standalone aggregator entry point (`Rscript code/08_aggregate.R`); the orchestrator passes the resolved output root directly and doesn't require this var. |
+| `MC_CORES` | `code/07_run_tax_sim.R` | Forwarded to the Tax-Simulator subprocess so the local-fork `mclapply` patch can read it. Set explicitly under SLURM. |
+
 ## Layout
 
 ```

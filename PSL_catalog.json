@@ -1,0 +1,28 @@
+{
+    "name": "AI-Fiscal",
+    "banner_title": "AI-Fiscal",
+    "banner_subtitle": "Fiscal impact of an AI-driven labor-to-capital income shift",
+    "detailed_description": "Microsimulation of the change in federal revenue and the distribution of post-tax-and-transfer income under shocks to productivity and the capital-labor share. Inputs are calibrated against Karger et al. 2026 (NBER w35046) AI-adoption trajectories; the pipeline routes the implied capital flow across tax units (Smith-Yagan-Zidar pass-through split) and across income types, then runs the Budget Lab Tax-Simulator to produce per-cell revenue and distributional deltas.",
+    "policy_area": "Tax Microsimulation, AI Macroeconomics, Distributional Analysis",
+    "geography": "United States",
+    "language": "R",
+    "maintainers": [
+        {
+            "name": "John Iselin",
+            "image": "https://avatars.githubusercontent.com/u/247814156?v=4",
+            "link": "https://github.com/johniselin-budget-lab"
+        },
+        {
+            "name": "Ryan Nunn",
+            "image": "",
+            "link": "https://github.com/Budget-Lab-Yale"
+        }
+    ],
+    "links": {
+      "code_repository": "https://github.com/Budget-Lab-Yale/AI-Fiscal",
+      "user_documentation": "https://github.com/Budget-Lab-Yale/AI-Fiscal/blob/main/docs/ai_fiscal_methodology.md",
+      "contributor_documentation": "https://github.com/Budget-Lab-Yale/AI-Fiscal/blob/main/README.md",
+      "webapp": "",
+      "recent_changes": "https://github.com/Budget-Lab-Yale/AI-Fiscal/blob/main/CHANGELOG.md"
+    }
+}
