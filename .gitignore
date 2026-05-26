@@ -55,6 +55,9 @@ scripts/
 slurm-*.out
 logs/
 
+# Local working notes (release punch list, scratch)
+todo.md
+
 # Perf harness output (regenerable; tracked harness lives in tests/perf/)
 tests/perf/last_run.csv
 tests/perf/profvis.html
