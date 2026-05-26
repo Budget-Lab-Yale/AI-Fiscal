@@ -388,8 +388,37 @@ Each class then flows through to specific taxable-income types:
 - **Pass-through equity flow** becomes pass-through ordinary income,
   further allocated across S-Corp and partnership active/passive
   sub-buckets using baseline positive capital holdings as weights.
-- **Retirement flow** runs through the procedure described in the
-  next section.
+- **Retirement flow** runs through the R1 income-flow cascade
+  described in the next section.
+
+## Retirement flow treatment
+
+The AI retirement increment follows the R1 income-flow cascade: the
+aggregate retirement slice from the within-unit allocation is pooled
+across tax units, redistributed to units with positive baseline
+taxable retirement income (weighted by SCF retirement wealth), then
+split between taxable pension and taxable IRA distributions using
+fixed shares from 2022 IRS statistics (67.6% / 32.4%). Conditioning
+the receiving set on taxable distributions and weighting by retirement
+wealth forces the AI retirement flow to concentrate in older tax
+units actually drawing from their accounts. Full derivation in
+[`ai_fiscal_methodology_appendix.md`](ai_fiscal_methodology_appendix.md)
+§B; calibration constants live in
+`config/retirement_calibration.yaml`; implementation in
+`code/04_allocate_capital.R::apply_retirement_cascade_R1`.
+
+## Realization timing
+
+The release pipeline realizes new long-term capital-gains flows
+in-year under V1 (mechanical): the gross AI LTCG flow enters `kg_lt`
+at accrual rather than being discounted by a hold-then-realize rate.
+The argument parallels the constant-realization choice for retirement
+— $K_0$ is sized off the on-1040 *realized* base, so re-applying a
+realization discount would double-count. Full derivation in
+[`ai_fiscal_methodology_appendix.md`](ai_fiscal_methodology_appendix.md)
+§C; implementation in `code/05_realization.R::apply_realization`.
+Alternative realization treatments are flagged in the
+"Parameterizing the realization rate" subsection of Future work.
 
 ## Building the counterfactual and running the tax calculator
 
