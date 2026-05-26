@@ -30,12 +30,25 @@
 #
 # Outputs (under results/aggregates/ + results/figures/<year>/)
 #   blsmm_debt_to_gdp_<year>.csv
-#   blsmm_debt_to_gdp_<year>_fixed.{png,pdf}
-#   blsmm_debt_to_gdp_<year>_reallocate.{png,pdf}
+#   blsmm_debt_to_gdp_fixed_<year>.png        (full: title/subtitle/caption)
+#   blsmm_debt_to_gdp_fixed_<year>_clean.png  (paper-ready: title/subtitle/caption stripped)
+#   blsmm_debt_to_gdp_reallocate_<year>.png
+#   blsmm_debt_to_gdp_reallocate_<year>_clean.png
 #   `blsmm_debt_to_gdp` sheet appended to:
 #     ai_fiscal_<year>_{<vintage>,latest}.xlsx
 #     ai_fiscal_publishable_<year>_{<vintage>,latest}.xlsx
+#
+# Figure formatting reuses the YBL palette + theme defined in 10_figures.R
+# (.fig_theme, PAL_LABOR, .fig_caption, .fig_save) so the BLSMM bars match
+# the publishable figure suite.
 # ==============================================================================
+
+# Pull in the shared figure palette / theme / save helpers. The orchestrator
+# already sources 10_figures.R before this file, but standalone
+# `Rscript code/15_blsmm_debt_gdp.R` runs need it loaded here too. Sourced
+# unconditionally for idempotence; 10's bottom-of-file entry guard means no
+# top-level side effects fire.
+source("code/10_figures.R")
 
 # Karger et al. 2026 NBER w35046 Table 19, median annualized 2030 GDP growth.
 # Mirrors config/scenario_params.yaml: shock.variants.{S,M,R}.r_ai_annual.
@@ -313,14 +326,15 @@ assemble_blsmm_figures <- function(year       = NULL,
   }
   baseline_debtgdp <- baseline_row$blsmm_debt_to_gdp_year_pct
   scen_df          <- results_df[results_df$scenario_id != "blsmm_baseline", ]
+  # Variant / labor labels match the convention used in the 09 scenario
+  # guide and PAL_VARIANT / PAL_LABOR keys in 10_figures.R, so the shared
+  # scale_*_manual calls below resolve colours by name.
   scen_df$variant  <- factor(scen_df$variant,
                              levels = c("S", "M", "R"),
                              labels = c("Slow", "Moderate", "Rapid"))
   scen_df$labor    <- factor(scen_df$labor,
                              levels = c("S0", "S2", "S3"),
-                             labels = c("Proportional (S0)",
-                                        "Compressive (S2)",
-                                        "Expansive (S3)"))
+                             labels = c("Proportional", "Compressive", "Expansive"))
   variant_g <- c(Slow = 2.0, Moderate = 2.6, Rapid = 3.3)
 
   make_plot <- function(sub, label) {
@@ -328,54 +342,48 @@ assemble_blsmm_figures <- function(year       = NULL,
     ymax <- max(sub$blsmm_debt_to_gdp_year_pct, baseline_debtgdp) + 1
     ggplot2::ggplot(sub, ggplot2::aes(
         x = variant, y = blsmm_debt_to_gdp_year_pct, fill = labor)) +
-      ggplot2::geom_col(position = ggplot2::position_dodge(width = 0.8), width = 0.75) +
+      ggplot2::geom_col(position = ggplot2::position_dodge(width = 0.8), width = 0.72) +
       ggplot2::geom_text(ggplot2::aes(label = sprintf("%.1f", blsmm_debt_to_gdp_year_pct)),
                          position = ggplot2::position_dodge(width = 0.8),
-                         vjust = -0.4, size = 3.2) +
+                         vjust = -0.4, size = 3.2, color = YBL_TEXT) +
       ggplot2::geom_hline(yintercept = baseline_debtgdp,
-                          linetype = "dashed", color = "grey30") +
+                          linetype = "dashed", color = YBL_CAPTION, linewidth = 0.4) +
       ggplot2::annotate("text",
                         x = 3.5, y = baseline_debtgdp,
                         label = sprintf("BLSMM baseline: %.1f%%", baseline_debtgdp),
-                        hjust = 1, vjust = -0.5, size = 3.2, color = "grey30") +
+                        hjust = 1, vjust = -0.5, size = 3.2, color = YBL_CAPTION) +
       ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0.02, 0.06))) +
       ggplot2::coord_cartesian(ylim = c(ymin, ymax)) +
       ggplot2::scale_x_discrete(labels = function(v) {
         sprintf("%s\n(%.1f%% / yr)", v, variant_g[v])
       }) +
-      ggplot2::scale_fill_brewer(palette = "Set2", name = "Labor incidence") +
+      ggplot2::scale_fill_manual(values = PAL_LABOR, name = "Labor scenario") +
       ggplot2::labs(
-        title    = sprintf("%d debt-to-GDP via BLSMM - %s", year, label),
+        title    = sprintf("%d debt-to-GDP via BLSMM — %s", year, label),
         subtitle = "Rev/GDP delta ramped 2026-2030; productivity bump set to hit Karger annualized growth.",
-        x        = "Karger variant (Karger 2025-2030 annualized GDP growth)",
-        y        = sprintf("Federal debt / GDP, %d (%%)", year)
+        x        = "Karger variant (2025-2030 annualized GDP growth)",
+        y        = sprintf("Federal debt / GDP, %d (%%)", year),
+        caption  = .fig_caption(year)
       ) +
-      ggplot2::theme_minimal(base_size = 11) +
-      ggplot2::theme(
-        legend.position = "bottom",
-        plot.title = ggplot2::element_text(face = "bold"),
-        panel.grid.major.x = ggplot2::element_blank()
-      )
+      .fig_theme()
   }
 
   pairs <- list(
     list(mode = "F", label = "Capital share held constant (Fixed)",
-         base = sprintf("blsmm_debt_to_gdp_%d_fixed", year)),
+         slug = "blsmm_debt_to_gdp_fixed"),
     list(mode = "R", label = "Labor-to-capital share shifts (Reallocate)",
-         base = sprintf("blsmm_debt_to_gdp_%d_reallocate", year))
+         slug = "blsmm_debt_to_gdp_reallocate")
   )
   written <- character()
   for (pp in pairs) {
     sub <- scen_df[scen_df$share_mode == pp$mode, ]
     if (!nrow(sub)) next
-    plt <- make_plot(sub, pp$label)
-    for (ext in c("png", "pdf")) {
-      out_fp <- file.path(fig_dir, paste0(pp$base, ".", ext))
-      ggplot2::ggsave(out_fp, plt, width = 9, height = 5.5,
-                      dpi = if (ext == "png") 200 else 300,
-                      bg = if (ext == "png") "white" else "transparent")
-      written <- c(written, out_fp)
-    }
+    plt  <- make_plot(sub, pp$label)
+    # .fig_save emits both <slug>_<year>.png (full) and <slug>_<year>_clean.png
+    # (paper-ready, title/subtitle/caption stripped) — same convention as
+    # 10_figures.R uses for the rest of the figure suite.
+    out  <- .fig_save(plt, fig_dir, pp$slug, year, w = 9, h = 5.5)
+    written <- c(written, unname(out))
   }
   if (length(written))
     cli::cli_inform(c(
