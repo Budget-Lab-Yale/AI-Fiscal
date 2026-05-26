@@ -40,6 +40,21 @@ history (including those code paths) is on the `main` branch.
 
 ## External dependencies
 
+### R environment
+
+R 4.4 or newer. Package versions are pinned via [`renv`](https://rstudio.github.io/renv/).
+From a fresh clone:
+
+```r
+# in R, from the project root:
+renv::restore()
+```
+
+This installs the locked versions of every package recorded in
+`renv.lock`. `requirements.txt` is a human-readable companion listing
+the same packages without version pins, mirroring the Tax-Simulator
+convention. The lockfile was generated against R 4.5.2.
+
 ### Tax microsimulation data (Budget Lab PUF + SCF, merged)
 
 Reproducers need access to the Budget Lab Tax-Data vintage (PUF +
