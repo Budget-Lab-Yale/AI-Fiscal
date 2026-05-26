@@ -1,0 +1,40 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.5'
+          # Posit Public Package Manager serves Linux binary packages,
+          # avoiding multi-minute compile times for ggplot2 / tidyverse
+          # dependencies during renv::restore().
+          use-public-rspm: true
+
+      - name: Show R info
+        run: Rscript -e 'sessionInfo()'
+
+      - name: Restore renv environment
+        uses: r-lib/actions/setup-renv@v2
+
+      - name: Run testthat suite
+        # The suite runs against the committed synthetic fixture at
+        # tests/fixtures/synthetic_tax_data/ when no real Tax-Data
+        # vintage is present (per helper-pipeline.R). All identity
+        # checks are data-shape-agnostic.
+        run: Rscript tests/testthat.R
