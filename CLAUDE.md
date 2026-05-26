@@ -240,7 +240,8 @@ overhead per run (~3s at startup), which is invisible against an
 
 [`.github/workflows/test.yml`](.github/workflows/test.yml) runs the
 testthat suite on every push and PR against `main`, ubuntu-latest /
-R 4.5 / `renv::restore()`. Posit Public Package Manager is enabled
+R 4.4.2 (the canonical cluster version) / `renv::restore()`. Posit
+Public Package Manager is enabled
 so package installs use pre-built binaries (renv from source would
 take 20+ min per CI run).
 

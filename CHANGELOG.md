@@ -39,8 +39,8 @@ labor-to-capital income shift, built on the Budget Lab Tax-Simulator.
   `docs/ai_fiscal_methodology.md`; full R1 and V1 derivations in
   `docs/ai_fiscal_methodology_appendix.md`.
 - **Reproducibility.** R package versions pinned via `renv.lock` (R
-  4.5.2); `requirements.txt` companion mirrors the Tax-Simulator
-  convention.
+  4.4.2, matching the cluster module); `requirements.txt` companion
+  mirrors the Tax-Simulator convention.
 
 ### Out of scope for v0.1.0 (planned for later releases)
 

@@ -53,7 +53,8 @@ renv::restore()
 This installs the locked versions of every package recorded in
 `renv.lock`. `requirements.txt` is a human-readable companion listing
 the same packages without version pins, mirroring the Tax-Simulator
-convention. The lockfile was generated against R 4.5.2.
+convention. The lockfile is pinned to R 4.4.2, matching the
+`R/4.4.2-gfbf-2024a` cluster module the release runs under.
 
 ### Tax microsimulation data (Budget Lab PUF + SCF, merged)
 
