@@ -46,6 +46,7 @@ source("code/08_aggregate.R")
 source("code/09_tables_figures.R")
 source("code/10_figures.R")
 source("code/13_macro_params_table.R")
+source("code/15_blsmm_debt_gdp.R")
 
 # Canonical 18-cell grid: 3 variants × 2 share modes × 3 labor scenarios
 # × V1 realization. The release pipeline does not accept overrides.
@@ -371,6 +372,15 @@ build_ai_fiscal_runs <- function(specs,
     runscript_path = runscript_path,
     agg_dir        = "results/aggregates",
     argv           = argv
+  )
+
+  # Optional macro tie-in: pipe the per-scenario revenue/GDP deltas through
+  # the Budget Lab Small Macro Model to recover scenario-specific 2030
+  # debt/GDP. Skips with a warning if BLSMM_DIR is unset or the BLSMM repo
+  # isn't reachable, so the rest of the pipeline doesn't depend on it.
+  run_blsmm_step(
+    agg_dir        = "results/aggregates",
+    runscript_path = runscript_path
   )
 
   invisible(output_root)

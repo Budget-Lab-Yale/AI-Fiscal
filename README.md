@@ -92,6 +92,23 @@ working tree, not part of upstream):
 3. **`src/main.R:110` and `src/sim/run.R:153` — `mc.cores` honors
    `MC_CORES` env var.**
 
+### Macro model (optional — for debt/GDP step)
+
+`code/15_blsmm_debt_gdp.R` consumes the per-scenario revenue/GDP
+deltas and pipes them through the **Budget Lab Small Macro Model**
+to recover scenario-specific 2030 debt/GDP. Clone separately and
+point `BLSMM_DIR` at the working tree:
+
+```bash
+export BLSMM_DIR=/path/to/Budget-Lab-Small-Macro-Model
+```
+
+Upstream: <https://github.com/Budget-Lab-Yale/Budget-Lab-Small-Macro-Model>.
+If `BLSMM_DIR` is unset (or doesn't point at a valid clone), the
+step skips with a warning and the rest of the pipeline finishes
+normally — the BLSMM CSV / xlsx sheet / figures just won't be
+produced.
+
 ## Layout
 
 ```
@@ -109,7 +126,7 @@ tests/      # testthat suite (Rscript tests/testthat.R)
 
 | Script | Role |
 |---|---|
-| `00_ai_fiscal_sim.R` | Orchestrator. Loops the 18-cell grid, invokes Tax-Simulator, runs 08+09+10. |
+| `00_ai_fiscal_sim.R` | Orchestrator. Loops the 18-cell grid, invokes Tax-Simulator, runs 08+09+10, then 15 (skipped if BLSMM unavailable). |
 | `00_utils.R` | Shared helpers (weighted quantile / top share / Gini, asset-column registry). |
 | `01_load_data.R` | Load merged PUF + SCF tax-units; Smith-Yagan-Zidar passthrough split. |
 | `02_params.R` | Read `scenario_params.yaml`; derive `(gk, alpha)` from `(s1, gy, L0)` per variant + share mode. |
@@ -123,6 +140,7 @@ tests/      # testthat suite (Rscript tests/testthat.R)
 | `10_figures.R` | Publishable PNG+PDF figure suite. |
 | `11_validation.R` | Input-side benchmark check (CBO / SOI / NIPA / DFA / SCF). Standalone diagnostic — not in the main pipeline. |
 | `13_macro_params_table.R` | Helper used by 09 to assemble the per-cell `cell_params` sheet. |
+| `15_blsmm_debt_gdp.R` | Pipe per-scenario revenue/GDP deltas through the Budget Lab Small Macro Model to recover scenario-specific 2030 debt/GDP. Requires `BLSMM_DIR`; skips gracefully if unset. |
 | `make_synthetic_tax_units.R` | Regenerate the synthetic PUF/SCF fixture. |
 
 ## Running
@@ -193,6 +211,7 @@ All artifacts land in `results/aggregates/`. Per year (default 2030):
 | `ai_fiscal_<year>_<vintage>.xlsx` + `ai_fiscal_<year>_latest.xlsx` | 08 | Microsim bundle |
 | `ai_fiscal_publishable_<year>_<vintage>.xlsx` + `ai_fiscal_publishable_<year>_latest.xlsx` | 09 | Publishable bundle |
 | `results/figures/<year>/*.{png,pdf}` | 10 | Publishable figure suite |
+| `blsmm_debt_to_gdp_<year>.csv` + `blsmm_debt_to_gdp` xlsx sheet + `results/figures/<year>/blsmm_debt_to_gdp_<year>_{fixed,reallocate}.{png,pdf}` | 15 | Optional — per-scenario 2030 debt/GDP from BLSMM; produced only if `BLSMM_DIR` is set |
 
 Both `.xlsx` bundles are self-documenting. The `variable_list` sheet
 describes every column on every data sheet; the `scenario_guide`

@@ -1,3 +1,8 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
 # Methodology: How potential AI futures interact with the current tax system
 
 ## Introduction
@@ -22,7 +27,8 @@ discuss the implications of that choice below.
 
 The model is calibrated as a *constant-realization* simulation: $X$ —
 the aggregate AI-induced capital income flow — is sized off the
-on-1040 realized base, so the baseline realization rate is already
+on-1040 realized taxable base, so the baseline realization rate (and other 
+factors like the taxation of retirement income) is already
 embedded in the construction. Under this assumption, AI capital
 income is realized in-year at the same rate as the baseline stock.
 
@@ -89,7 +95,7 @@ labor. Passive profit is flat 75% capital. The intuition is that an
 active partner earning at or below typical top-end wages looks like
 they are being paid mostly for their labor, while an active partner
 whose draw vastly exceeds top wages is more plausibly receiving rents
-on firm capital. SYZ apply $W^\star$ as a firm-level threshold; we
+on firm capital. SZ (2020) apply $W^\star$ as a firm-level threshold; we
 apply it directly at the tax-unit level (no owner-manager $\bar n$
 bridging), which collapses the multi-owner dimension. The simplification
 matters most at the very top of the wage distribution, where a small
@@ -151,13 +157,13 @@ shares of factor income, with capital shares
 $\theta_t^K = 1 - \theta_t^L$. Let $H = 5$ be the Karger horizon and
 
 $$
-\mathrm{cum\_base} \;=\; (1 + g^{\mathrm{CBO}}_{2026}) \cdot (1 + g^{\mathrm{CBO}}_{2027+})^{H-1}
+\mathrm{G_{CBO}} \;=\; (1 + g^{\mathrm{CBO}}_{2026}) \cdot (1 + g^{\mathrm{CBO}}_{2027+})^{H-1}
 $$
 
 be cumulative CBO growth from 2025 to 2030. Then
 
 $$
-g_y \;=\; \frac{(1 + r^{\mathrm{AI}})^H}{\mathrm{cum\_base}} - 1
+g_y \;=\; \frac{(1 + r^{\mathrm{AI}})^H}{\mathrm{G_{CBO}}} - 1
 $$
 
 is the additional 5-year growth in nominal factor income caused by
@@ -216,7 +222,8 @@ $$
 and redistributes it across tax units. We offer three redistribution
 rules — proportional (S0), compressive (S2), and expansive (S3).
 None of the rules imply any extensive-margin adjustment; employment
-is held constant.
+is held constant. The omitted S1 is a planned future expansion involving 
+occupation-level AI exposure. 
 
 ### Proportional (S0)
 
@@ -294,24 +301,22 @@ X \;=\; g_k \cdot K_0.
 $$
 
 Corporate income tax operates **upstream** of household realizations,
-so the AI capital flow $X$ reaches tax units in full
-($X_{\mathrm{to\_units}} = X$). We capture the corporate-tax effect
-of the shock as a macro bolt-on, anchored to CBO's baseline-year CIT
-level, rather than as a household-side wedge that mechanically
-subtracts from $X$.
+so the AI capital flow $X$ reaches tax units in full. We capture the 
+corporate-tax effect of the shock as a macro bolt-on, anchored to CBO's 
+baseline-year CIT level, rather than as a household-side wedge that 
+mechanically subtracts from $X$.
 
 A fraction $\kappa$ of $K_0$ flows through C-corporations in the
 household-realized frame. To scale that household-realized slice up
 to the pre-realization corporate tax base — and absorb the
 statutory-vs-effective gap (avoidance, NOLs, credits, profit
-shifting) — we calibrate a single dimensionless factor $\eta$ at
-runtime against CBO's baseline-year CIT level
-$\Delta R^{\mathrm{CIT}}_{\mathrm{CBO}}$:
+shifting) — we calibrate a single factor $\eta$ against CBO's 
+baseline-year CIT level $R^{\mathrm{CIT}}_{\mathrm{CBO}}$, calculated by 
+multiplying the baseline (2030 in this case) CIT revenue to GDP ratio (from 
+CBO's 2026 Budget and Economic Outlook) by baseline GDP:
 
 $$
-\eta \;=\; \frac{\tau_C^{\mathrm{stat}} \cdot K_0 \cdot \kappa}{\Delta R^{\mathrm{CIT}}_{\mathrm{CBO}}},
-\qquad
-\Delta R^{\mathrm{CIT}}_{\mathrm{CBO}} \;=\; \mathtt{cit\_to\_gdp\_baseline\_year} \cdot \mathtt{gdp\_baseline\_year\_B}.
+\eta \;=\; \frac{\tau_C^{\mathrm{stat}} \cdot K_0 \cdot \kappa}{ R^{\mathrm{CIT}}_{\mathrm{CBO}}}
 $$
 
 The AI CIT delta then scales linearly with $X$:
@@ -327,7 +332,7 @@ times the CBO baseline CIT level. With $\tau_C^{\mathrm{stat}} =
 21\%$ (TCJA), $\kappa \approx 0.50$ (the narrow C-corp share of
 capital income from NIPA 2024, with S-Corp profit stripped from the
 numerator), and CBO's 2030 CIT anchor of $\sim \$486$B
-($\mathtt{cit\_to\_gdp\_baseline\_year} = 0.013$ times nominal GDP),
+(or CIT-to-GDP equaling $0.013$ times GDP),
 $\eta$ falls out to roughly one in practice; its exact value is
 reported on the `parameters` sheet of every run.
 
@@ -336,16 +341,14 @@ layered onto the microsim revenue total; it is **not** attributed
 back to individual households. As a result, every distributional
 figure in our output reflects the full capital flow $X$ that reaches
 households. This is a deliberate choice: we do not adopt a
-per-household corporate-incidence assumption (such as the JCT 75/25
-capital/labor split).
-
+per-household corporate-incidence assumption.
 ### Across-unit allocation
 
-We distribute $X_{\mathrm{to\_units}} = X$ across tax units in
+We distribute $X$ across tax units in
 proportion to each unit's share of total household wealth:
 
 $$
-X_i \;=\; X_{\mathrm{to\_units}} \cdot \frac{A_i}{\sum_j w_j A_j},
+X_i \;=\; X \cdot \frac{A_i}{\sum_j w_j A_j},
 $$
 
 where $A_i$ is the sum of the unit's SCF-imputed wealth columns
@@ -354,19 +357,18 @@ annuities, trusts, real-estate funds, primary and other home equity,
 pass-through equity, and miscellaneous non-financial assets).
 Allocating to total wealth assumes the AI shock raises returns
 proportionally across asset classes; pinning to a narrower base
-(productive capital, non-housing) would push the distributional
-incidence further toward the top and is a natural sensitivity for
-future iterations.
+would push the distributional incidence further toward the top and is 
+an area we plan to explore in the future. 
 
 ### Within-unit allocation across income types
 
 The asset base contains both income-bearing and non-income-bearing
 classes. Of the income-bearing classes, four matter for tax
 purposes: equities (taxable), bonds, pass-through equity, and
-retirement balances. Let $A_i^{\mathrm{inc}}$ be their sum for a
+retirement balances. Let $A_{i,{\mathrm{inc}}}$ be their sum for a
 given tax unit. We allocate each unit's $X_i$ across the four
 classes proportional to its baseline holdings within
-$A_i^{\mathrm{inc}}$.
+$A_{i,{\mathrm{inc}}}$.
 
 Units with zero income-bearing holdings route their entire $X_i$ to
 retirement, preserving the aggregate identity $\sum_i w_i X_i =
@@ -388,116 +390,6 @@ Each class then flows through to specific taxable-income types:
   sub-buckets using baseline positive capital holdings as weights.
 - **Retirement flow** runs through the procedure described in the
   next section.
-
-## Retirement flow treatment
-
-Retirement assets sit awkwardly in this setting because while
-retirement wealth is held by many households across the age
-distribution, retirement *income* is generally realized by older
-households alone. Allocating the AI retirement increment in
-proportion to retirement wealth alone would distribute the flow to
-working-age households who are not yet drawing from their accounts —
-producing distributional numbers that misrepresent how AI
-retirement income would actually land. We therefore apply the
-following procedure.
-
-**First**, compute the realization pool at the population level:
-
-$$
-F \;=\; \sum_i w_i \cdot X_{i,r}^{\mathrm{alloc}},
-$$
-
-where $X_{i,r}^{\mathrm{alloc}}$ is unit $i$'s retirement slice from
-the within-unit allocation.
-
-**Second**, define the receiving set of tax units as those with
-positive taxable retirement income on their baseline return:
-
-$$
-\mathcal R \;=\; \{ i : \mathrm{txbl\_pens\_dist}_i + \mathrm{txbl\_ira\_dist}_i > 0 \}.
-$$
-
-**Third**, distribute $F$ across $\mathcal R$ in proportion to SCF
-retirement wealth $W_i^{\mathrm{ret}}$:
-
-$$
-F_i \;=\; \mathbf{1}_{i \in \mathcal R} \cdot
-         \frac{F \cdot W_i^{\mathrm{ret}}}
-              {\sum_{j \in \mathcal R} w_j \cdot W_j^{\mathrm{ret}}},
-\qquad \sum_i w_i F_i \;=\; F.
-$$
-
-Conditioning the receiving set on taxable retirement income while
-weighting by wealth forces the allocation of retirement income to
-concentrate in older tax units — the ones actually drawing from
-their accounts.
-
-**Fourth**, $F_i$ is split at the tax-unit level between taxable
-pension distributions and taxable IRA distributions. We pull from
-2022 IRS statistics to construct fixed ratios for this allocation:
-67.6% to pension distributions and 32.4% to IRA distributions. The
-two PUF columns (`txbl_pens_dist`, `txbl_ira_dist`) are updated
-accordingly; `gross_pens_dist` is incremented by the same amount as
-the taxable component, since under the constant-realization
-assumption no new non-taxable rollover flow is generated.
-
-### A diagnostic: average tax rate on baseline retirement income
-
-Independently of the AI counterfactual, readers often want a sense
-of the level of taxation on retirement income today. We compute this
-by running a stacked zero-out counterfactual: a separate
-Tax-Simulator scenario that zeros each unit's `txbl_ira_dist`,
-`gross_pens_dist`, and `txbl_pens_dist`, then comparing tax
-liability with and without retirement income. The decile-level
-result on the 2030 baseline, non-dependent filers ($n = 201{,}166$):
-
-### Table 2. Baseline retirement ATR by decile, 2030
-
-| decile | $Y_R$ ($B) | $\Delta$ IIT ($B) | implied ATR |
-|------:|-----------:|------------------:|------------:|
-| 1     |       55.8 |               5.0 |        9.0% |
-| 2     |       25.6 |               0.9 |        3.4% |
-| 3     |       50.6 |               2.4 |        4.8% |
-| 4     |       79.9 |               6.3 |        7.8% |
-| 5     |      134.6 |              13.4 |        9.9% |
-| 6     |      151.1 |              15.7 |       10.4% |
-| 7     |      256.5 |              31.2 |       12.2% |
-| 8     |      499.1 |              67.8 |       13.6% |
-| 9     |      632.5 |              90.6 |       14.3% |
-| 10    |     1296.9 |             134.3 |       10.4% |
-
-Population total ATR is 11.6%. The decile-10 dip relative to decile 9
-is structural rather than a measurement artifact: at the very top,
-retirement is a smaller share of total income and non-retirement
-income already sits in the top bracket, so zeroing retirement
-income removes ordinary-rate mass with limited bracket interaction.
-Decile-9 units more often fall out of the top bracket when their
-retirement income is removed, exposing more dollars to the
-difference.
-
-## Realization timing
-
-As noted at the start of this document, the definition of $X$
-implies that we are growing realized (and generally taxable) income
-that appears on tax returns. This embeds a specific assumption about
-realization: all gains generated by the shock are recognized
-immediately at accrual. We adopt this as the model's default — it
-holds as long as $X$ already captures the appropriate rate of
-realizations, which is the case by construction when $K_0$ is the
-on-1040 base. All gains realized in-year:
-
-$$
-X^{\mathrm{LTCG}}_{\mathrm{realized}} \;=\; X^{\mathrm{LTCG}}_{\mathrm{gross}}.
-$$
-
-Treating AI capital gains as recognized immediately at accrual is
-the parallel argument to the constant-realization choice for
-retirement: $K_0$ is sized off the on-1040 realized base, so
-re-applying a realization discount inside the model would
-double-count. Loosening the assumption — defining $X$ at the
-wealth level so the shock acts on unrealized accruals, or
-parameterizing the realization rate as a function of unit
-characteristics — is discussed in the Future work section.
 
 ## Building the counterfactual and running the tax calculator
 
@@ -593,13 +485,13 @@ baseline to CBO's published 2030 ratio (17.7%; CBO publication
 62105) and add the model's $\Delta R$ on top:
 
 $$
-R^{\mathrm{cbo}}_{\mathrm{scen}} \;=\; \bigl(R/Y\bigr)^{\mathrm{CBO}}_{\mathrm{base}} \cdot Y_{\mathrm{base}} + \Delta R.
+R^{\mathrm{cbo}}_{\mathrm{scen}} \;=\; \bigl(\frac{R}{Y}\bigr)^{\mathrm{CBO}}_{\mathrm{base}} \cdot Y_{\mathrm{base}} + \Delta R.
 $$
 
 The publishable change in the revenue-to-GDP ratio is then
 
 $$
-\Delta\!\left(\frac{R}{Y}\right)^{\mathrm{cbo}} \;=\; \frac{R^{\mathrm{cbo}}_{\mathrm{scen}}}{Y_{\mathrm{base}} (1 + g_y)} - \bigl(R/Y\bigr)^{\mathrm{CBO}}_{\mathrm{base}} \;=\; \frac{\Delta R}{Y_{\mathrm{base}} (1 + g_y)} - \bigl(R/Y\bigr)^{\mathrm{CBO}}_{\mathrm{base}} \cdot \frac{g_y}{1 + g_y}.
+\Delta\!\left(\frac{R}{Y}\right)^{\mathrm{cbo}} \;=\; \frac{R^{\mathrm{cbo}}_{\mathrm{scen}}}{Y_{\mathrm{base}} (1 + g_y)} - \bigl(\frac{R}{Y}\bigr)^{\mathrm{CBO}}_{\mathrm{base}} \;=\; \frac{\Delta R}{Y_{\mathrm{base}} (1 + g_y)} - \bigl(\frac{R}{Y}\bigr)^{\mathrm{CBO}}_{\mathrm{base}} \cdot \frac{g_y}{1 + g_y}.
 $$
 
 The second term is the **dilution drag**: even with no revenue
@@ -611,6 +503,34 @@ forecast level. The maintained assumption is that revenue streams
 the model omits (notably the baseline CIT level and any pieces of
 "other" revenue not captured by Tax-Simulator) are unchanged in
 the scenario except through channels already in $\Delta R$.
+
+### Connecting to the macro model
+
+The revenue-to-GDP delta is the natural handoff into the **Budget
+Lab Small Macro Model (BLSMM)**, which carries baseline projections
+for federal debt. For each scenario in
+`revenue_to_gdp_<year>.csv` the optional step
+`code/15_blsmm_debt_gdp.R`:
+
+1. Applies the CBO-anchored revenue/GDP delta as a linear ramp on
+   BLSMM's federal-revenue path ($\mathtt{rgfr\_star}$) from
+   2026 through the baseline year, held at full level thereafter.
+2. Solves for a constant per-year productivity bump (added to
+   BLSMM's potential-output path $\mathtt{glqstar}$) such that the
+   annualized 2025–baseline-year real GDP growth in BLSMM matches
+   the Karger variant's $r^{\mathrm{AI}}$ target.
+3. Reads off BLSMM's 2030 federal debt and debt/GDP and writes the
+   results to `blsmm_debt_to_gdp_<year>.csv` plus a sheet on both
+   xlsx bundles and per-share-mode bar plots.
+
+BLSMM's CBO-style fiscal feedback (the model's $\psi_1$, $\psi_2$
+elasticities) mechanically lowers outlays as potential output
+rises. Under an AI shock policymakers may instead raise outlays
+for displaced-worker support; the BLSMM number therefore reads
+as a baseline-feedback estimate of debt/GDP rather than an
+all-things-considered projection. The step requires a local clone
+of the BLSMM repo (env var `BLSMM_DIR`); if absent, the rest of
+the pipeline finishes normally without the BLSMM outputs.
 
 ## The scenario grid
 
@@ -681,9 +601,8 @@ read in context.
 
 - **Corporate microsim.** We capture corporate income tax through a
   single macro bolt-on rather than re-deriving corporate liability
-  from per-firm data. Per-household corporate-incidence assumptions
-  (such as the JCT 75/25 capital/labor split) are deliberately not
-  applied; corporate tax operates upstream of household
+  from per-firm data. Per-household corporate-incidence assumptions 
+  are deliberately not applied; corporate tax operates upstream of household
   realizations, so the full $X$ reaches households, and the macro
   CIT delta is layered onto aggregate revenue separately. Any
   distributional spillover of CIT changes is absorbed into the
@@ -712,9 +631,8 @@ five directions where the model can be extended.
 A natural fourth labor-incidence rule scales each unit's labor
 income by an occupation's exposure to AI: $\mathrm{YiL}_{1,i} = (1 +
 \beta \cdot e_i) \cdot \mathrm{YiL}_i$, where $e_i$ is an
-occupation-level AI-exposure index (Eloundou et al. 2023 or
-Felten-Raj-Seamans), and $\beta$ is solved so the aggregate matches
-$L_1$. The mechanic is straightforward; the missing piece is an
+occupation-level AI-exposure index, and $\beta$ is solved so the aggregate 
+matches $L_1$. The mechanic is straightforward; the missing piece is an
 occupation-level exposure imputation onto the tax-unit file. Once
 that imputation exists, the AI-exposure scenario slots into the
 labor-scenario axis alongside the existing proportional /
@@ -737,12 +655,11 @@ $$
 This requires (a) that $X$ capture unrealized as well as realized
 gains (see the wealth-frame extension below) and (b) an estimate of
 $r$ from the literature. Counter-anchors include CRS R41364 (which
-reports a 20-year realization rate near 0.6), the
-Auerbach–Hassett-style annual-realization literature, and the JCT
-convention. Further work would condition $r$ on individual or
-economy-level characteristics: the marginal tax rates a unit faces,
-the composition of its wealth and income, and the relative size of
-its capital versus labor base.
+reports a 20-year realization rate near 0.6). Further work would 
+condition $r$ on individual or economy-level characteristics: the 
+marginal tax rates a unit faces, the composition of its wealth and income, 
+and the relative size of its capital versus labor base.
+
 
 ### Lifetime present value
 
