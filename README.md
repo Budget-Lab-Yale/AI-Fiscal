@@ -96,7 +96,9 @@ requires a resolvable Tax-Simulator working tree (set
 `TAX_SIMULATOR_DIR` or rely on the pinned default).
 
 Three local-fork patches are required (kept in the Tax-Simulator
-working tree, not part of upstream):
+working tree, not part of upstream). Detailed diagnosis and the
+upstream-fix plan for each are in
+[`docs/tax_simulator_patches.md`](docs/tax_simulator_patches.md):
 
 1. **`src/sim/run.R:95` — `build_timeburden_table(ID)` commented out.**
    Segfaults under `--multicore scenario` from a concurrent
