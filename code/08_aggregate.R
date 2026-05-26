@@ -795,18 +795,6 @@ build_atr_decile <- function(output_root, runscript_path, year,
   }
 }
 
-# Short ai_fiscal git rev (or "—" if unavailable). Used in run_info.
-.git_short_rev <- function(repo = getwd(), n = 12L) {
-  rev <- tryCatch(
-    suppressWarnings(system2(
-      "git", c("-C", repo, "rev-parse", "HEAD"),
-      stdout = TRUE, stderr = FALSE
-    ))[1],
-    error = function(e) NA_character_
-  )
-  if (length(rev) && !is.na(rev) && nzchar(rev)) substr(rev, 1, n) else "—"
-}
-
 # Two-column run-metadata table (field, value). When `bundle_type` is
 # supplied, an extra row is inserted after "Generated" identifying the
 # bundle flavor (microsim / publishable).

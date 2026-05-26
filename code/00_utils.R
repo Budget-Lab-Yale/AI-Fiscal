@@ -63,6 +63,21 @@ section <- function(title, width = 70) {
   cat("\n", rule, "\n", title, "\n", rule, "\n", sep = "")
 }
 
+# Short git rev of a repo (or "—" if unavailable). Used by 08_aggregate.R's
+# run-metadata sheet and the orchestrator pre-flight banner. Lives here so
+# both callers reach it through the always-sourced-first utils module
+# instead of one reaching into the other's file.
+.git_short_rev <- function(repo = getwd(), n = 12L) {
+  rev <- tryCatch(
+    suppressWarnings(system2(
+      "git", c("-C", repo, "rev-parse", "HEAD"),
+      stdout = TRUE, stderr = FALSE
+    ))[1],
+    error = function(e) NA_character_
+  )
+  if (length(rev) && !is.na(rev) && nzchar(rev)) substr(rev, 1, n) else "—"
+}
+
 # --- Asset / wealth column registry --------------------------------------
 # Single source of truth for the wealth-column universe carried on the
 # merged Tax-Data baseline file (post-normalization by load_tax_units():

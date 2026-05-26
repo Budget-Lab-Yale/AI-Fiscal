@@ -295,7 +295,7 @@ build_ai_fiscal_runs <- function(specs,
 # obvious up front rather than minutes into an 18-hour SLURM job. Every
 # lookup is non-fatal: an unresolved value prints a marker and the run
 # proceeds to abort at the natural point with the proper error message.
-# `.git_short_rev` is provided by 08_aggregate.R (sourced above).
+# `.git_short_rev` is provided by 00_utils.R (sourced first).
 .print_preflight <- function(data_dir, runscript_label) {
   safe <- function(expr) tryCatch(expr, error = function(e) "(unresolved)")
 
