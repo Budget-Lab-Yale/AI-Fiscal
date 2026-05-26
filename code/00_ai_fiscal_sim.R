@@ -290,6 +290,39 @@ build_ai_fiscal_runs <- function(specs,
             sprintf("release_%s.log", format(Sys.time(), "%Y%m%d_%H%M%S")))
 }
 
+# Print a pre-flight banner with the resolved versions / paths the run
+# depends on, before any heavy work, so a misconfigured environment is
+# obvious up front rather than minutes into an 18-hour SLURM job. Every
+# lookup is non-fatal: an unresolved value prints a marker and the run
+# proceeds to abort at the natural point with the proper error message.
+# `.git_short_rev` is provided by 08_aggregate.R (sourced above).
+.print_preflight <- function(data_dir, runscript_label) {
+  safe <- function(expr) tryCatch(expr, error = function(e) "(unresolved)")
+
+  ai_rev  <- safe(.git_short_rev(getwd()))
+  ts_root <- safe(tax_sim_root())
+  ts_rev  <- if (identical(ts_root, "(unresolved)")) "(unresolved)"
+             else safe(.git_short_rev(ts_root))
+  vintage <- safe(tax_data_vintage(symlink = data_dir)$vintage)
+  blsmm   <- Sys.getenv("BLSMM_DIR", unset = "")
+  blsmm_s <- if (nzchar(blsmm) && dir.exists(blsmm)) blsmm
+             else "(unset — BLSMM debt/GDP step will skip)"
+  mc      <- Sys.getenv("MC_CORES", unset = "(unset — Tax-Simulator default)")
+
+  cli::cli_inform(c(
+    "AI-Fiscal pre-flight",
+    "*" = "R:                 {R.version.string}",
+    "*" = "ai_fiscal rev:     {ai_rev}",
+    "*" = "Tax-Simulator dir: {ts_root}",
+    "*" = "Tax-Simulator rev: {ts_rev}",
+    "*" = "Tax-Data dir:      {data_dir}",
+    "*" = "Tax-Data vintage:  {vintage}",
+    "*" = "BLSMM dir:         {blsmm_s}",
+    "*" = "MC_CORES:          {mc}",
+    "*" = "Runscript:         {runscript_label}"
+  ))
+}
+
 .cli_main <- function(argv) {
   flags    <- .parse_cli_args(argv)
   log_file <- flags$log %||% .default_log_path()
@@ -328,12 +361,20 @@ build_ai_fiscal_runs <- function(specs,
 
 .cli_main_body <- function(argv, flags, log_con) {
   specs          <- release_specs()
-  runscript_path <- flags[["runscript-path"]] %||% default_runscript_path()
+  data_dir       <- flags[["data-dir"]] %||% "data/tax_data"
+  runscript_flag <- flags[["runscript-path"]]
+
+  # Banner first: shows whether TAX_SIMULATOR_DIR / data_dir resolve
+  # before runscript-path resolution (which aborts if Tax-Simulator
+  # is unreachable) or any counterfactual building begins.
+  .print_preflight(data_dir, runscript_flag %||% "(Tax-Simulator default)")
+
+  runscript_path <- runscript_flag %||% default_runscript_path()
 
   build_ai_fiscal_runs(
     specs,
     runscript_path = runscript_path,
-    data_dir       = flags[["data-dir"]] %||% "data/tax_data",
+    data_dir       = data_dir,
     years          = flags$years,
     overwrite      = isTRUE(flags$overwrite)
   )
