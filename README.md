@@ -199,25 +199,20 @@ asset_base selection — the grid is fixed.
 
 ### SLURM
 
-The 18-cell grid × 3 flavors fits in 128 G / 8 CPUs / 18 hr.
-`scripts/` is gitignored. Starter:
+`slurm_run.sh` at the repo root is a single-job SBATCH driver for the
+18-cell grid (fits in 128 G / 8 CPUs / 18 hr). Set required env
+vars and submit:
 
 ```bash
-#!/bin/bash
-#SBATCH --job-name=AI-Fiscal_release
-#SBATCH --output=logs/sbatch_%j.out
-#SBATCH --error=logs/sbatch_%j.err
-#SBATCH --time=18:00:00
-#SBATCH --mem=128G
-#SBATCH --cpus-per-task=8
-
-set -euo pipefail
-cd /path/to/your/AI-Fiscal
-module load R/4.4.2-gfbf-2024a
-
-MC_CORES="${MC_CORES:-8}" Rscript code/00_ai_fiscal_sim.R \
-  --overwrite --multicore scenario
+export TAX_SIMULATOR_DIR=/path/to/Tax-Simulator
+export BLSMM_DIR=/path/to/Budget-Lab-Small-Macro-Model   # optional
+sbatch slurm_run.sh
 ```
+
+Any extra flags are forwarded to the orchestrator
+(`Rscript code/00_ai_fiscal_sim.R ...`). The `module load` line in
+the script is Yale-Roberts-specific; adapt for your cluster.
+`scripts/` is gitignored for local ad-hoc wrappers.
 
 ### Outputs
 

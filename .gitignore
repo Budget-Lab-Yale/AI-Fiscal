@@ -44,10 +44,10 @@ output/
 # per-user / per-machine and should not travel via this repo.
 .claude/
 
-# scripts/: SBATCH templates and ad-hoc shell wrappers carry
-# user-specific paths (Roberts node mount, personal scratch dirs)
-# and shouldn't travel via the repo. README references the SLURM
-# workflow conceptually; reproducers adapt their own scripts/.
+# scripts/: local ad-hoc shell wrappers (cluster-specific paths,
+# personal scratch dirs). The reference SBATCH driver is `slurm_run.sh`
+# at the repo root; `scripts/` is for everything else a user wants
+# to keep locally without sending upstream.
 scripts/
 
 # Logs
