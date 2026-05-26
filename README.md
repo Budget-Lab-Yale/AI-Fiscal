@@ -243,7 +243,12 @@ sheet documents the axis codes; the `cell_params` sheet carries the
 per-cell macro / shock parameters; the `parameter_index` sheet is
 auto-generated from `config/scenario_params.yaml`.
 
-Identity checks: `Rscript tests/testthat.R`.
+Identity checks: `Rscript tests/testthat.R`. The GitHub Actions
+workflow runs this suite on every push against the synthetic fixture.
+A green check means the repo bootstraps and the model's internal
+identities hold on schema-equivalent data — it does **not** validate
+the Tax-Simulator economic pipeline (06/07) or any numeric result
+against real PUF + SCF microdata.
 
 ## Parameters
 
