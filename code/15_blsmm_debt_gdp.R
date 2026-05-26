@@ -51,8 +51,12 @@
 source("code/10_figures.R")
 
 # Karger et al. 2026 NBER w35046 Table 19, median annualized 2030 GDP growth.
-# Mirrors config/scenario_params.yaml: shock.variants.{S,M,R}.r_ai_annual.
-BLSMM_R_AI_ANNUAL <- c(S = 0.020, M = 0.026, R = 0.033)
+# Sourced from config/scenario_params.yaml: shock.variants.{S,M,R}.r_ai_annual
+# at every call site so this file never drifts from the yaml.
+.load_karger_r_ai_annual <- function(yaml_path = "config/scenario_params.yaml") {
+  variants <- yaml::read_yaml(yaml_path)$shock$variants
+  vapply(variants, function(v) as.numeric(v$r_ai_annual), numeric(1))
+}
 
 # Locate the cloned BLSMM repo. Returns NULL with a warning if not resolvable.
 .resolve_blsmm_dir <- function(blsmm_dir = NULL) {
@@ -76,17 +80,18 @@ BLSMM_R_AI_ANNUAL <- c(S = 0.020, M = 0.026, R = 0.033)
 }
 
 # Source the v1_8 module set inside the BLSMM working directory.
-# Caller is responsible for restoring cwd; we don't on.exit here so the
-# loaded functions remain available to subsequent simulate() calls.
+# Restores cwd via on.exit so a failing source() can't strand the
+# caller inside the BLSMM tree; the sourced functions persist in the
+# global env regardless, so subsequent simulate() calls still see them.
 .source_blsmm <- function(blsmm_dir) {
   old_wd <- getwd()
+  on.exit(setwd(old_wd), add = TRUE)
   setwd(blsmm_dir)
   for (f in c("simulation", "parameters", "equations", "debt_proxy",
               "forcing", "neutral_rate", "presim_block", "solver",
               "user_deltas")) {
     source(file.path("model/v1_8", paste0(f, ".R")), local = FALSE)
   }
-  setwd(old_wd)
 }
 
 # Append a sheet to an existing openxlsx workbook on disk. If the sheet
@@ -135,6 +140,7 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
 
   cli::cli_inform("BLSMM debt/GDP step: BLSMM_DIR = {.path {blsmm_dir}}")
   ai_fiscal_root <- getwd()
+  r_ai_annual_by_variant <- .load_karger_r_ai_annual()
   .source_blsmm(blsmm_dir)
 
   # Switch into BLSMM for the runs (its read.csv calls use relative paths
@@ -193,14 +199,14 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
   baseline_2029  <- baseline_sim[baseline_sim$year == year - 1L, ]
   baseline_g5    <- annualized_growth(baseline_sim)
 
-  rev_gdp <- read.csv(file.path(ai_fiscal_root, rev_gdp_fp), check.names = FALSE)
+  rev_gdp <- data.table::fread(file.path(ai_fiscal_root, rev_gdp_fp))
   rev_gdp$delta_rev_to_gdp_cbo_pp <- rev_gdp$delta_rev_to_gdp_cbo * 100
 
   results <- vector("list", nrow(rev_gdp))
   for (i in seq_len(nrow(rev_gdp))) {
     row <- rev_gdp[i, ]
     variant <- as.character(row$variant)
-    target_g <- BLSMM_R_AI_ANNUAL[[variant]]
+    target_g <- r_ai_annual_by_variant[[variant]]
     if (is.null(target_g))
       cli::cli_abort("BLSMM step: unknown variant code {.val {variant}}.")
 
@@ -233,7 +239,7 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
       stringsAsFactors = FALSE
     )
   }
-  results_df <- do.call(rbind, results)
+  results_df <- data.table::rbindlist(results)
 
   baseline_row <- data.frame(
     scenario_id                = "blsmm_baseline",
@@ -265,7 +271,7 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
 
   out_csv <- file.path(agg_dir, sprintf("blsmm_debt_to_gdp_%d.csv", year))
   dir.create(dirname(out_csv), recursive = TRUE, showWarnings = FALSE)
-  utils::write.csv(results_df, out_csv, row.names = FALSE)
+  data.table::fwrite(results_df, out_csv)
   cli::cli_inform("Wrote {.path {out_csv}} ({nrow(results_df)} rows)")
 
   # Append to xlsx bundles where present. Mirrors 08 + 09's vintage / _latest
@@ -316,7 +322,7 @@ assemble_blsmm_figures <- function(year       = NULL,
       cli::cli_warn("BLSMM figures: missing {.path {csv_fp}}; skipping.")
       return(invisible(NULL))
     }
-    results_df <- utils::read.csv(csv_fp, stringsAsFactors = FALSE)
+    results_df <- data.table::fread(csv_fp)
   }
 
   baseline_row     <- results_df[results_df$scenario_id == "blsmm_baseline", ]
@@ -335,7 +341,9 @@ assemble_blsmm_figures <- function(year       = NULL,
   scen_df$labor    <- factor(scen_df$labor,
                              levels = c("S0", "S2", "S3"),
                              labels = c("Proportional", "Compressive", "Expansive"))
-  variant_g <- c(Slow = 2.0, Moderate = 2.6, Rapid = 3.3)
+  r_ai_pct  <- .load_karger_r_ai_annual() * 100
+  variant_g <- setNames(r_ai_pct[c("S", "M", "R")],
+                        c("Slow", "Moderate", "Rapid"))
 
   make_plot <- function(sub, label) {
     ymin <- min(sub$blsmm_debt_to_gdp_year_pct, baseline_debtgdp) - 1
