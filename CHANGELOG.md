@@ -47,6 +47,33 @@ Review waves 1–2 (numbers-identical to v0.1.0 except new guards):
   and the methodology (gross-home-values wording; 21-column
   cell_params variable list).
 
+Review waves 3–5 (guards, registry, test hardening):
+
+- `--years` validated for shape and a >= 2-year span;
+  `weighted_quantile` hardened (empty/NA/zero-weight aborts,
+  float-proof tail); SYZ W* sample and percentile validated; YiL/YiK
+  NA tripwire after the split; `load_params` asserts
+  `horizon_start_year == 2025` (positional CBO growth keys) and
+  validates `r_ai_annual`, `L0`, `s1` ranges.
+- **Scenario-axis registry** in `00_utils.R` — single source for axis
+  codes/labels/flavor suffixes, consumed by 00/08/09/10/15 (was six
+  hand-synced literal vectors, each failing by silent NA-drop). 08
+  aborts on unregistered IDs/suffixes; 09 warns before dropping
+  unparseable IDs; the scenario_guide is asserted registry-consistent;
+  10 names any value it coerces to NA.
+- Tripwires: 09 aborts if microsim corp-tax deltas are non-zero before
+  layering the macro CIT wedge (v2 entity-tax double-count guard), and
+  if a parsed scenario finds no macro-summary row (stale-CSV NA
+  headline).
+- BLSMM variant lookup fixed (dead `is.null` guard on a named vector);
+  fixture generator immune to the `sample()` scalar gotcha; validation
+  receipts comparison filters to the requested year; one failing
+  figure no longer kills the whole suite.
+- Tests: helper no longer leaks Step B columns into shared state;
+  new coverage for 02 derivation algebra and the scenario-ID layer;
+  identity tolerances converted to relative form; helper announces
+  real-vintage vs synthetic substrate. 132 PASS (was 95).
+
 ## [0.1.0] — 2026-MM-DD
 
 Initial public release. Income-frame microsimulation of an AI-driven
