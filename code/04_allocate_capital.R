@@ -117,6 +117,20 @@ allocate_across_units <- function(dt, X_to_units) {
       i = "Cannot allocate {.var X_to_units} proportionally to a zero base."
     ))
   }
+  # A_base sums the base columns unclamped, so a unit whose negative
+  # pass_throughs (SCF donor-pool artifact) exceeds all other holdings
+  # gets X_i < 0 — which the within-unit step does not expect. Surface
+  # it: downstream share math and the retirement residual routing assume
+  # X_i >= 0.
+  n_neg <- sum(dt$A_base < 0)
+  if (n_neg > 0) {
+    neg_mass_B <- sum(dt$weight[dt$A_base < 0] * dt$A_base[dt$A_base < 0]) / 1e9
+    cli::cli_warn(c(
+      "{n_neg} unit{?s} carr{?ies/y} a negative all-assets base; {?it/they} will receive X_i < 0.",
+      x = sprintf("Weighted negative base mass: $%.4fB.", neg_mass_B),
+      i = "Negative {.field pass_throughs} exceeding other holdings; inspect the vintage if this fires."
+    ))
+  }
   dt[, X_i := X_to_units * A_base / total_base]
   setattr(dt, "total_base", total_base)
   dt
@@ -124,8 +138,9 @@ allocate_across_units <- function(dt, X_to_units) {
 
 # Step 5a: distribute X_i across income-bearing asset classes only. Units
 # with no income-bearing holdings get their residual routed to retirement
-# (deferred) so that sum_i w_i * X_i is preserved. Under the all-assets
-# base X_i is always non-negative.
+# (deferred) so that sum_i w_i * X_i is preserved. X_i is non-negative
+# provided A_base >= 0 for every unit — allocate_across_units warns when
+# that fails (negative pass_throughs exceeding other holdings).
 allocate_within_unit <- function(dt) {
   inc_cols <- unname(.INCOME_BEARING_COLS)
   # Clamp per-class holdings at zero before computing proportional
@@ -153,8 +168,12 @@ allocate_within_unit <- function(dt) {
 # X_<type>.
 map_to_income_types <- function(dt, asset_map_path, params) {
   amap <- fread(asset_map_path)
-  pe <- lookup_shares(amap, "public_equity_taxable")
-  pt <- lookup_shares(amap, "passthrough_equity")
+  pe <- lookup_shares(amap, "public_equity_taxable",
+                      required_types = c("qualified_dividend", "ltcg"),
+                      map_path = asset_map_path)
+  pt <- lookup_shares(amap, "passthrough_equity",
+                      required_types = "passthrough_ordinary",
+                      map_path = asset_map_path)
 
   dt[, X_qualified_div := X_public_equity_taxable * pe$qualified_dividend]
   dt[, X_ltcg_gross    := X_public_equity_taxable * pe$ltcg]
@@ -244,8 +263,35 @@ apply_retirement_cascade_R1 <- function(dt, params) {
 }
 
 # Pull a named list of {income_type: share} for a given asset class out
-# of the asset_to_income_map.csv table.
-lookup_shares <- function(amap, class_name) {
-  sub <- amap[asset_class == class_name]
+# of the asset_to_income_map.csv table. The map is identity-critical
+# (shares scale X_<class> flows directly), so validate rather than
+# trusting the CSV: every required income type must be present exactly
+# once with a non-NA share, and the required shares must sum to 1 so no
+# class mass silently leaks.
+lookup_shares <- function(amap, class_name, required_types,
+                          map_path = "config/asset_to_income_map.csv") {
+  sub <- amap[asset_class == class_name & income_type %in% required_types]
+  missing <- setdiff(required_types, sub$income_type)
+  if (length(missing) || anyDuplicated(sub$income_type)) {
+    cli::cli_abort(c(
+      "Asset-to-income map rows missing or duplicated.",
+      x = "Class {.val {class_name}}: missing {.val {missing}}; duplicated {.val {sub$income_type[duplicated(sub$income_type)]}}.",
+      i = "Check {.path {map_path}}."
+    ))
+  }
+  if (anyNA(sub$share) || !is.numeric(sub$share)) {
+    cli::cli_abort(c(
+      "Asset-to-income map shares are missing or non-numeric.",
+      x = "Class {.val {class_name}}, income type{?s} {.val {sub$income_type[is.na(sub$share)]}}.",
+      i = "Check {.path {map_path}}."
+    ))
+  }
+  if (abs(sum(sub$share) - 1) > 1e-8) {
+    cli::cli_abort(c(
+      "Asset-to-income map shares do not sum to 1.",
+      x = "Class {.val {class_name}}: sum = {sum(sub$share)}.",
+      i = "Class flow would silently leak; fix {.path {map_path}}."
+    ))
+  }
   setNames(as.list(sub$share), sub$income_type)
 }

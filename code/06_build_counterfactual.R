@@ -89,20 +89,24 @@ source("code/00_utils.R")
 #   - yh_default, basis_ratio: gain-weighted means used by .augment_kg_lt
 #     to populate kg_lt_years_held / kg_lt_basis on units newly receiving
 #     LTCG flow.
-# All depend only on dt_baseline (= the post-SYZ-split table), so the
-# orchestrator computes this once before the cell loop and passes it
-# into build_counterfactual via `baseline_cache`. Tests / diagnostics
-# pass NULL and we recompute inline.
-compute_baseline_cache <- function(dt_baseline) {
+# All depend only on dt_baseline (= the post-SYZ-split table) and the
+# SYZ passive capital share, so the orchestrator computes this once
+# before the cell loop and passes it into build_counterfactual via
+# `baseline_cache`. Tests / diagnostics pass NULL and we recompute
+# inline. `params` supplies passthrough.passive_capital_share — the
+# same parameter 01_load_data.R uses to build YiL/YiK, so the two
+# stay in sync with the yaml.
+compute_baseline_cache <- function(dt_baseline, params) {
+  psh <- params$raw$passthrough$passive_capital_share
   cap_holdings <- list(
     scorp_active  = pmax(dt_baseline$scorp_active_cap_share *
                            dt_baseline$scorp_active_net, 0),
-    scorp_passive = pmax(0.75 * (dt_baseline$scorp_passive -
-                                   dt_baseline$scorp_passive_loss), 0),
+    scorp_passive = pmax(psh * (dt_baseline$scorp_passive -
+                                  dt_baseline$scorp_passive_loss), 0),
     part_active   = pmax(dt_baseline$part_active_cap_share *
                            dt_baseline$part_active_net, 0),
-    part_passive  = pmax(0.75 * (dt_baseline$part_passive -
-                                   dt_baseline$part_passive_loss), 0)
+    part_passive  = pmax(psh * (dt_baseline$part_passive -
+                                  dt_baseline$part_passive_loss), 0)
   )
   cap_holdings_total <- Reduce(`+`, cap_holdings)
 
@@ -127,7 +131,9 @@ build_counterfactual <- function(dt_baseline, step_a_dt, step_b,
   flavor        <- match.arg(flavor)
   apply_labor   <- flavor != "capital_only"
   apply_capital <- flavor != "labor_only"
-  if (is.null(baseline_cache)) baseline_cache <- compute_baseline_cache(dt_baseline)
+  if (is.null(baseline_cache)) {
+    baseline_cache <- compute_baseline_cache(dt_baseline, params)
+  }
 
   dt <- copy(dt_baseline)
   # allocate_capital mutates its input in place (data.table convention),
@@ -143,8 +149,40 @@ build_counterfactual <- function(dt_baseline, step_a_dt, step_b,
                       X_ltcg_in_year = X_ltcg_V1,
                       X_pens_gross, X_pens_txbl,
                       X_ira_gross,  X_ira_txbl)]
-  dt <- merge(dt, step_a_dt[, .(id, YiL1)], by = "id", all.x = TRUE)
-  dt <- merge(dt, flows,                    by = "id", all.x = TRUE)
+
+  # Order-preserving update joins. merge(by = "id") would re-sort dt by
+  # id, while baseline_cache and the direct dt_baseline$ column reads in
+  # steps 2-3 below stay in file order — a silent per-unit row scramble
+  # whenever the vintage CSV isn't already id-sorted. Update joins leave
+  # dt in dt_baseline's row order, so the positional combination below
+  # is correct by construction (tripwire asserted after the joins).
+  if (anyDuplicated(step_a_dt$id) || anyDuplicated(flows$id)) {
+    cli::cli_abort(c(
+      "Duplicate {.field id} values in Step A / Step B inputs.",
+      x = "Per-unit update joins would be ambiguous.",
+      i = "Both tables must carry exactly one row per baseline tax unit."
+    ))
+  }
+  dt[step_a_dt, on = "id", YiL1 := i.YiL1]
+  flow_cols <- setdiff(names(flows), "id")
+  dt[flows, on = "id",
+     (flow_cols) := mget(paste0("i.", flow_cols))]
+  if (!identical(dt$id, dt_baseline$id)) {
+    cli::cli_abort(
+      "Row order diverged from {.arg dt_baseline} after the update joins; positional contract broken."
+    )
+  }
+  # Ids missing from step_a/step_b would otherwise leave NAs that
+  # propagate silently into the written tax-units CSV.
+  na_cols <- c("YiL1", flow_cols)
+  na_hit  <- na_cols[vapply(dt[, ..na_cols], anyNA, logical(1))]
+  if (length(na_hit)) {
+    cli::cli_abort(c(
+      "NA values after joining Step A / Step B outputs onto the baseline.",
+      x = "Columns with NAs: {.field {na_hit}}.",
+      i = "Some baseline {.field id}s are missing from the step tables (or the steps produced NAs)."
+    ))
+  }
 
   dt[, rho_i := fifelse(YiL != 0, YiL1 / YiL, 1)]
 
@@ -170,16 +208,37 @@ build_counterfactual <- function(dt_baseline, step_a_dt, step_b,
   flow_pa <- flow_share(w$part_active)
   flow_pp <- flow_share(w$part_passive)
 
-  # 3. Reconstruct passthrough columns.
+  # Units with X_passthrough_ordinary != 0 but no positive baseline
+  # holdings in any sub-bucket (w_tot == 0) have no allocation weights:
+  # their flow is not written anywhere and the counterfactual undershoots
+  # X_to_units by that mass. Surface it rather than dropping silently.
+  if (apply_capital) {
+    no_base <- w_tot <= 0 & dt$X_passthrough_ordinary != 0
+    if (any(no_base)) {
+      dropped_B <- sum(dt$weight[no_base] *
+                         dt$X_passthrough_ordinary[no_base]) / 1e9
+      cli::cli_warn(c(
+        "Passthrough flow dropped for {sum(no_base)} unit{?s} with no positive baseline passthrough capital holdings.",
+        x = sprintf("$%.4fB weighted flow not written to the counterfactual.",
+                    dropped_B),
+        i = "These units carry SCF {.field pass_throughs} wealth but no positive sub-bucket to receive the flow."
+      ))
+    }
+  }
+
+  # 3. Reconstruct passthrough columns. `psh` is the SYZ passive capital
+  # share from the yaml — must match what compute_baseline_cache and
+  # 01_load_data.R use.
+  psh    <- params$raw$passthrough$passive_capital_share
   rho_pt <- if (apply_labor) dt$rho_i else 1
   sa <- .update_passthrough(dt_baseline$scorp_active,  dt_baseline$scorp_active_loss,
                             dt_baseline$scorp_active_cap_share, rho_pt, flow_sa)
   sp <- .update_passthrough(dt_baseline$scorp_passive, dt_baseline$scorp_passive_loss,
-                            0.75,                              rho_pt, flow_sp)
+                            psh,                               rho_pt, flow_sp)
   pa <- .update_passthrough(dt_baseline$part_active,   dt_baseline$part_active_loss,
                             dt_baseline$part_active_cap_share, rho_pt, flow_pa)
   pp <- .update_passthrough(dt_baseline$part_passive,  dt_baseline$part_passive_loss,
-                            0.75,                              rho_pt, flow_pp)
+                            psh,                               rho_pt, flow_pp)
   dt[, scorp_active       := sa$pos]
   dt[, scorp_active_loss  := sa$loss]
   dt[, scorp_passive      := sp$pos]
@@ -282,7 +341,14 @@ write_counterfactual_scenario <- function(dt_cf, year, scenario_id,
     target <- file.path(baseline_dir, f)
     link   <- file.path(scenario_dir, f)
     unlink(link, force = TRUE)
-    file.symlink(target, link)
+    ok <- file.symlink(target, link)
+    if (!isTRUE(ok)) {
+      cli::cli_abort(c(
+        "Failed to symlink {.path {f}} into the scenario folder.",
+        x = "{.path {link}} -> {.path {target}}.",
+        i = "On Windows, {.fn file.symlink} needs Developer Mode or admin rights; otherwise Tax-Simulator would fail much later on the missing baseline files."
+      ))
+    }
   }
 
   fp <- file.path(scenario_dir, override_csv)

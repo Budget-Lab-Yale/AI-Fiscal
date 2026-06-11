@@ -69,10 +69,14 @@ tax_sim_output_root <- function(vintage,
 # `config/runscripts/`, no `.csv`).
 runscript_name_from_path <- function(runscript_path,
                                      ts_root = tax_sim_root()) {
+  # winslash = "/" on both sides: the default "\\" on Windows would
+  # never match a "/"-joined prefix, so the containment check below
+  # spuriously failed on Windows (and the extracted name would carry
+  # backslashes into main.R's argv).
   rs_dir <- normalizePath(file.path(ts_root, "config", "runscripts"),
-                          mustWork = TRUE)
-  abs    <- normalizePath(runscript_path, mustWork = TRUE)
-  prefix <- paste0(rs_dir, .Platform$file.sep)
+                          winslash = "/", mustWork = TRUE)
+  abs    <- normalizePath(runscript_path, winslash = "/", mustWork = TRUE)
+  prefix <- paste0(rs_dir, "/")
   if (!startsWith(abs, prefix)) {
     cli::cli_abort(c(
       "Runscript is not under the Tax-Simulator config tree.",

@@ -18,6 +18,35 @@ the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   generation (CBO baseline module, separable labor/capital modules,
   upstream capital sizing).
 
+### Fixed
+
+Review waves 1–2 (numbers-identical to v0.1.0 except new guards):
+
+- Counterfactual builder: order-preserving update joins replace the
+  re-sorting `merge()` calls, closing a latent row-misalignment hazard
+  between merge-sorted flows and file-ordered baseline vectors; id
+  uniqueness, row-order, and post-join NA assertions added (C1, M4).
+- `runscript_name_from_path()`: `winslash = "/"` so the containment
+  check works on Windows (M1).
+- Passthrough flow dropped for units with no positive sub-bucket
+  holdings is now surfaced with a `cli_warn` carrying the weighted
+  dollar mass (M2) — it fires on the synthetic fixture, so expect it
+  on real runs too.
+- SYZ passive capital share is read from
+  `passthrough.passive_capital_share` in the yaml everywhere
+  (`compute_baseline_cache()` gained a `params` arg); previously
+  hard-coded as 0.75 in four places in 06 (M3).
+- `allocate_across_units()` warns when any unit carries a negative
+  all-assets base (would receive X_i < 0) (M9).
+- `lookup_shares()` validates the asset-to-income map: required
+  income types present exactly once, numeric shares, sum to 1 (M10).
+- `write_counterfactual_scenario()` aborts with a Windows-specific
+  hint when `file.symlink()` fails instead of ignoring the return
+  value (M5).
+- Documentation staleness fixes across 06/09/10/11, README, CLAUDE.md,
+  and the methodology (gross-home-values wording; 21-column
+  cell_params variable list).
+
 ## [0.1.0] — 2026-MM-DD
 
 Initial public release. Income-frame microsimulation of an AI-driven

@@ -169,7 +169,7 @@ build_ai_fiscal_runs <- function(specs,
     load_tax_units(year, data_dir = data_dir),
     params0
   )
-  baseline_cache <- compute_baseline_cache(dt_split)
+  baseline_cache <- compute_baseline_cache(dt_split, params0)
 
   # 2. Cache (params, step_b) per unique (variant, share_mode). share_mode
   # changes s1 → (gk, alpha, X, CIT wedge), so step_b must be recomputed.

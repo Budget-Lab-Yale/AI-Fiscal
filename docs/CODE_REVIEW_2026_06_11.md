@@ -1,5 +1,15 @@
 # Full-repo code review — 2026-06-11
 
+**Status update (same day):** waves 1–2 of the fix order are FIXED —
+C1, M1, M2, M3, M4, M5, M9, M10 — plus the full documentation-
+staleness list (commit `f2b070a` for docs; see git log for the fix
+commit). Suite green after fixes (95 PASS / 2 Windows skips).
+Empirical note: the M2 warning fires even on the synthetic fixture
+(1,915 units' passthrough flow unwritten), so the leak is real —
+quantify on real data at the next full run. Still open: waves 3–5
+(M6/M7/M8/M11/M12/M13/M14/M15, axis registry + CIT tripwire, test
+items T1–T4, minors).
+
 Four parallel reviewers over code/, tests/, config conventions, with
 a v2-readiness lens (see `docs/v2_architecture.md`). Line numbers as
 of commit `79fb365`. Severity: **C** = can corrupt results or block

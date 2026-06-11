@@ -82,7 +82,7 @@ step_b <- time_it("allocate_capital",
 step_b <- time_it("apply_realization",
                   apply_realization(step_b))
 bc <- time_it("compute_baseline_cache",
-              compute_baseline_cache(dt_split))
+              compute_baseline_cache(dt_split, params))
 
 # Per-cell sections — repeat n_cells times to estimate full-grid cost.
 cell_times <- list()
