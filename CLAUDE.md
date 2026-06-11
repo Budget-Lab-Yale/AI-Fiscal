@@ -110,7 +110,7 @@ orchestrator (00_ai_fiscal_sim.R)
   │     - publishable xlsx bundle
   │
   ├── assemble_figures()  (10_figures.R)
-  │     - PNG+PDF figure suite under results/figures/<year>/
+  │     - PNG figure suite under results/figures/<year>/
   │     - figure_data_<year>.xlsx
   │
   └── run_blsmm_step()  (15_blsmm_debt_gdp.R)  -- optional

@@ -747,12 +747,13 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL) {
   )
 
   cell_params_rows <- data.table(
-    sheet = rep("cell_params", 19),
+    sheet = rep("cell_params", 21),
     column = c("variant", "share_mode", "labor_scenario",
                "theta_0_L", "theta_0_K", "theta_1_L", "theta_1_K",
                "g_y", "g_k", "alpha", "sigma",
                "L0_B", "L1_B", "K0_B", "K1_B",
-               "X_B", "X_to_units_B", "eta_corp", "delta_R_CIT_B"),
+               "X_B", "X_to_units_B", "kappa_corp", "cit_statutory",
+               "eta_corp", "delta_R_CIT_B"),
     description = c(
       "Shock variant code (S = Slow, M = Moderate, R = Rapid).",
       "Factor-share mode. R = reallocate (Karger labor-share decline); F = fixed (s1 := 1 - L0, no factor-share shift).",
@@ -771,6 +772,8 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL) {
       "Post-shock aggregate capital income in $ billions. K0_B * (1 + g_k).",
       "Aggregate AI capital flow in $ billions, before the off-microsim CIT wedge. X = K1_B - K0_B.",
       "Aggregate capital flow that reaches tax units, in $ billions. CIT acts upstream of household realizations, so X reaches households in full: X_to_units = X.",
+      "C-corp share of the capital base used in the CIT wedge (corporate.kappa_corp, narrow definition with S-corps stripped; see config/calibration/kappa_corp_calculation.csv).",
+      "Statutory corporate income tax rate (corporate.cit_statutory, TCJA IRC §11). Cancels algebraically against eta_corp in delta_R_CIT; carried for transparency.",
       "Calibrated corporate-base scale factor. eta = cit_statutory * (K0$ * kappa_corp) / CBO_CIT_baseline$ so that the baseline-year CIT level matches CBO. Absorbs both the household-realized-vs-pre-realization wedge and the statutory-vs-effective gap. Constant within a (variant, share_mode) cell.",
       "Off-microsim CIT revenue change in $ billions. cit_statutory * kappa_corp * X / eta_corp ≡ X * CBO_CIT_baseline / K0$."
     )

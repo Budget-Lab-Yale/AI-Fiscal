@@ -15,7 +15,7 @@
 #      consume; each non-baseline row sets `dep.Tax-Data.ID` to the
 #      scenario folder created in step 2.
 #   4. Aggregate / difference per-unit liabilities downstream
-#      (08_aggregate.R, not yet implemented).
+#      (08_aggregate.R).
 
 suppressPackageStartupMessages({
   library(data.table)
@@ -299,9 +299,13 @@ write_counterfactual_scenario <- function(dt_cf, year, scenario_id,
 # Columns:
 #   id              join key (matches Tax-Simulator detail/<year>.csv)
 #   dL_unit         YiL1 - YiL on the labor side; zero under capital_only
-#   X_gross_unit    gross capital-flow allocation, pre-CIT, $; zero under
-#                   labor_only. Recovered from step_b$X_i (post-CIT) by
-#                   scaling with macro$X / macro$X_to_units.
+#   X_gross_unit    gross capital-flow allocation, $; zero under
+#                   labor_only. Scaled from step_b$X_i by
+#                   macro$X / macro$X_to_units — identically 1 today
+#                   because compute_macro_targets sets X_to_units = X
+#                   (CIT wedge is off-microsim). The scaling is kept so
+#                   a future macro-vs-distributed split (e.g. a v2
+#                   retention/payout stage) flows through unchanged.
 #   dY_factor_unit  convenience: dL_unit + X_gross_unit
 #
 # `flavor` zeros out the channel turned off in build_counterfactual so

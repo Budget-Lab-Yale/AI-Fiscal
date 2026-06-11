@@ -14,9 +14,9 @@
 #
 # Run from repo root:
 #   module load R/4.4.2-gfbf-2024a
-#   Rscript code/10_validation.R                     # year from scenario_params.yaml
-#   Rscript code/10_validation.R --year 2024         # specific year
-#   Rscript code/10_validation.R --receipts <path>   # also include IIT/CIT
+#   Rscript code/11_validation.R                     # year from scenario_params.yaml
+#   Rscript code/11_validation.R --year 2024         # specific year
+#   Rscript code/11_validation.R --receipts <path>   # also include IIT/CIT
 #
 # CLI args:
 #   --year      tax-units file year to validate (default: baseline_year from yaml)

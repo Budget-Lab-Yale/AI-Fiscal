@@ -8,8 +8,9 @@
 #     revenue_decomp_<year>.csv                        (from 08)
 #   - <runscript_basename>_macro.csv                   (from 00)
 #
-# Outputs (under `out_dir`, default results/figures/<year>/): one PNG + PDF
-# per figure, sized for a YBL-style policy brief, plus a single
+# Outputs (under `out_dir`, default results/figures/<year>/): one PNG
+# per figure (full + _clean variants), sized for a YBL-style policy
+# brief, plus a single
 # figure_data_<year>.xlsx with one sheet per figure carrying the data
 # behind the chart (use the table in place of or alongside the figure).
 #
@@ -57,10 +58,11 @@ PAL_VARIANT     <- c(Slow     = YBL_PALE,
                      Rapid    = YBL_NAVY)
 
 # Labor map: cool for compressive (pulls toward mean), warm for
-# expansive (pulls apart), neutral for proportional, muted for the
-# AI-exposure map (implemented in 03_shock_labor.R but gated on an
-# optional `ai_exposure` column — present only when the input file
-# carries CPS occ × Eloundou exposure scores).
+# expansive (pulls apart), neutral for proportional. The AI-exposure
+# entry is a palette reservation only — no exposure scenario exists in
+# this repo's 03_shock_labor.R (S0/S2/S3 only; an exposure variant
+# lives in the archived dev repo, and a CPS-cell version is sketched
+# in docs/v2_architecture.md §3).
 PAL_LABOR       <- c(Proportional  = YBL_GRAY,
                      `AI-exposure` = YBL_MUTED,
                      Compressive   = YBL_CYAN,

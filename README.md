@@ -145,7 +145,11 @@ code/       # R scripts (numbered in pipeline order)
 config/     # scenario_params.yaml + asset map + retirement calibration
 data/
   tax_data/    # symlink -> shared Tax-Data vintage
-  aggregates/  # output: deliverable CSVs + XLSX bundles + PDFs
+  external/    # published benchmark inputs (DFA, SOI); see its README
+  matched/     # local working area (gitignored)
+results/
+  aggregates/  # output: deliverable CSVs + XLSX bundles
+  figures/     # output: PNG figure suite + figure_data xlsx
 docs/       # methodology
 tests/      # testthat suite (Rscript tests/testthat.R)
   fixtures/synthetic_tax_data/  # 10k-row schema-equivalent fake PUF
@@ -166,7 +170,7 @@ tests/      # testthat suite (Rscript tests/testthat.R)
 | `07_run_tax_sim.R` | Invoke Tax-Simulator via `callr` in a clean R subprocess. |
 | `08_aggregate.R` | Revenue + income-totals + inequality deltas + decomp + microsim `.xlsx` bundle. |
 | `09_tables_figures.R` | Layer macro CIT onto microsim totals; assemble publishable grid + decile panel + `.xlsx` bundle. |
-| `10_figures.R` | Publishable PNG+PDF figure suite. |
+| `10_figures.R` | Publishable PNG figure suite (full + `_clean` variants). |
 | `11_validation.R` | Input-side benchmark check (CBO / SOI / NIPA / DFA / SCF). Standalone diagnostic — not in the main pipeline. |
 | `13_macro_params_table.R` | Helper used by 09 to assemble the per-cell `cell_params` sheet. |
 | `15_blsmm_debt_gdp.R` | Pipe per-scenario revenue/GDP deltas through the Budget Lab Small Macro Model to recover scenario-specific 2030 debt/GDP. Requires `BLSMM_DIR`; skips gracefully if unset. |

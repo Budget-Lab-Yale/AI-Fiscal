@@ -52,8 +52,9 @@ address this, each year pairs the PUF income columns with imputed
 asset holdings drawn from the Federal Reserve's Survey of Consumer
 Finances (SCF): cash, equities, bonds, retirement balances, life
 insurance, annuities, trusts, real-estate funds, primary and other
-home equity, and pass-through equity, as well as active/passive
-splits for S-Corp and partnership profit. The PUF-SCF match is
+home values (gross — mortgage liabilities are imputed alongside but
+excluded from the allocation base), and pass-through equity, as well
+as active/passive splits for S-Corp and partnership profit. The PUF-SCF match is
 validated against aggregates from NIPA, SOI, and the Distributional
 Financial Accounts (DFA) upstream in the data pipeline. This project
 uses the PUF-SCF matched file as the ground truth.
@@ -353,8 +354,9 @@ $$
 
 where $A_i$ is the sum of the unit's SCF-imputed wealth columns
 (cash, equities, bonds, retirement balances, life insurance,
-annuities, trusts, real-estate funds, primary and other home equity,
-pass-through equity, and miscellaneous non-financial assets).
+annuities, trusts, real-estate funds, primary and other home values
+gross of mortgage debt, pass-through equity, and miscellaneous
+non-financial assets).
 Allocating to total wealth assumes the AI shock raises returns
 proportionally across asset classes; pinning to a narrower base
 would push the distributional incidence further toward the top and is 

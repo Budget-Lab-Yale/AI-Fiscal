@@ -58,8 +58,9 @@ reuse numbered R-labels.
 
 - [x] Decision documented in both repos (this file;
   `ai_fiscal/docs/AI_FISCAL_PUBLIC_REPO.md` tombstone note).
-- [ ] Port from `ai_fiscal`: `docs/realization_and_wealth_extensions.md`
+- [x] Port from `ai_fiscal`: `docs/realization_and_wealth_extensions.md`
   (v2 planning input), `config/calibration/cit_avoidance_calculation.csv`.
+  Done 2026-06-11 (commit `79fb365`).
 - [ ] Tag `v0.1.0` here (after fixture regen + native cluster
   `renv::snapshot()`; see `todo.md` §"Post-review status").
 - [ ] Archive `Budget-Lab-Yale/ai_fiscal` on GitHub (Settings →
