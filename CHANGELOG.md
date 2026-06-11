@@ -12,6 +12,11 @@ the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `docs/repo_consolidation.md` — decision record making this the
   single canonical repo; `Budget-Lab-Yale/ai_fiscal` (private dev
   tree) to be archived once v0.1.0 is tagged.
+- `docs/CODE_REVIEW_2026_06_11.md` — full-repo review findings
+  (1 critical, ~15 major, fix order); no code changed yet.
+- `docs/v2_architecture.md` — ideation sketch for the v2 model
+  generation (CBO baseline module, separable labor/capital modules,
+  upstream capital sizing).
 
 ## [0.1.0] — 2026-MM-DD
 
