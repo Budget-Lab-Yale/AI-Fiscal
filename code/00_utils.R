@@ -3,13 +3,33 @@
 
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
-# Weighted unconditional quantile (linear, conservative-upper). Returns the
-# smallest x[i] whose cumulative weight share is >= p. Vectorized in `p`.
+# Weighted unconditional quantile (upper step function — no
+# interpolation). Returns the smallest x[i] whose cumulative weight
+# share is >= p. Vectorized in `p`. Aborts on empty/NA/zero-weight
+# input rather than returning NA silently: this feeds the SYZ W*
+# threshold, and an NA here would cascade through YiL/YiK unseen.
 weighted_quantile <- function(x, w, p) {
+  if (!length(x) || length(x) != length(w)) {
+    cli::cli_abort(
+      "weighted_quantile: {.arg x} must be non-empty and the same length as {.arg w} (got {length(x)} vs {length(w)})."
+    )
+  }
+  if (anyNA(x) || anyNA(w)) {
+    cli::cli_abort(
+      "weighted_quantile: NA in {.arg x} ({sum(is.na(x))}) or {.arg w} ({sum(is.na(w))}); filter before calling."
+    )
+  }
+  total_w <- sum(w)
+  if (total_w <= 0) {
+    cli::cli_abort("weighted_quantile: total weight is non-positive ({total_w}).")
+  }
   ord <- order(x)
   x_sorted <- x[ord]
   w_sorted <- w[ord]
-  cw <- cumsum(w_sorted) / sum(w_sorted)
+  cw <- cumsum(w_sorted) / total_w
+  # Float-proof the tail: accumulated rounding can leave max(cw) just
+  # under 1, making p = 1 (or p > max(cw)) return NA.
+  cw[length(cw)] <- 1
   vapply(p, function(pi) x_sorted[which(cw >= pi)[1]], numeric(1))
 }
 

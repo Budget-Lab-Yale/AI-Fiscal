@@ -153,7 +153,22 @@ build_ai_fiscal_runs <- function(specs,
   # year run produces an empty receipts.csv.
   years_str <- years %||% sprintf("%d:%d", year - 1L, year)
 
-  years_min <- as.integer(strsplit(years_str, ":")[[1]][1])
+  # Validate the range shape AND that it spans >= 2 years: Tax-Simulator's
+  # FY adjustment drops the earliest year of each scenario, so a
+  # single-year run (e.g. --years 2030 or 2030:2030) passes the
+  # file-exists check below but produces an empty receipts.csv after the
+  # full run.
+  years_parts <- strsplit(years_str, ":", fixed = TRUE)[[1]]
+  years_int   <- suppressWarnings(as.integer(years_parts))
+  if (length(years_int) != 2L || anyNA(years_int) ||
+      years_int[1] >= years_int[2]) {
+    cli::cli_abort(c(
+      "Invalid {.arg years} range: {.val {years_str}}.",
+      x = "Expected {.code <start>:<end>} with start < end (e.g. {.val 2029:2030}).",
+      i = "Tax-Simulator's FY adjustment drops the earliest year, so the range must span at least two years."
+    ))
+  }
+  years_min <- years_int[1]
   prior_fp  <- file.path(vintage_paths$path, "baseline",
                          sprintf("tax_units_%d.csv", years_min))
   if (!file.exists(prior_fp)) {

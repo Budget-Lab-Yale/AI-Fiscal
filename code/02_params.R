@@ -133,17 +133,45 @@ load_params <- function(path = "config/scenario_params.yaml",
       i = "Set baseline_year > horizon_start_year in {.path {path}}."
     ))
   }
+  # The CBO growth keys are named by calendar year but consumed
+  # positionally: g_2026 applies to the first horizon year, g_2027plus
+  # to the rest. That is only correct while the horizon starts at 2025.
+  # Rolling the CBO baseline forward without renaming the keys would
+  # silently shift the compounding — assert until the v2 year-indexed
+  # baseline object replaces this (docs/v2_architecture.md §2).
+  if (!identical(as.integer(start_year), 2025L)) {
+    cli::cli_abort(c(
+      "cbo_baseline.horizon_start_year is {.val {start_year}} but the growth keys assume 2025.",
+      x = "{.field g_2026} / {.field g_2027plus} are applied positionally to horizon years 1 / 2+.",
+      i = "Rename the keys and update the compounding in {.fn load_params} before rolling the baseline forward."
+    ))
+  }
   g_2026     <- raw$cbo_baseline$g_2026
   g_2027plus <- raw$cbo_baseline$g_2027plus
   cum_base   <- (1 + g_2026) * (1 + g_2027plus)^(horizon - 1)
+  if (!is.numeric(v$r_ai_annual) || is.na(v$r_ai_annual) || v$r_ai_annual <= -1) {
+    cli::cli_abort(
+      "Variant {.val {active}}: {.field r_ai_annual} must be a number > -1 (got {.val {v$r_ai_annual}})."
+    )
+  }
   gy         <- (1 + v$r_ai_annual)^horizon / cum_base - 1
 
   L0 <- raw$shock$baseline_labor_share
+  if (!is.numeric(L0) || is.na(L0) || L0 <= 0 || L0 >= 1) {
+    cli::cli_abort(
+      "{.field shock.baseline_labor_share} must be strictly inside (0, 1); got {.val {L0}}."
+    )
+  }
   K0 <- 1 - L0
   # Under share_mode = "F" we pin the post-shock capital share to baseline
   # (s1 := 1 - L0 = K0) so the labor-capital split is preserved while gy
   # is unchanged. gk collapses to gy and alpha to 1.
   s1 <- if (share_mode == "F") K0 else v$s1
+  if (!is.numeric(s1) || is.na(s1) || s1 <= 0 || s1 >= 1) {
+    cli::cli_abort(
+      "Variant {.val {active}}: post-shock capital share {.field s1} must be strictly inside (0, 1); got {.val {s1}}. A typo like {.val 46.2} instead of {.val 0.462} would otherwise sail through."
+    )
+  }
   K1 <- s1 * (1 + gy)
   L1 <- (1 - s1) * (1 + gy)
   gk <- (K1 - K0) / K0

@@ -101,6 +101,16 @@ apply_passthrough_split <- function(dt, params) {
   dt <- compute_yi_labor(dt, pt$passive_capital_share)
   dt <- compute_yi_capital(dt, pt$passive_capital_share)
 
+  # One NA in any of the ~20 component income columns propagates into
+  # YiL/YiK and would only surface much later as weird aggregates.
+  if (anyNA(dt$YiL) || anyNA(dt$YiK)) {
+    cli::cli_abort(c(
+      "NA values after the SYZ split.",
+      x = "YiL: {sum(is.na(dt$YiL))} NA{?s}; YiK: {sum(is.na(dt$YiK))} NA{?s}.",
+      i = "An NA in any component income column propagates; inspect the vintage."
+    ))
+  }
+
   setattr(dt, "syz_W_star", W_star)
   dt
 }
@@ -117,9 +127,21 @@ apply_passthrough_split <- function(dt, params) {
 compute_wage_threshold <- function(dt, pt) {
   conditioning <- pt$wage_threshold_conditioning
   p <- pt$wage_threshold_percentile / 100
+  if (!is.numeric(p) || is.na(p) || p <= 0 || p >= 1) {
+    cli::cli_abort(c(
+      "Invalid {.field passthrough.wage_threshold_percentile}: {.val {pt$wage_threshold_percentile}}.",
+      i = "Must be a percentile strictly between 0 and 100 (the yaml value is divided by 100 here — a fraction like 0.99 would silently become the 0.99th percentile)."
+    ))
+  }
 
   if (conditioning == "positive_wages") {
-    keep <- dt$wages > 0
+    keep <- !is.na(dt$wages) & dt$wages > 0
+    if (!any(keep)) {
+      cli::cli_abort(c(
+        "No tax units with positive wages; cannot compute the SYZ W* threshold.",
+        i = "Check the {.field wages} column of the vintage (all zero/negative/NA)."
+      ))
+    }
     weighted_quantile(dt$wages[keep], dt$weight[keep], p)
   } else if (conditioning == "all") {
     weighted_quantile(dt$wages, dt$weight, p)
