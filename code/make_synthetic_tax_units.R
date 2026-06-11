@@ -57,10 +57,18 @@ SYNTH_SEED <- 20260504L
   out <- if (cls == "logical") {
     as.logical(rbinom(n, 1, prof$p_true %||% 0))
   } else if (cls == "integer") {
-    if (!is.null(prof$unique)) {
+    if (!is.null(prof$unique) && length(prof$unique) == 0L) {
+      # All-NA integer column: nothing observed to enumerate (and
+      # sample(integer(0), ...) would error). p_na = 1 fills these
+      # anyway; return typed NAs directly.
+      rep(NA_integer_, n)
+    } else if (!is.null(prof$unique)) {
       # Low-cardinality (filing_status, dep_age*, age*, n_dep*, etc.):
-      # uniform draw from the observed enumeration.
-      sample(prof$unique, n, replace = TRUE)
+      # uniform draw from the observed enumeration. Index-based on
+      # purpose: sample(x, ...) with a length-1 numeric x draws from
+      # 1:x, not rep(x, n) — a constant code column k > 1 would come
+      # out as uniform noise on 1..k (R's scalar-sample gotcha).
+      prof$unique[sample.int(length(prof$unique), n, replace = TRUE)]
     } else if (prof$max == 0 && prof$min == 0) {
       integer(n)
     } else {

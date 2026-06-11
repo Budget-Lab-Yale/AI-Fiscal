@@ -19,6 +19,7 @@ withr::with_dir(here::here(), {
   source("code/05_realization.R")
   source("code/06_build_counterfactual.R")
   source("code/08_aggregate.R")
+  source("code/09_tables_figures.R")  # .parse_scenario_axes tests
 })
 
 params <- load_params(here::here("config", "scenario_params.yaml"))
@@ -34,7 +35,14 @@ year   <- params$raw$baseline_year
 .synth_data_dir <- here::here("tests", "fixtures", "synthetic_tax_data")
 .real_file      <- file.path(.real_data_dir, "baseline",
                               sprintf("tax_units_%d.csv", year))
-data_dir_for_tests <- if (file.exists(.real_file)) .real_data_dir else {
+data_dir_for_tests <- if (file.exists(.real_file)) {
+  # Say so explicitly: with real data present, local runs test a
+  # different substrate than CI (synthetic), and a passing suite should
+  # be attributable to the data it actually ran on.
+  message("[helper-pipeline] using REAL Tax-Data vintage at ",
+          .real_data_dir, " (CI runs the synthetic fixture)")
+  .real_data_dir
+} else {
   message("[helper-pipeline] real Tax-Data vintage not found; ",
           "using synthetic fixture at ", .synth_data_dir)
   .synth_data_dir
@@ -44,8 +52,13 @@ dt_baseline <- load_tax_units(year, data_dir = data_dir_for_tests)
 dt_baseline <- apply_passthrough_split(dt_baseline, params)
 
 dt_step_a <- shock_labor(dt_baseline, params, scenario = "S0")
+# allocate_capital mutates its input by reference (data.table
+# convention): without the copy(), the shared dt_baseline would carry
+# Step B's analytic columns (A_base, X_i, exempt_share, ...) into every
+# later test file, and any future test calling allocate_capital with
+# different params would silently overwrite X_i for all of them.
 step_b    <- allocate_capital(
-  dt_baseline, params,
+  copy(dt_baseline), params,
   asset_map_path = here::here("config", "asset_to_income_map.csv")
 )
 step_b    <- apply_realization(step_b)

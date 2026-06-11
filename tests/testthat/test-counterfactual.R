@@ -29,18 +29,25 @@ test_that("CF wages obey wages_cf == wages_base * rho_i per unit", {
   expect_lt(max(abs(m$wages_cf - m$pred)), 1e-3)
 })
 
+# Identity tolerances are RELATIVE to the flow magnitude (floor $1):
+# an absolute $1e-3 is ~1e-16 relative against full-PUF trillion-scale
+# sums — within long-double reassociation error at n ~ 2e5 — so the
+# old form passed on the 10k synthetic fixture but could flake on real
+# data. 1e-12 relative is ~$1 per $1T: tight but reassociation-proof.
+.rel_tol <- function(scale) 1e-12 * max(1, abs(scale))
+
 test_that("CF div_pref absorbs X_qualified_div", {
   d_b  <- sum(dt_baseline$weight * dt_baseline$div_pref)
   d_cf <- sum(dt_cf$weight       * dt_cf$div_pref)
   qd   <- sum(step_b$weight      * step_b$X_qualified_div)
-  expect_lt(abs((d_cf - d_b) - qd), 1e-3)
+  expect_lt(abs((d_cf - d_b) - qd), .rel_tol(d_b))
 })
 
 test_that("CF kg_lt absorbs X_ltcg_V1", {
   k_b  <- sum(dt_baseline$weight * dt_baseline$kg_lt)
   k_cf <- sum(dt_cf$weight       * dt_cf$kg_lt)
   v1   <- sum(step_b$weight      * step_b$X_ltcg_V1)
-  expect_lt(abs((k_cf - k_b) - v1), 1e-3)
+  expect_lt(abs((k_cf - k_b) - v1), .rel_tol(k_b))
 })
 
 test_that("CF kg_lt_years_held and kg_lt_basis are non-NA wherever kg_lt != 0", {
@@ -59,7 +66,7 @@ test_that("CF interest absorbs X_taxable_int + X_tax_exempt_int", {
                   (dt_cf$txbl_int + dt_cf$exempt_int))
   flow   <- sum(step_b$weight *
                   (step_b$X_taxable_int + step_b$X_tax_exempt_int))
-  expect_lt(abs((int_cf - int_b) - flow), 1e-3)
+  expect_lt(abs((int_cf - int_b) - flow), .rel_tol(int_b))
 })
 
 # --- Phase-1 flavor decomposition: build_counterfactual(flavor = ...) -----
@@ -129,14 +136,15 @@ test_that("LO and CO each absorb their share of the aggregate flows", {
   wages_b  <- sum(dt_baseline$weight * dt_baseline$wages)
   wages_LO <- sum(dt_cf_LO$weight    * dt_cf_LO$wages)
   wages_CO <- sum(dt_cf_CO$weight    * dt_cf_CO$wages)
-  expect_lt(abs(wages_LO - sum(dt_cf$weight * dt_cf$wages)), 1e-6)
-  expect_lt(abs(wages_CO - wages_b),                          1e-6)
+  expect_lt(abs(wages_LO - sum(dt_cf$weight * dt_cf$wages)),
+            .rel_tol(wages_b))
+  expect_lt(abs(wages_CO - wages_b), .rel_tol(wages_b))
 
   # Capital: aggregate kg_lt under capital_only equals aggregate kg_lt under
   # both; labor_only leaves kg_lt at baseline.
   kg_b  <- sum(dt_baseline$weight * dt_baseline$kg_lt)
   kg_LO <- sum(dt_cf_LO$weight    * dt_cf_LO$kg_lt)
   kg_CO <- sum(dt_cf_CO$weight    * dt_cf_CO$kg_lt)
-  expect_lt(abs(kg_LO - kg_b),                            1e-3)
-  expect_lt(abs(kg_CO - sum(dt_cf$weight * dt_cf$kg_lt)), 1e-3)
+  expect_lt(abs(kg_LO - kg_b), .rel_tol(kg_b))
+  expect_lt(abs(kg_CO - sum(dt_cf$weight * dt_cf$kg_lt)), .rel_tol(kg_b))
 })

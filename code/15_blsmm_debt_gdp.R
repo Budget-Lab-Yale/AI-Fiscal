@@ -206,9 +206,16 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
   for (i in seq_len(nrow(rev_gdp))) {
     row <- rev_gdp[i, ]
     variant <- as.character(row$variant)
+    # r_ai_annual_by_variant is a named numeric vector: [["unknown"]]
+    # throws subscript-out-of-bounds rather than returning NULL, so an
+    # is.null() guard here can never fire — check membership instead.
+    if (!variant %in% names(r_ai_annual_by_variant)) {
+      cli::cli_abort(c(
+        "BLSMM step: unknown variant code {.val {variant}}.",
+        i = "Known variants: {.val {names(r_ai_annual_by_variant)}} (from {.field shock.variants} in scenario_params.yaml)."
+      ))
+    }
     target_g <- r_ai_annual_by_variant[[variant]]
-    if (is.null(target_g))
-      cli::cli_abort("BLSMM step: unknown variant code {.val {variant}}.")
 
     bump <- solve_prod_bump(row$delta_rev_to_gdp_cbo_pp, target_g)
     sim  <- run_scenario(bump, row$delta_rev_to_gdp_cbo_pp)

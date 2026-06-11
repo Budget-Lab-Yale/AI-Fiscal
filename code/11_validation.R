@@ -125,8 +125,11 @@ compute_top_shares <- function(dt) {
 
 # Optional: pull IIT / CIT totals from a Tax-Simulator receipts.csv.
 # The Tax-Simulator output schema is one row per fiscal year with
-# per-instrument columns; we sum across baseline-aligned rows.
-compute_revenue_aggregates <- function(receipts_path) {
+# per-instrument columns; we take the row matching `year` — the
+# pipeline's two-year runs (FY-adjustment compensation) leave multiple
+# rows, and the year-specific benchmarks (iit_total_2030 etc.) must
+# not be compared against whichever year happens to sit in row 1.
+compute_revenue_aggregates <- function(receipts_path, year) {
   if (is.null(receipts_path) || !nzchar(receipts_path) || !file.exists(receipts_path)) {
     return(list())
   }
@@ -135,6 +138,14 @@ compute_revenue_aggregates <- function(receipts_path) {
   if (is.na(yr_col)) {
     cli::cli_warn("Could not find a year column in {.path {receipts_path}}; skipping revenue aggregates.")
     return(list())
+  }
+  rec <- rec[rec[[yr_col]] == year, ]
+  if (!nrow(rec)) {
+    cli::cli_warn("No row for year {.val {year}} in {.path {receipts_path}}; skipping revenue aggregates.")
+    return(list())
+  }
+  if (nrow(rec) > 1L) {
+    cli::cli_warn("{nrow(rec)} rows for year {.val {year}} in {.path {receipts_path}}; using the first.")
   }
   iit_col <- intersect(c("revenues_iit", "iit", "individual_income_tax"), names(rec))[1]
   cit_col <- intersect(c("revenues_corp_tax", "cit", "corporate_income_tax"), names(rec))[1]
@@ -321,7 +332,7 @@ run_validation <- function(year = NULL, receipts = NULL, tol = 0.10) {
 
   section("3. Compute aggregates")
   agg        <- compute_aggregates(dt)
-  rev_agg    <- compute_revenue_aggregates(receipts)
+  rev_agg    <- compute_revenue_aggregates(receipts, year)
   top_shares <- compute_top_shares(dt)
   computed   <- c(agg, rev_agg, top_shares)
 

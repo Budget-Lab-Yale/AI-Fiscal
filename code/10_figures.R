@@ -224,6 +224,18 @@ INSTRUMENT_LABEL <- c(
 # bailed on missing rows) into a render-list entry. Keeps assemble_figures
 # tidy and gives a single place to handle the NULL case.
 .fig_entry <- function(slug, result, w, h) {
+  # `result` arrives as an unevaluated promise; forcing it inside
+  # tryCatch means a data-prep error in one fig_*() call downgrades to
+  # a warning + NULL entry instead of aborting the whole suite before
+  # any PNG or the figure-data xlsx is written (the per-figure tryCatch
+  # in assemble_figures covers render time only, not construction).
+  result <- tryCatch(result, error = function(e) {
+    cli::cli_warn(c(
+      "Figure {.val {slug}} failed during construction; skipped.",
+      x = conditionMessage(e)
+    ))
+    NULL
+  })
   if (is.null(result)) {
     list(slug = slug, plot = NULL, data = NULL, w = w, h = h)
   } else {
