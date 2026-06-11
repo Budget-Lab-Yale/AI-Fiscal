@@ -52,10 +52,10 @@ source("code/15_blsmm_debt_gdp.R")
 # × V1 realization. The release pipeline does not accept overrides.
 release_specs <- function() {
   grid <- expand.grid(
-    variant        = c("S", "M", "R"),
-    share_mode     = c("R", "F"),
-    labor_scenario = c("S0", "S2", "S3"),
-    realization    = "V1",
+    variant        = names(.AXIS_VARIANTS),
+    share_mode     = names(.AXIS_SHARE_MODES),
+    labor_scenario = names(.AXIS_LABOR),
+    realization    = names(.AXIS_REALIZATION),
     stringsAsFactors = FALSE
   )
   lapply(seq_len(nrow(grid)), function(i) as.list(grid[i, ]))
@@ -216,9 +216,15 @@ build_ai_fiscal_runs <- function(specs,
     years            = years_str
   ))
 
-  # Decomposition is always on for the release pipeline.
-  flavors <- c("both", "labor_only", "capital_only")
-  flavor_suffix <- c(both = "", labor_only = "_LO", capital_only = "_CO")
+  # Decomposition is always on for the release pipeline. Suffix map is
+  # the inverse of .FLAVOR_SUFFIX_MAP (axis registry, 00_utils.R) so the
+  # writer and 08's parser cannot drift apart.
+  flavor_suffix <- c(
+    both = "",
+    setNames(paste0("_", names(.FLAVOR_SUFFIX_MAP)),
+             unname(.FLAVOR_SUFFIX_MAP))
+  )
+  flavors <- names(flavor_suffix)
 
   for (spec in specs) {
     sid_base <- ai_fiscal_scenario_id(spec$variant, spec$share_mode,

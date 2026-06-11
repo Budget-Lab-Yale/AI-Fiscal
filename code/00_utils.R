@@ -136,3 +136,40 @@ section <- function(title, width = 70) {
   passthrough_equity    = "pass_throughs",
   retirement_dc_ira     = "retirement"
 )
+
+# --- Scenario-axis registry -----------------------------------------------
+# Single source of truth for the release grid's axis codes and labels.
+# Consumed by: release_specs() (00), .parse_scenario_axes() and
+# .VARIANT_LABEL_MAP (09), .scenario_flavor()/.scenario_base() and the
+# .build_scenario_guide() consistency check (08), .restore_axes() (10),
+# and the BLSMM figure layer (15). Before the registry these six sites
+# carried hand-synced literal vectors, and every mismatch failed by
+# silent NA-coercion row drops rather than an error.
+#
+# Vectors are code -> label, in *code* (narrative) order. Note the
+# scenario_guide presents labor rows in label order (Compressive,
+# Proportional, Expansive) — that presentational ordering lives in
+# .build_scenario_guide(), which is asserted against this registry.
+.AXIS_VARIANTS    <- c(S  = "Slow",         M  = "Moderate",    R  = "Rapid")
+.AXIS_SHARE_MODES <- c(R  = "Reallocate",   F  = "Fixed share")
+.AXIS_LABOR       <- c(S0 = "Proportional", S2 = "Compressive", S3 = "Expansive")
+.AXIS_REALIZATION <- c(V1 = "Mechanical")
+
+# Decomposition flavor suffixes appended to scenario IDs (a de-facto
+# fifth axis carried in the ID string; see CLAUDE.md).
+.FLAVOR_SUFFIX_MAP <- c(LO = "labor_only", CO = "capital_only")
+
+# Anchored regex matching exactly the canonical (suffix-free) scenario
+# IDs this release can produce.
+.scenario_id_regex <- function() {
+  sprintf("^ai_(%s)_(%s)_(%s)_(%s)$",
+          paste(names(.AXIS_VARIANTS),    collapse = "|"),
+          paste(names(.AXIS_SHARE_MODES), collapse = "|"),
+          paste(names(.AXIS_LABOR),       collapse = "|"),
+          paste(names(.AXIS_REALIZATION), collapse = "|"))
+}
+
+# Anchored regex matching a registered flavor suffix at the end of an ID.
+.flavor_suffix_regex <- function() {
+  sprintf("_(%s)$", paste(names(.FLAVOR_SUFFIX_MAP), collapse = "|"))
+}

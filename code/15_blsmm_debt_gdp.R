@@ -336,14 +336,14 @@ assemble_blsmm_figures <- function(year       = NULL,
   # guide and PAL_VARIANT / PAL_LABOR keys in 10_figures.R, so the shared
   # scale_*_manual calls below resolve colours by name.
   scen_df$variant  <- factor(scen_df$variant,
-                             levels = c("S", "M", "R"),
-                             labels = c("Slow", "Moderate", "Rapid"))
+                             levels = names(.AXIS_VARIANTS),
+                             labels = unname(.AXIS_VARIANTS))
   scen_df$labor    <- factor(scen_df$labor,
-                             levels = c("S0", "S2", "S3"),
-                             labels = c("Proportional", "Compressive", "Expansive"))
+                             levels = names(.AXIS_LABOR),
+                             labels = unname(.AXIS_LABOR))
   r_ai_pct  <- .load_karger_r_ai_annual() * 100
-  variant_g <- setNames(r_ai_pct[c("S", "M", "R")],
-                        c("Slow", "Moderate", "Rapid"))
+  variant_g <- setNames(r_ai_pct[names(.AXIS_VARIANTS)],
+                        unname(.AXIS_VARIANTS))
 
   make_plot <- function(sub, label) {
     ymin <- min(sub$blsmm_debt_to_gdp_year_pct, baseline_debtgdp) - 1
@@ -357,7 +357,7 @@ assemble_blsmm_figures <- function(year       = NULL,
       ggplot2::geom_hline(yintercept = baseline_debtgdp,
                           linetype = "dashed", color = YBL_CAPTION, linewidth = 0.4) +
       ggplot2::annotate("text",
-                        x = 3.5, y = baseline_debtgdp,
+                        x = length(.AXIS_VARIANTS) + 0.5, y = baseline_debtgdp,
                         label = sprintf("BLSMM baseline: %.1f%%", baseline_debtgdp),
                         hjust = 1, vjust = -0.5, size = 3.2, color = YBL_CAPTION) +
       ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0.02, 0.06))) +

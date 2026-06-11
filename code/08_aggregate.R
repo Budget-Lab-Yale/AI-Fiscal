@@ -48,18 +48,34 @@ latest_tax_sim_vintage <- function(
   file.path(parent, sort(vintages, decreasing = TRUE)[1])
 }
 
-# Decomposition helpers: extract the flavor suffix (LO/CO) from
-# scenario IDs produced under --decomp. IDs without a suffix are the
-# canonical "both" flavor (current default behavior).
-.scenario_flavor <- function(scenario_ids) {
-  m <- regmatches(scenario_ids, regexec("_(LO|CO)$", scenario_ids))
+# Decomposition helpers: extract the flavor suffix (from the registry
+# in 00_utils.R) from scenario IDs produced under --decomp. IDs without
+# a suffix are the canonical "both" flavor. IDs that are neither
+# baseline, nor a canonical grid ID, nor a canonical ID plus a
+# registered suffix ABORT: before this check, an unregistered suffix
+# (e.g. a future `_KO`) was silently classified "both" and aggregated
+# as a canonical cell.
+.scenario_flavor <- function(scenario_ids, baseline_id = "baseline") {
+  base    <- sub(.flavor_suffix_regex(), "", scenario_ids)
+  unknown <- scenario_ids[
+    scenario_ids != baseline_id & !grepl(.scenario_id_regex(), base)
+  ]
+  if (length(unknown)) {
+    cli::cli_abort(c(
+      "Scenario ID{?s} {.val {unknown}} not recognized by the axis registry.",
+      x = "Neither {.val {baseline_id}}, nor a canonical grid ID, nor canonical + a registered flavor suffix ({.val {names(.FLAVOR_SUFFIX_MAP)}}).",
+      i = "Register new axis codes / suffixes in {.path code/00_utils.R} before aggregating them."
+    ))
+  }
+  m <- regmatches(scenario_ids, regexec(.flavor_suffix_regex(), scenario_ids))
   suffix <- vapply(m, function(parts) {
     if (length(parts) >= 2L) parts[2] else NA_character_
   }, character(1))
-  fifelse(is.na(suffix), "both",
-          fifelse(suffix == "LO", "labor_only", "capital_only"))
+  fifelse(is.na(suffix), "both", unname(.FLAVOR_SUFFIX_MAP[suffix]))
 }
-.scenario_base <- function(scenario_ids) sub("_(LO|CO)$", "", scenario_ids)
+.scenario_base <- function(scenario_ids) {
+  sub(.flavor_suffix_regex(), "", scenario_ids)
+}
 
 # Subset of runscript IDs corresponding to canonical "both" scenarios
 # (excluding baseline). Used by per-scenario aggregators that should
@@ -561,6 +577,27 @@ build_atr_decile <- function(output_root, runscript_path, year,
       "Publishable default: K0 is built from the on-1040 realized base, so the baseline realization rate is already implicit in X."
     )
   )
+  # Guide rows are hand-written (prose per row, presentational order);
+  # assert the (axis, code, name) triples stay in lockstep with the axis
+  # registry in 00_utils.R so neither can drift alone.
+  registry <- rbind(
+    data.table(axis = "variant",     code = names(.AXIS_VARIANTS),
+               name = unname(.AXIS_VARIANTS)),
+    data.table(axis = "share_mode",  code = names(.AXIS_SHARE_MODES),
+               name = unname(.AXIS_SHARE_MODES)),
+    data.table(axis = "labor",       code = names(.AXIS_LABOR),
+               name = unname(.AXIS_LABOR)),
+    data.table(axis = "realization", code = names(.AXIS_REALIZATION),
+               name = unname(.AXIS_REALIZATION))
+  )
+  key_of <- function(d) sort(paste(d$axis, d$code, d$name, sep = "|"))
+  if (!identical(key_of(dt), key_of(registry))) {
+    cli::cli_abort(c(
+      "scenario_guide rows out of sync with the axis registry.",
+      x = "Guide-only: {.val {setdiff(key_of(dt), key_of(registry))}}; registry-only: {.val {setdiff(key_of(registry), key_of(dt))}}.",
+      i = "Update {.fn .build_scenario_guide} and the registry in {.path code/00_utils.R} together."
+    ))
+  }
   if (publishable) {
     dt[, notes := NULL]
   }

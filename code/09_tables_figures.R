@@ -58,21 +58,37 @@ source("code/08_aggregate.R")
 .parse_scenario_axes <- function(scenario_ids) {
   m <- regmatches(
     scenario_ids,
-    regexec("^ai_([A-Za-z])_([RF])_(S[0-9])_(V[0-9])$", scenario_ids)
+    regexec(.scenario_id_regex(), scenario_ids)
   )
   axes <- vapply(m, function(parts) {
     if (length(parts) < 5L) rep(NA_character_, 4L) else parts[2:5]
   }, character(4))
+  # `_LO`/`_CO` decomposition IDs are *meant* to parse to NA here (they
+  # are joined back by base ID downstream, never shown as grid rows).
+  # Anything else that fails to parse is drift — a scenario silently
+  # vanishing from the deliverable — so say it out loud.
+  unexpected <- scenario_ids[
+    is.na(axes[1, ]) &
+      scenario_ids != "baseline" &
+      !grepl(.flavor_suffix_regex(), scenario_ids)
+  ]
+  if (length(unexpected)) {
+    cli::cli_warn(c(
+      "{length(unexpected)} scenario ID{?s} did not parse against the axis registry and will be DROPPED from the deliverable grid.",
+      x = "{.val {unexpected}}.",
+      i = "If these are new axis codes, register them in the axis registry in {.path code/00_utils.R} first."
+    ))
+  }
   # All four axes are factors with explicit level orders so downstream
   # `order()` and ggplot fill / facet aesthetics carry the intended
   # narrative ordering (Slow→Rapid, Reallocate→Fixed, S0→S3, V1)
   # instead of falling back to alphabetical.
   data.table(
     scenario_id = scenario_ids,
-    variant     = factor(axes[1, ], levels = c("S", "M", "R")),
-    share_mode  = factor(axes[2, ], levels = c("R", "F")),
-    labor       = factor(axes[3, ], levels = c("S0", "S2", "S3")),
-    realization = factor(axes[4, ], levels = c("V1"))
+    variant     = factor(axes[1, ], levels = names(.AXIS_VARIANTS)),
+    share_mode  = factor(axes[2, ], levels = names(.AXIS_SHARE_MODES)),
+    labor       = factor(axes[3, ], levels = names(.AXIS_LABOR)),
+    realization = factor(axes[4, ], levels = names(.AXIS_REALIZATION))
   )
 }
 
@@ -158,6 +174,18 @@ source("code/08_aggregate.R")
                by = c("variant_chr", "share_mode_chr"),
                all.x = TRUE)
   out[, c("variant_chr", "share_mode_chr") := NULL]
+  # A parsed scenario with no macro row (stale macro CSV after a grid
+  # edit; partial rerun) would carry delta_R_CIT = NA, and
+  # total_with_macro_cit downstream would silently become NA in the
+  # publishable bundle.
+  unmatched <- out[is.na(delta_R_CIT), scenario_id]
+  if (length(unmatched)) {
+    cli::cli_abort(c(
+      "{length(unmatched)} scenario{?s} found no (variant, share_mode) row in the macro summary.",
+      x = "{.val {unmatched}}.",
+      i = "The macro CSV at {.path {macro_path}} is stale relative to the runscript - re-run the orchestrator."
+    ))
+  }
   out
 }
 
@@ -189,6 +217,22 @@ build_revenue_deliverable <- function(rev_long, macro_per_scn, decomp = NULL) {
             baseline, counterfactual, delta, delta_R_CIT)],
     cit_rows
   )
+
+  # Tripwire against CIT double-counting: layering the off-microsim
+  # delta_R_CIT on top assumes Tax-Simulator never moves corporate-tax
+  # revenue in our (household-only) counterfactuals. The moment a
+  # capital module models CIT inside the microsim (v2 entity-tax stage,
+  # docs/v2_architecture.md §4), this must fail rather than silently
+  # add the wedge twice.
+  corp_moved <- rev[instrument == "revenues_corp_tax" & abs(delta) > 1e-9,
+                    unique(scenario_id)]
+  if (length(corp_moved)) {
+    cli::cli_abort(c(
+      "Microsim corporate-tax deltas are non-zero, but the macro CIT wedge is about to be layered on top.",
+      x = "{length(corp_moved)} scenario{?s}, e.g. {.val {head(corp_moved, 3)}}.",
+      i = "Double-counting risk: zero the microsim CIT channel or disable the {.field delta_R_CIT} layering."
+    ))
+  }
 
   microsim_total <- rev[instrument == "total",
                         .(scenario_id, microsim_total = delta)]
@@ -383,7 +427,8 @@ build_revenue_to_gdp <- function(rev_long, cell_params,
 
 # Variant code -> Karger label. Used by .write_key_parameters_sheet to
 # title the per-variant columns of the key_parameters layout.
-.VARIANT_LABEL_MAP <- c(S = "Slow", M = "Moderate", R = "Rapid")
+# Alias of the axis registry (00_utils.R) kept for existing call sites.
+.VARIANT_LABEL_MAP <- .AXIS_VARIANTS
 
 # Tidy macro-summary table that drives the publishable bundle's
 # `key_parameters` sheet. Returns a list:

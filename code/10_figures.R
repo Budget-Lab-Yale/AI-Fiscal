@@ -1530,29 +1530,36 @@ assemble_figures <- function(
   decomp    <- if (file.exists(decomp_fp)) fread(decomp_fp) else NULL
   atr_dec   <- if (file.exists(atr_dec_fp)) fread(atr_dec_fp) else NULL
 
-  # Restore factor levels on the axis columns (fread loses them).
+  # Restore factor levels on the axis columns (fread loses them). Code
+  # levels come from the axis registry (00_utils.R); label levels come
+  # from the scenario guide's row order (the presentational ordering,
+  # asserted registry-consistent in .build_scenario_guide). Values not
+  # in the registry coerce to NA and silently vanish from every figure,
+  # so warn whenever factoring *introduces* an NA.
   .restore_axes <- function(dt) {
-    if ("variant" %in% names(dt))
-      dt[, variant := factor(variant, levels = c("S", "M", "R"))]
-    if ("share_mode" %in% names(dt))
-      dt[, share_mode := factor(share_mode, levels = c("R", "F"))]
-    if ("labor" %in% names(dt))
-      dt[, labor := factor(labor, levels = c("S0", "S2", "S3"))]
-    if ("realization" %in% names(dt))
-      dt[, realization := factor(realization, levels = c("V1"))]
-    if ("variant_label" %in% names(dt))
-      dt[, variant_label := factor(variant_label,
-                                    levels = c("Slow", "Moderate", "Rapid"))]
-    if ("share_mode_label" %in% names(dt))
-      dt[, share_mode_label := factor(share_mode_label,
-                                       levels = c("Reallocate", "Fixed share"))]
-    if ("labor_label" %in% names(dt))
-      dt[, labor_label := factor(labor_label,
-                                  levels = c("Compressive", "Proportional",
-                                             "Expansive"))]
-    if ("realization_label" %in% names(dt))
-      dt[, realization_label := factor(realization_label,
-                                        levels = c("Mechanical"))]
+    guide <- .build_scenario_guide()
+    label_levels <- function(axis_name) guide[axis == axis_name]$name
+    spec <- list(
+      variant           = names(.AXIS_VARIANTS),
+      share_mode        = names(.AXIS_SHARE_MODES),
+      labor             = names(.AXIS_LABOR),
+      realization       = names(.AXIS_REALIZATION),
+      variant_label     = label_levels("variant"),
+      share_mode_label  = label_levels("share_mode"),
+      labor_label       = label_levels("labor"),
+      realization_label = label_levels("realization")
+    )
+    for (col in intersect(names(spec), names(dt))) {
+      vals <- as.character(dt[[col]])
+      bad  <- setdiff(unique(vals[!is.na(vals)]), spec[[col]])
+      if (length(bad)) {
+        cli::cli_warn(c(
+          "{.field {col}} carries value{?s} {.val {bad}} not in the axis registry; coerced to NA and dropped from the figures.",
+          i = "Register new codes in {.path code/00_utils.R}."
+        ))
+      }
+      dt[, (col) := factor(get(col), levels = spec[[col]])]
+    }
     dt
   }
   .restore_axes(wide); .restore_axes(long); .restore_axes(decile)
