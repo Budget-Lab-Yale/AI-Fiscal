@@ -7,6 +7,12 @@ the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `docs/repo_consolidation.md` — decision record making this the
+  single canonical repo; `Budget-Lab-Yale/ai_fiscal` (private dev
+  tree) to be archived once v0.1.0 is tagged.
+
 ## [0.1.0] — 2026-MM-DD
 
 Initial public release. Income-frame microsimulation of an AI-driven

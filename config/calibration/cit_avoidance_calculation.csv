@@ -1,0 +1,18 @@
+step,quantity,value,formula_or_source,notes
+1_inputs,federal_cit_receipts_2024_billions,491.7,NIPA federal-only accrual basis 2024,
+1_inputs,corporate_profits_pretax_2024_billions,4179.2,NIPA Table 1.12 profits before tax (without IVA/CCAdj),
+1_inputs,scorp_share_of_BEA_corporate_profits,0.20,IRS SOI; consistent with kappa_corp calculation,Strip from denominator since S-corp profits not in CIT base
+1_inputs,statutory_cit_rate,0.21,TCJA post-2017,
+2_derived,c_corp_pretax_profits_estimate_billions,3343.36,= 4179.2 * (1 - 0.20),Denominator for effective rate
+2_derived,effective_cit_rate_narrow,0.1471,= 491.7 / 3343.36,Federal CIT receipts / C-corp pretax profits
+2_derived,effective_cit_rate_inclusive,0.1177,= 491.7 / 4179.2,All BEA corporate profits including S-corps in denominator
+3_avoidance,avoidance_narrow_basis,0.2997,= (0.21 - 0.1471) / 0.21,Anchored value
+3_avoidance,avoidance_inclusive_basis,0.4395,= (0.21 - 0.1177) / 0.21,Higher because denominator is broader
+4_chosen,cit_avoidance,0.30,narrow definition rounded,Adopted in scenario_params.yaml on 2026-05-04. tau_C^eff = 0.21 * (1 - 0.30) = 0.147
+5_external_anchors,GAO_2018_profitable_large_effective,0.09,GAO-23-105384 highlights,Profitable large M-3 filers only; lower bound is broader since loss-makers excluded
+5_external_anchors,GAO_2018_avoidance_implied,0.5714,= (0.21 - 0.09) / 0.21,Upper bound on plausible avoidance
+5_external_anchors,JCT_2024_corp_tax_expenditures_billions,188.0,JCX-48-24,Tax-expenditure mechanism only; doesn't capture profit shifting or NOL utilization
+5_external_anchors,JCT_avoidance_from_expenditures_only,0.2618,= 188 / (530 + 188),Lower bound; uses CBO actual receipts of $530B
+6_sensitivity,cit_avoidance_low,0.25,JCT-tax-expenditure-only mechanism,
+6_sensitivity,cit_avoidance_central,0.30,NIPA narrow,
+6_sensitivity,cit_avoidance_high,0.55,GAO profitable-large basis,

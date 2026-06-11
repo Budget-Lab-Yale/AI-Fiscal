@@ -299,6 +299,17 @@ pass on Linux and Mac.
   timestamp-vintaged xlsx are gitignored; only the canonical
   `*_latest.xlsx` bundles and the figure suite are tracked.
 
+## Repo lineage
+
+This is the **single canonical repo** as of 2026-06-11. It began as a
+history-squashed, variant-stripped release fork of the private dev
+tree `Budget-Lab-Yale/ai_fiscal`; that repo is archived and survives
+only as the provenance record / source for dormant variant machinery.
+Development now happens on `main` here; releases are tags. Full
+rationale, the R1-naming guard (R1 here ≠ R1 in the archive), and the
+porting checklist live in
+[`docs/repo_consolidation.md`](docs/repo_consolidation.md).
+
 ## When in doubt
 
 - **Adding a parameter:** yaml entry with `_status`/`_source` siblings,
