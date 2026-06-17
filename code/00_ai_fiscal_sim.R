@@ -143,6 +143,16 @@ build_ai_fiscal_runs <- function(specs,
                                  overwrite       = FALSE) {
 
   force(runscript_path)
+  # Sibling artifacts (_macro.csv, _cell_params.csv) are derived by
+  # replacing the `.csv` suffix. A path without it would make that
+  # substitution a no-op and overwrite the runscript itself.
+  if (!grepl("\\.csv$", runscript_path)) {
+    cli::cli_abort(c(
+      "Runscript path must end in {.code .csv}.",
+      x = "Got {.path {runscript_path}}.",
+      i = "Sibling summaries are written by replacing the {.code .csv} suffix; without it they would clobber the runscript."
+    ))
+  }
   if (is.null(vintage_paths)) vintage_paths <- tax_data_vintage(symlink = data_dir)
   force(vintage_paths)
 
@@ -296,7 +306,16 @@ build_ai_fiscal_runs <- function(specs,
         if (i + 1L > length(argv)) {
           cli::cli_abort("Flag {.val --{flag}} requires a value.")
         }
-        out[[flag]] <- argv[i + 1L]
+        nxt <- argv[i + 1L]
+        if (startsWith(nxt, "--")) {
+          # Guard the common typo `--years --overwrite`, which would
+          # otherwise silently set years = "--overwrite".
+          cli::cli_abort(c(
+            "Flag {.val --{flag}} requires a value but is followed by another flag ({.val {nxt}}).",
+            i = "Use {.code --{flag} <value>} or {.code --{flag}=<value>}."
+          ))
+        }
+        out[[flag]] <- nxt
         i <- i + 2L
       } else {
         cli::cli_abort("Unknown flag {.val --{flag}}.")

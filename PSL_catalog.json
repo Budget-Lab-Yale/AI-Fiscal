@@ -1,7 +1,7 @@
 {
     "name": "AI-Fiscal",
     "banner_title": "AI-Fiscal",
-    "banner_subtitle": "Fiscal impact of an AI-driven labor-to-capital income shift",
+    "banner_subtitle": "How potential AI futures would play out in the current tax system",
     "detailed_description": "Microsimulation of the change in federal revenue and the distribution of post-tax-and-transfer income under shocks to productivity and the capital-labor share. Inputs are calibrated against Karger et al. 2026 (NBER w35046) AI-adoption trajectories; the pipeline routes the implied capital flow across tax units (Smith-Yagan-Zidar pass-through split) and across income types, then runs the Budget Lab Tax-Simulator to produce per-cell revenue and distributional deltas.",
     "policy_area": "Tax Microsimulation, AI Macroeconomics, Distributional Analysis",
     "geography": "United States",

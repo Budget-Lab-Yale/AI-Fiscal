@@ -328,11 +328,17 @@ write_counterfactual_scenario <- function(dt_cf, year, scenario_id,
   scenario_dir <- file.path(vintage_paths$path, scenario_id)
   override_csv <- sprintf("tax_units_%d.csv", year)
 
-  if (dir.exists(scenario_dir) && !overwrite) {
-    cli::cli_abort(c(
-      "Scenario directory already exists: {.path {scenario_dir}}.",
-      i = "Pass {.arg overwrite = TRUE} to replace, or choose a fresh {.arg scenario_id}."
-    ))
+  if (dir.exists(scenario_dir)) {
+    if (!overwrite) {
+      cli::cli_abort(c(
+        "Scenario directory already exists: {.path {scenario_dir}}.",
+        i = "Pass {.arg overwrite = TRUE} to replace, or choose a fresh {.arg scenario_id}."
+      ))
+    }
+    # Wipe the existing folder before recreating it: re-linking only the
+    # current baseline files would leave stale files / dangling symlinks
+    # from a prior build (e.g. after the baseline set changed) in place.
+    unlink(scenario_dir, recursive = TRUE, force = TRUE)
   }
   dir.create(scenario_dir, recursive = TRUE, showWarnings = FALSE)
 

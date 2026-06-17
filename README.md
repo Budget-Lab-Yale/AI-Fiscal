@@ -1,5 +1,7 @@
 # AI-Fiscal — v0.1.0 release build
 
+**How potential AI futures would play out in the current tax system.**
+
 Simulating the fiscal impact of an AI-driven labor-to-capital income
 shift, using the Budget Lab tax microsimulation.
 

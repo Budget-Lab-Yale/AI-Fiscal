@@ -378,7 +378,7 @@ fig_macro_cit_split <- function(wide, year) {
     ggplot2::geom_col(width = 0.7) +
     ggplot2::geom_hline(yintercept = 0, color = YBL_TEXT, linewidth = 0.4) +
     ggplot2::facet_grid(realization_label ~ variant_label) +
-    ggplot2::scale_fill_manual(values = unname(PAL_SPLIT), name = NULL) +
+    ggplot2::scale_fill_manual(values = PAL_SPLIT, name = NULL) +
     ggplot2::scale_y_continuous(labels = .dollar_B) +
     ggplot2::labs(
       title    = "Microsim vs macro corporate-tax contribution",
@@ -416,7 +416,10 @@ fig_instrument_breakdown <- function(long, year) {
     ggplot2::geom_hline(yintercept = 0, color = YBL_TEXT, linewidth = 0.4) +
     ggplot2::facet_grid(realization_label ~ variant_label) +
     ggplot2::scale_fill_manual(
-      values = unname(PAL_INSTRUMENT[keep_instruments]),
+      # Key colors by the instrument *label* (the fill aesthetic) so the
+      # mapping survives any reordering of the factor levels.
+      values = setNames(PAL_INSTRUMENT[keep_instruments],
+                        INSTRUMENT_LABEL[keep_instruments]),
       name = NULL
     ) +
     ggplot2::scale_y_continuous(labels = .dollar_B) +
@@ -469,7 +472,12 @@ fig_decomp <- function(decomp, macro_per_scn, axes, year) {
     ggplot2::geom_col(width = 0.72) +
     ggplot2::geom_hline(yintercept = 0, color = YBL_TEXT, linewidth = 0.4) +
     ggplot2::facet_grid(realization_label ~ variant_label) +
-    ggplot2::scale_fill_manual(values = unname(PAL_DECOMP), name = NULL) +
+    # Re-key the code-named palette by the component *label* used in the
+    # fill aesthetic so the color mapping is by name, not factor position.
+    ggplot2::scale_fill_manual(
+      values = setNames(PAL_DECOMP[names(component_label)], component_label),
+      name = NULL
+    ) +
     ggplot2::scale_y_continuous(labels = .dollar_B) +
     ggplot2::labs(
       title    = "Revenue decomposition: labor, capital, interaction, macro CIT",
@@ -1102,6 +1110,16 @@ fig_atr_decile_by_growth <- function(atr_d, axes_sub, year) {
   # capital channel — for S0 (no labor delta) that's exact; for S2/S3 it
   # carries the redistributive labor effect. Caption flags the fallback.
   out[is.na(delta_R_micro_cap_B), delta_R_micro_cap_B := delta_R_micro_total_B]
+  # Both sources unavailable -> the capital channel stays NA and would
+  # propagate silently into the waterfall / scatter figures. Surface it.
+  n_na <- sum(is.na(out$delta_R_micro_cap_B))
+  if (n_na > 0L) {
+    cli::cli_warn(c(
+      "Microsim capital ΔR is NA for {n_na} scenario{?s} in the X-taxed table.",
+      x = "Neither the decomposition (--decomp) nor {.field wide$total} supplied a value.",
+      i = "The affected X-waterfall / X-ETR points will be dropped from those figures."
+    ))
+  }
   out[, micro_cap_source := micro_cap_src]
 
   out[, delta_R_total_B := delta_R_CIT_B + delta_R_micro_cap_B]
@@ -1489,8 +1507,9 @@ assemble_figures <- function(
   ),
   agg_dir        = "results/aggregates",
   out_dir        = NULL,
-  # TODO: argv is accepted for parity with assemble_deliverables but currently
-  # unused inside this function. Wire up CLI parsing (--year, --out-dir, ...) or drop.
+  # argv is accepted for signature parity with assemble_deliverables()
+  # (the orchestrator calls both uniformly) and is intentionally unused
+  # here — the figure suite takes no CLI overrides.
   argv           = NULL
 ) {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {

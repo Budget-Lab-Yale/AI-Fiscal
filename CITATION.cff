@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "AI-Fiscal: AI labor-to-capital shift fiscal microsimulation"
+title: "AI-Fiscal: How potential AI futures would play out in the current tax system"
 abstract: >
   AI-Fiscal estimates the federal-revenue and distributional consequences
   of an AI-driven shift in factor income shares (labor to capital), built
