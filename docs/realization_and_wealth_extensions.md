@@ -1,11 +1,25 @@
 # Realization and wealth-frame extensions
 
+> **⚠️ PLANNING / FUTURE-WORK DOCUMENT — NOT A DESCRIPTION OF THE
+> v0.1.0 RELEASE.** None of the machinery below ships in this repo.
+> The released model is **V1 realization only** (mechanical; see
+> `code/05_realization.R`, 20 lines) under the **income frame**. The
+> **wealth frame, the V2 / V3 realization variants, the step-up
+> haircut φ, and the `realization.rate_r` parameter do not exist in
+> this codebase** — there is no `realization` section in
+> `config/scenario_params.yaml`, and no V2/V3 code path in `code/`.
+> Where this document says "today", "already in the code", or names a
+> config key in the present tense, it is describing the **archived
+> private dev repo** (`Budget-Lab-Yale/ai_fiscal`), from which this
+> doc was ported — *not* the public release you are reading. Read it
+> as a design sketch for v0.2.0+, nothing more.
+
 > Ported 2026-06-11 from the archived dev repo
 > (`ai_fiscal/docs/realization_and_wealth_extensions.md`) as part of
-> the repo consolidation (`docs/repo_consolidation.md`). Variant
-> labels follow the archived repo's history; note this repo's R1
-> cascade is the archived repo's R4. The V2/V3 realization variants
-> referenced here exist only in the archived repo's code.
+> the repo consolidation. Variant labels follow the archived repo's
+> history; note this repo's R1 cascade is the archived repo's R4. The
+> V2/V3 realization variants referenced here exist only in the
+> archived repo's code.
 
 **Status:** Planning. Drafted 2026-05-22 by merging the prior
 `realization_rate_memo.Rmd` and `wealth_frame_migration.md`.
@@ -132,11 +146,15 @@ driven by a wealth-frame allocator.
 
 ### 2.3 What is calibrated where today, and where it needs to come from
 
-| Quantity            | Today                              | Wealth-frame source                                                                                |
+The "Income frame (v0.1.0)" column describes what the **released**
+model does; the V2/V3 / step-up entries are the archived repo's
+machinery and are shown only to motivate the wealth-frame target.
+
+| Quantity            | Income frame (v0.1.0)              | Wealth-frame source (proposed)                                                                     |
 |---------------------|------------------------------------|----------------------------------------------------------------------------------------------------|
 | `gk`                | NIPA capital-income share shift    | Replace with `gW` calibrated against DFA wealth aggregates or a documented `gW = f(gk)` mapping     |
 | `K0`                | $\sum w \cdot \mathrm{YiK}$ (income)| `K0_wealth = $\sum w \cdot A^{\mathrm{base}}$` (wealth)                                            |
-| Equity realization  | V1/V2/V3 LTCG rate $r$, step-up $\varphi$; div/LTCG split 0.30/0.70 fixed in `asset_to_income_map.csv` | Decompose into `r_div`, `r_lt` with explicit sources (NIPA personal dividends / NIPA realized LTCG over DFA equity stock) |
+| Equity realization  | V1 only (gross = realized); div/LTCG split fixed in `asset_to_income_map.csv`. (V2/V3 rate $r$ and step-up $\varphi$ are archived-repo machinery, not in this release.) | Decompose into `r_div`, `r_lt` with explicit sources (NIPA personal dividends / NIPA realized LTCG over DFA equity stock) |
 | Bond realization    | 100% implicit                       | `r_int = 1.0` explicit; exempt share already per-unit                                              |
 | Pass-through        | 100% implicit                       | `r_pt = 1.0` explicit                                                                              |
 | Retirement          | Inherits baseline rate              | `r_R = 0.0492` from SOI/DFA (see §4 below) applied consistently against wealth accrual              |
@@ -170,7 +188,8 @@ flows to the PUF `kg_lt` column according to a realization rule:
 
 - **V1** (mechanical): $X^{\mathrm{LTCG}}_{V1} = X^{\mathrm{LTCG}}_{\mathrm{gross}}$.
   Defensible only when $X$ is constructed off the already-realized
-  base (the current v0.1.0 default).
+  base. **This is the only variant in the v0.1.0 release**; V2 and V3
+  below are proposed extensions, not shipped code.
 - **V2** (realization-adjusted):
   $X^{\mathrm{LTCG}}_{V2} = r \cdot X^{\mathrm{LTCG}}_{\mathrm{gross}}$.
   Requires $X$ to capture unrealized as well as realized gains.
@@ -180,10 +199,12 @@ flows to the PUF `kg_lt` column according to a realization rule:
   $\varphi$. Not consumed by Tax-Simulator (annual-flow object),
   reported as a diagnostic.
 
-The current placeholder value in `config/scenario_params.yaml` is
-`realization.rate_r: 0.60`. The remainder of this section documents
-the calibration anchors and the labelling questions that need
-resolution before that value enters a publishable run.
+The placeholder value carried in the **archived dev repo** was
+`realization.rate_r: 0.60`. **No such key exists in this release's
+`config/scenario_params.yaml`** — it would be introduced only when
+the V2/V3 work lands. The remainder of this section documents the
+calibration anchors and the labelling questions that need resolution
+before that value enters a publishable run.
 
 ### 3.2 Primary anchor: CRS R41364
 
@@ -281,7 +302,8 @@ revenue tail of a multi-decade structural change.
 **Sting.** Treating $r$ as a cumulative coefficient but applying it
 to an annual gross-gain flow without explicit horizon discounting
 will over-count revenue if the analyst reads the V2 output as a
-within-year number. Two mitigations exist already in the code:
+within-year number. Two mitigations were built into the archived dev
+repo's code (and would carry over when V2/V3 land here):
 
 - `X_ltcg_V2_lifetime = (1 - (1-r) · phi) · X_ltcg_gross` is the
   eventual taxable base once step-up is netted off. At $r = 0.60$
@@ -305,8 +327,8 @@ expecting an annual marginal realization rate will need a footnote.
 | **C. Hybrid: $r$ per concept**                          | V2 at the annual rate (~0.25) for short-run scoring; V2_lifetime / V3 at $r = 0.60$ for the long-run tail.| Discloses both concepts; readers can pick the relevant horizon.                        | Two numbers to explain; doubles the output surface.                                            |
 | **D. Per-variant derivation**                           | Compute $r$ per S/M/R variant from a shock-conditioned R/Y rule.                                          | Variant-specific; R/Y preserved under each shock.                                      | Three different $r$ values; small numerical movement around current value.                    |
 
-**Recommendation: Option A with the footnote.** Keep
-`realization.rate_r = 0.60` cited to CRS R41364, but add a one-line
+**Recommendation: Option A with the footnote.** When V2/V3 land,
+adopt `realization.rate_r = 0.60` cited to CRS R41364, and add a one-line
 header to the V2 outputs in the publishable workbook stating that
 the rate is calibrated to a *lifetime* realizations-to-accruals
 concept and that an *annual-marginal* sensitivity at $r = 0.25$ is

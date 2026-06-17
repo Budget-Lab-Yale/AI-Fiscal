@@ -305,10 +305,12 @@ This is the **single canonical repo** as of 2026-06-11. It began as a
 history-squashed, variant-stripped release fork of the private dev
 tree `Budget-Lab-Yale/ai_fiscal`; that repo is archived and survives
 only as the provenance record / source for dormant variant machinery.
-Development now happens on `main` here; releases are tags. Full
-rationale, the R1-naming guard (R1 here ≠ R1 in the archive), and the
-porting checklist live in
-[`docs/repo_consolidation.md`](docs/repo_consolidation.md).
+Development now happens on `main` here; releases are tags. One naming
+guard to know: **this repo's R1 retirement cascade is the archived
+repo's R4** — don't cross-reference variant labels between the two.
+(The full consolidation decision record and porting checklist are kept
+locally in `docs/repo_consolidation.md`, which is not part of the
+public release.)
 
 ## When in doubt
 

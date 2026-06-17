@@ -58,6 +58,15 @@ logs/
 # Local working notes (release punch list, scratch)
 todo.md
 
+# Internal / pre-release working docs — kept locally, not part of the
+# public release. Provenance lives in CLAUDE.md's "Repo lineage" section.
+docs/CODE_REVIEW_*.md
+docs/repo_consolidation.md
+
+# Word copy of the methodology — the canonical source is the tracked
+# docs/ai_fiscal_methodology.md; avoid shipping a second copy that drifts.
+*.docx
+
 # Perf harness output (regenerable; tracked harness lives in tests/perf/)
 tests/perf/last_run.csv
 tests/perf/profvis.html

@@ -766,7 +766,7 @@ build_atr_decile <- function(output_root, runscript_path, year,
     ),
     default_value = c(
       "0.21", "0.50 (narrow definition)",
-      "0.013 * 37,391 = $486.1B (2030)",
+      "cit_to_gdp_baseline_year * gdp_baseline_year_B$ (from scenario_params.yaml)",
       "Calibrated at runtime from K0$",
       "varies by variant", "X (unchanged)",
       "varies by variant only", "varies by cell"

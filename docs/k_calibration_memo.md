@@ -1,7 +1,11 @@
 # Calibrating `labor_inequality.k`
 
-*Memo — drafted 2026-05-07. For later review; numbers cited from memory
-need verification before relying on them.*
+*Memo — drafted 2026-05-07; run-specific numbers reconciled against the
+shipped `config/scenario_params.yaml` on 2026-06-17. The g_y values and
+σ-factors below are now computed from the release config. The
+literature-based anchor ranges in §(a) and §(b) are order-of-magnitude
+and still need a derivation/sources pass before they are cited in the
+paper — they are flagged inline.*
 
 ## The question
 
@@ -13,17 +17,22 @@ should we sweep as sensitivity?
 
 ## What k means in our run
 
-Under Karger's 5-yr cumulative `g_y ∈ {5.1%, 6.7%, 10.4%}` (S/M/R), at
-`k = 1`:
+Under the release config's 5-yr cumulative `g_y ∈ {0.59%, 3.58%,
+7.17%}` (S/M/R — the AI bump above the CBO no-AI baseline path, derived
+in `02_params.R` from `r_ai_annual = {2.0%, 2.6%, 3.3%}` and the CBO
+baseline path; Slow ≈ baseline, hence the small bump), at `k = 1`:
 
-- S3 σ-factor:   1.051 / 1.067 / 1.104   (log-wage dispersion up 5-10%)
-- S2 σ-factor:   0.949 / 0.933 / 0.896
+- S3 σ-factor (1 + k·g_y):   1.006 / 1.036 / 1.072   (log-wage dispersion up to ~7%)
+- S2 σ-factor (1 − k·g_y):   0.994 / 0.964 / 0.928
 
-Headline impact at k = 1 (from the 09:53 run):
-R/S3/V1 aftertax Gini Δ = +0.035; R/S2/V1 = -0.026.
-
-The transformation is approximately linear in k for small bites, so
-`k = 2` roughly doubles the Gini deltas, `k = 0.5` halves them.
+The dispersion bite is therefore modest under the released variants —
+material only for the Rapid variant. The transformation is
+approximately linear in k for small bites, so `k = 2` roughly doubles
+the Gini deltas and `k = 0.5` halves them. For the realized aftertax
+Gini and decile deltas per cell, read `gini_deltas_<year>.csv` /
+`share_deltas_<year>.csv` (08) and Figure 07 — those are the
+authoritative outputs; this memo does not restate a headline number,
+since it moves with every recalibration.
 
 ## Three candidate calibration anchors
 
@@ -34,8 +43,9 @@ a closed form roughly proportional to the within-skill task
 elasticity divided by `(1 − share_displaced)`. Pro: micro-founded,
 citable. Con: highly sensitive to elasticity assumptions; we'd have
 to commit to a specific parameterization and defend it. Order of
-magnitude under "standard" parameterizations: **k somewhere in
-[1, 3]**, but I have not derived this — to verify before citing.
+magnitude under "standard" parameterizations: plausibly **k in
+[1, 3]** — but this has not been derived from the model and must be
+worked through analytically before it is cited.
 
 **(b) Historical analogy (skill-biased technical change, ~1980-2010).**
 Back-solve k from the IT/computerization episode: ~30% cumulative TFP
@@ -45,8 +55,9 @@ plausibly in **[0.5, 1.5]**, depending on horizon, dispersion measure,
 and how much of the inequality rise gets attributed to
 non-technological factors (institutions, trade, top-end finance).
 Pro: empirical. Con: AI may displace differently than IT (cognitive vs.
-routine); the literature contests the magnitude. *All numbers in this
-paragraph are recalled, not freshly checked.*
+routine); the literature contests the magnitude. *The ranges here are
+order-of-magnitude placeholders pending a sources pass against the
+SBTC literature — do not cite the bracket until it is checked.*
 
 **(c) Karger-consistency.** Karger et al. (NBER w35046, the source of
 our `g_y` targets) presumably implies some dispersion change in their
@@ -60,16 +71,16 @@ estimate if the number exists.**
 
 ## Recommended path
 
-1. Spend an hour with Karger §5-6 (and the appendix at
-   `docs/w35046_appendix.pdf`) looking for a directly back-solvable k.
-   If found, that's the central estimate.
+1. Spend an hour with Karger §5-6 and the NBER w35046 appendix
+   looking for a directly back-solvable k. If found, that's the
+   central estimate.
 2. If not, fall back to (a) — pick an Acemoglu-Restrepo
    parameterization, derive k analytically, document the elasticity
    assumption in `config/scenario_params.yaml` next to the `k` entry.
 3. Either way, run `k ∈ {0.5, 1, 2, 3}` on the canonical grid as a
    fan and report sensitivity in 09's PDF (or a new sensitivity
    sheet on the publishable bundle). The `σ ≤ 0` abort caps `k` at
-   `1/g_y` ≈ 9.6 for the R variant, well above any defensible value.
+   `1/g_y` ≈ 14 for the R variant, well above any defensible value.
 
 ## Open issues to surface in the memo
 

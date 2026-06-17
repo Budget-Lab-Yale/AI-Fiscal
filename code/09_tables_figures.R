@@ -458,7 +458,9 @@ build_revenue_to_gdp <- function(rev_long, cell_params,
 # (i.e., the result of `yaml::read_yaml(yaml_path)$shock`). When NULL,
 # the r_ai_annual column is filled with NA and the writer suppresses
 # that row from the sheet.
-build_key_parameters_table <- function(cell_params, shock_params = NULL) {
+build_key_parameters_table <- function(cell_params, shock_params = NULL,
+                                        baseline_year = NULL,
+                                        horizon_start_year = NULL) {
   cp <- as.data.table(cell_params)
   sm_pref <- if ("R" %in% cp$share_mode) "R" else cp$share_mode[1]
   cp      <- cp[share_mode == sm_pref]
@@ -517,7 +519,9 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL) {
     meta = list(
       baseline_labor_share = baseline_labor_share,
       k_inequality         = k_inequality,
-      share_mode           = sm_pref
+      share_mode           = sm_pref,
+      baseline_year        = baseline_year,
+      horizon_start_year   = horizon_start_year
     )
   )
 }
@@ -541,6 +545,25 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL) {
   variant_labels <- unname(.VARIANT_LABEL_MAP[variant_codes])
   n_var          <- length(variant_codes)
   if (n_var < 1L) return(invisible(NULL))
+
+  # Year-dependent labels are driven by baseline_year / horizon_start_year
+  # (from the yaml via build_key_parameters_table) rather than hardcoded
+  # literals, so a rolled-forward baseline relabels the sheet correctly.
+  # Fall back to generic, year-free phrasing if either is unavailable.
+  by_yr  <- meta$baseline_year
+  hsy_yr <- meta$horizon_start_year
+  have_yrs <- is.numeric(by_yr) && length(by_yr) == 1L && !is.na(by_yr) &&
+    is.numeric(hsy_yr) && length(hsy_yr) == 1L && !is.na(hsy_yr) &&
+    by_yr > hsy_yr
+  karger_hdr <- if (have_yrs) {
+    sprintf("Karger AI-adoption inputs (%d-year horizon, %d-%d)",
+            by_yr - hsy_yr, hsy_yr, by_yr)
+  } else "Karger AI-adoption inputs (over the Karger horizon)"
+  cap_share_lbl  <- if (have_yrs) sprintf("%d capital share (s_1)", by_yr)
+                    else "Horizon capital share (s_1)"
+  lab_share_lbl  <- if (have_yrs) sprintf("%d labor share (1 - s_1)", by_yr)
+                    else "Horizon labor share (1 - s_1)"
+  base_share_yr  <- if (have_yrs) sprintf(" (%d)", hsy_yr) else ""
 
   openxlsx::addWorksheet(wb, sheet_name)
 
@@ -651,14 +674,14 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL) {
   put_blank()
 
   # Karger inputs section (improvements E + B).
-  put_section("Karger AI-adoption inputs (5-year horizon, 2025-2030)")
+  put_section(karger_hdr)
   if (!all(is.na(kp$r_ai_annual))) {
     put_data_row("Annual GDP growth under AI (r_ai_annual)",
                  kp$r_ai_annual, pct1_style)
   }
-  put_data_row("2030 capital share (s_1)",
+  put_data_row(cap_share_lbl,
                kp$theta_1_K, pct1_style)
-  put_data_row("2030 labor share (1 - s_1)",
+  put_data_row(lab_share_lbl,
                kp$theta_1_L, pct1_style)
   put_blank()
 
@@ -700,10 +723,10 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL) {
     sprintf("Share mode shown: %s.", meta$share_mode)
   }
   put_note(sprintf(
-    paste0("Baseline labor share (2025): %s. Source: ",
+    paste0("Baseline labor share%s: %s. Source: ",
            "Karger, Buehler, Cox, Saint-Jacques, and Bjorkegren (2026), ",
            "CBO (2026), and TBL Calculations."),
-    baseline_share_pct))
+    base_share_yr, baseline_share_pct))
   put_note(share_mode_text)
   put_note(paste0(
     "Negative labor growth occurs when the labor share falls fast enough ",
@@ -843,7 +866,7 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL) {
       "Microsim counterfactual total plus the off-microsim macro CIT wedge ($ billions). Equals baseline_revenue_B + 'total' row delta + 'macro_cit_delta' row delta from revenue_grid_long.",
       "Baseline nominal GDP at baseline_year ($ billions). Sourced from cbo_baseline.gdp_baseline_year_B in scenario_params.yaml.",
       "Counterfactual nominal GDP at baseline_year ($ billions). Equals baseline_gdp_B * (1 + g_y) — Step B's macro accounting routes the AI productivity bump through GDP.",
-      "Model-internal baseline revenue / GDP, as a fraction (multiply by 100 for pp). Understates the published level by ~1.3 pp at baseline_year = 2030 because the microsim baseline has CIT = 0; use baseline_rev_to_gdp_cbo for level comparisons.",
+      "Model-internal baseline revenue / GDP, as a fraction (multiply by 100 for pp). Understates the published level by ~1.3 pp at the default baseline_year (2030) because the microsim baseline has CIT = 0; use baseline_rev_to_gdp_cbo for level comparisons.",
       "Model-internal counterfactual revenue / counterfactual GDP, as a fraction.",
       "scenario_rev_to_gdp - baseline_rev_to_gdp, in fractional points. Internally consistent but applies the GDP-growth dilution drag to the model's smaller baseline; use delta_rev_to_gdp_cbo for the publishable response.",
       "CBO-anchored baseline revenue level in $ billions. Equals cbo_baseline.rev_to_gdp_baseline_year * baseline_gdp_B — the level implied by CBO's published rev/GDP at baseline_year. Constant across cells.",
@@ -913,16 +936,22 @@ write_publishable_excel_bundle <- function(out_dir, year,
   if (file.exists(cell_params_fp)) {
     cell_params_tbl <- fread(cell_params_fp)
     ctx$add_sheet("cell_params", cell_params_tbl)
-    # Pull the shock yaml slice so the key_parameters sheet can surface
-    # r_ai_annual alongside the derived bumps. Falls back to NULL when
-    # the file is unreachable; the writer suppresses the r_ai row in
-    # that case.
+    # Pull the yaml so the key_parameters sheet can surface r_ai_annual
+    # alongside the derived bumps, and label the year-dependent rows from
+    # baseline_year / horizon_start_year rather than hardcoded literals.
+    # Falls back to NULL when the file is unreachable; the writer
+    # suppresses the r_ai row and uses generic (year-free) labels then.
     yaml_path_kp <- .resolve_repo_path("config/scenario_params.yaml")
-    shock_params <- tryCatch(
-      if (file.exists(yaml_path_kp)) yaml::read_yaml(yaml_path_kp)$shock else NULL,
+    yaml_kp <- tryCatch(
+      if (file.exists(yaml_path_kp)) yaml::read_yaml(yaml_path_kp) else NULL,
       error = function(e) NULL
     )
-    kp <- build_key_parameters_table(cell_params_tbl, shock_params)
+    kp <- build_key_parameters_table(
+      cell_params_tbl,
+      shock_params       = yaml_kp$shock,
+      baseline_year      = yaml_kp$baseline_year,
+      horizon_start_year = yaml_kp$cbo_baseline$horizon_start_year
+    )
     .write_key_parameters_sheet(ctx$wb, "key_parameters", kp)
     # Bump the at-a-glance summary up to position 2 (right after
     # run_info) so it's the first thing a reader sees on opening the
