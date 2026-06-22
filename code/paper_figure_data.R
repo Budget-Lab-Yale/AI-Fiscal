@@ -18,6 +18,9 @@
 #
 # Output:
 #   results/figures/<year>/paper_figure_data_<year>.xlsx
+#   results/figures/<year>/A1_gdp_growth_<year>.png  (+ _clean)   } the two
+#   results/figures/<year>/A2_labor_share_<year>.png (+ _clean)   } FRED charts
+# (Figs 1-7, A3 PNGs come from 10_figures.R; A4 from 15_blsmm_debt_gdp.R.)
 #
 # Draft-exhibit -> source mapping. The model-figure mapping was verified
 # 2026-06-22 by hashing the draft's embedded images against the rendered
@@ -202,6 +205,171 @@ cli_or_message <- function(msg) {
 }
 
 # --------------------------------------------------------------------------
+# PNG renders for A1 / A2
+# --------------------------------------------------------------------------
+# Figures 1-7, A3 already have rendered PNGs from 10_figures.R, and A4 from
+# 15_blsmm_debt_gdp.R. A1/A2 are regenerated here, so render them too — a
+# YBL-style line chart of the historical series with the AI scenario
+# reference lines (and NBER recession shading), matching the draft's
+# Datawrapper exhibits. Emits a full (titled) and a _clean (paper-ready)
+# PNG, mirroring the 10_figures.R convention.
+
+# Palette subset, matching code/10_figures.R.
+.PAL <- list(navy = "#101f5b", blue = "#286dc0", cyan = "#18a1cd",
+             orange = "#fa8c00", gray = "#4a4a4a", text = "#222222",
+             caption = "#666666", grid = "#e8e8e8")
+
+.paper_theme <- function() {
+  ggplot2::theme_minimal(base_size = 11) +
+    ggplot2::theme(
+      plot.title          = ggplot2::element_text(face = "bold", size = 14,
+                                                   color = .PAL$text,
+                                                   margin = ggplot2::margin(b = 4)),
+      plot.subtitle       = ggplot2::element_text(size = 11, color = .PAL$text,
+                                                   margin = ggplot2::margin(b = 10)),
+      plot.caption        = ggplot2::element_text(size = 9, color = .PAL$caption,
+                                                   face = "italic", hjust = 0,
+                                                   margin = ggplot2::margin(t = 8)),
+      plot.title.position   = "plot",
+      plot.caption.position = "plot",
+      axis.title          = ggplot2::element_text(size = 10, color = .PAL$text),
+      axis.text           = ggplot2::element_text(size = 9, color = "#555555"),
+      axis.ticks          = ggplot2::element_blank(),
+      panel.grid.minor    = ggplot2::element_blank(),
+      panel.grid.major.x  = ggplot2::element_blank(),
+      panel.grid.major.y  = ggplot2::element_line(color = .PAL$grid, linewidth = 0.3),
+      plot.margin         = ggplot2::margin(12, 16, 12, 12)
+    )
+}
+
+# Save a full (titled) PNG and a _clean (no title/subtitle/caption) PNG.
+.save_paper_png <- function(plot, out_dir, slug, year, w = 7.6, h = 4.8) {
+  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+  full  <- file.path(out_dir, sprintf("%s_%d.png", slug, year))
+  clean <- file.path(out_dir, sprintf("%s_%d_clean.png", slug, year))
+  ggplot2::ggsave(full, plot, width = w, height = h, dpi = 200, bg = "white")
+  ggplot2::ggsave(clean,
+                  plot + ggplot2::labs(title = NULL, subtitle = NULL, caption = NULL),
+                  width = w, height = h, dpi = 200, bg = "white")
+  c(full = full, clean = clean)
+}
+
+# NBER recession bands as decimal-year intervals, from FRED USREC (monthly
+# 0/1). Returns data.frame(start, end) or NULL (offline / unavailable).
+.fred_recession_bands <- function() {
+  df <- .fred_series("USREC")
+  if (is.null(df)) return(NULL)
+  df <- df[order(df$date), ]
+  rec <- !is.na(df$value) & df$value == 1
+  if (!any(rec)) return(NULL)
+  dy <- as.integer(format(df$date, "%Y")) + (as.integer(format(df$date, "%m")) - 1L) / 12
+  bands <- list(); in_rec <- FALSE; st <- NA_real_
+  for (i in seq_along(rec)) {
+    if (rec[i] && !in_rec) { in_rec <- TRUE; st <- dy[i] }
+    else if (!rec[i] && in_rec) { in_rec <- FALSE; bands[[length(bands) + 1L]] <- c(st, dy[i]) }
+  }
+  if (in_rec) bands[[length(bands) + 1L]] <- c(st, dy[length(dy)] + 1/12)
+  if (!length(bands)) return(NULL)
+  do.call(rbind, lapply(bands, function(b) data.frame(start = b[1], end = b[2])))
+}
+
+# Keep only recession bands overlapping [xmin, Inf) and clamp their start to
+# xmin, so USREC's pre-1950 history doesn't stretch the plot past the data.
+.clamp_bands <- function(rec, xmin) {
+  if (is.null(rec)) return(NULL)
+  rec <- rec[rec$end >= xmin, , drop = FALSE]
+  if (!nrow(rec)) return(NULL)
+  rec$start <- pmax(rec$start, xmin)
+  rec
+}
+
+# Shared scaffold: recession bands + dashed scenario reference lines with
+# right-edge labels. `series` is the line layer(s) added by the caller.
+.scenario_ref_layers <- function(df, value_cols, xmax) {
+  refs <- data.frame(
+    label = c("Slow", "Moderate", "Rapid"),
+    value = c(df[[value_cols[1]]][1], df[[value_cols[2]]][1], df[[value_cols[3]]][1]),
+    stringsAsFactors = FALSE
+  )
+  refs$label <- factor(refs$label, levels = c("Slow", "Moderate", "Rapid"))
+  pal <- c(Slow = .PAL$blue, Moderate = .PAL$cyan, Rapid = .PAL$orange)
+  list(
+    hline = ggplot2::geom_hline(data = refs,
+                                ggplot2::aes(yintercept = value, color = label),
+                                linetype = "dashed", linewidth = 0.5),
+    text  = ggplot2::geom_text(data = refs,
+                               ggplot2::aes(x = xmax, y = value, color = label,
+                                            label = sprintf("%s: %.1f%%", label, 100 * value)),
+                               hjust = 1, vjust = -0.5, size = 3.2,
+                               fontface = "bold", show.legend = FALSE),
+    scale = ggplot2::scale_color_manual(values = pal, guide = "none")
+  )
+}
+
+.render_gdp_growth <- function(df, year, out_dir) {
+  if (!requireNamespace("ggplot2", quietly = TRUE) ||
+      !requireNamespace("scales", quietly = TRUE)) return(NULL)
+  hist <- df[!is.na(df[["GDP Growth"]]),     c("Year", "GDP Growth")];     names(hist) <- c("year", "value")
+  proj <- df[!is.na(df[["CBO Projection"]]), c("Year", "CBO Projection")]; names(proj) <- c("year", "value")
+  xmin <- min(hist$year); xmax <- max(df$Year)
+  rec  <- .clamp_bands(.fred_recession_bands(), xmin)
+  refl <- .scenario_ref_layers(df, c("Slow (2030)", "Moderate (2030)", "Rapid (2030)"), xmax)
+
+  p <- ggplot2::ggplot()
+  if (!is.null(rec)) {
+    p <- p + ggplot2::geom_rect(data = rec,
+                                ggplot2::aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf),
+                                fill = .PAL$gray, alpha = 0.10, inherit.aes = FALSE)
+  }
+  p <- p + refl$hline +
+    ggplot2::geom_line(data = hist, ggplot2::aes(year, value),
+                       color = .PAL$navy, linewidth = 0.9) +
+    ggplot2::geom_line(data = proj, ggplot2::aes(year, value),
+                       color = .PAL$navy, linetype = "dashed", linewidth = 0.8) +
+    refl$text + refl$scale +
+    ggplot2::scale_y_continuous(labels = scales::label_percent(accuracy = 1)) +
+    ggplot2::labs(
+      title    = "AI scenario GDP growth vs. historical GDP growth",
+      subtitle = "Real GDP growth, 5-yr annualized (log); CBO baseline projection 2026 onward.",
+      x = NULL, y = NULL,
+      caption  = sprintf("Source: BEA/BLS via FRED (GDPC1), CBO 2025 baseline, NBER recessions; The Budget Lab at Yale. FY %d.", year)
+    ) +
+    ggplot2::coord_cartesian(xlim = c(xmin, xmax)) +
+    .paper_theme()
+  .save_paper_png(p, out_dir, "A1_gdp_growth", year)
+}
+
+.render_labor_share <- function(df, year, out_dir) {
+  if (!requireNamespace("ggplot2", quietly = TRUE) ||
+      !requireNamespace("scales", quietly = TRUE)) return(NULL)
+  hist <- df[!is.na(df[["Labor Share"]]), c("Year", "Labor Share")]; names(hist) <- c("year", "value")
+  xmin <- min(hist$year); xmax <- max(df$Year)
+  rec  <- .clamp_bands(.fred_recession_bands(), xmin)
+  refl <- .scenario_ref_layers(df, c("Slow (2030)", "Moderate (2030)", "Rapid (2030)"), xmax)
+
+  p <- ggplot2::ggplot()
+  if (!is.null(rec)) {
+    p <- p + ggplot2::geom_rect(data = rec,
+                                ggplot2::aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf),
+                                fill = .PAL$gray, alpha = 0.10, inherit.aes = FALSE)
+  }
+  p <- p + refl$hline +
+    ggplot2::geom_line(data = hist, ggplot2::aes(year, value),
+                       color = .PAL$navy, linewidth = 0.9) +
+    refl$text + refl$scale +
+    ggplot2::scale_y_continuous(labels = scales::label_percent(accuracy = 1)) +
+    ggplot2::labs(
+      title    = "AI scenario labor share vs. historical labor share",
+      subtitle = "Nonfarm-business labor share of income (percent). Reference lines: AI scenario 2030 labor shares.",
+      x = NULL, y = NULL,
+      caption  = sprintf("Source: BLS via FRED (PRS85006173), NBER recessions; The Budget Lab at Yale. FY %d.", year)
+    ) +
+    ggplot2::coord_cartesian(xlim = c(xmin, xmax)) +
+    .paper_theme()
+  .save_paper_png(p, out_dir, "A2_labor_share", year)
+}
+
+# --------------------------------------------------------------------------
 # Manifest — one row per draft exhibit, in draft order.
 #   tab     : worksheet name in the output (<= 31 chars, Excel limit)
 #   caption : the draft's caption line, verbatim
@@ -242,10 +410,12 @@ cli_or_message <- function(msg) {
   list(tab = "Figure A1", caption = "Figure A1. How AI Scenario GDP Growth Assumptions Compare to Historical GDP Growth",
        units = "GDP growth (5-yr annualized, log). CBO projection 2026 onward.",
        kind = "fred", source = NA_character_, builder = .build_fred_gdp_growth,
+       render = .render_gdp_growth,
        note = "Real GDP from FRED GDPC1 (Bil. Chn. 2017$). 5-yr annualized log growth; projection extends GDP with CBO g_2026 / g_2027plus. Reference lines = AI scenario GDP CAGRs (scenario_params.yaml)."),
   list(tab = "Figure A2", caption = "Figure A2. How AI Scenario Labor Share Assumptions Compare to the Historical Labor Share",
        units = "Labor share of income (nonfarm business, percent)",
        kind = "fred", source = NA_character_, builder = .build_fred_labor_share,
+       render = .render_labor_share,
        note = "Labor share from FRED PRS85006173 (BLS NFB labor share, index 2017=100), rescaled to percent at the 2017 level. Reference lines = AI scenario 2030 labor shares = 1 - s1 (scenario_params.yaml)."),
   list(tab = "Figure A3", caption = "Figure A3. Federal revenue gains versus change in pre-tax income",
        units = "Change in federal revenue (y-axis) plotted against pre-tax income growth (x-axis), FY 2030, Billions USD",
@@ -306,7 +476,9 @@ build_paper_figure_data <- function(
   openxlsx::setColWidths(wb, "Contents", cols = 1:4, widths = c(8, 12, 90, 38))
   openxlsx::freezePane(wb, "Contents", firstActiveRow = 4)
 
+  out_dir <- dirname(out_xlsx)
   n_ok <- 0L; missing_src <- character(); fred_failed <- character()
+  rendered_png <- character()
   for (e in .PAPER_MANIFEST) {
     openxlsx::addWorksheet(wb, e$tab)
 
@@ -372,6 +544,14 @@ build_paper_figure_data <- function(
         openxlsx::writeData(wb, e$tab, df, startRow = body_row, startCol = 1,
                             headerStyle = hdr_st)
         n_ok <- n_ok + 1L
+        # Render the matching PNG (full + _clean), mirroring 10_figures.R.
+        if (!is.null(e$render)) {
+          pngs <- tryCatch(e$render(df, year, out_dir), error = function(err) {
+            cli_or_message(sprintf("%s: PNG render failed: %s", e$tab, conditionMessage(err)))
+            NULL
+          })
+          if (!is.null(pngs)) rendered_png <- c(rendered_png, pngs)
+        }
       }
     }
     openxlsx::setColWidths(wb, e$tab, cols = 1:12, widths = "auto")
@@ -380,6 +560,10 @@ build_paper_figure_data <- function(
   dir.create(dirname(out_xlsx), recursive = TRUE, showWarnings = FALSE)
   openxlsx::saveWorkbook(wb, out_xlsx, overwrite = TRUE)
   message(sprintf("Wrote %s (%d exhibit sheets + Contents).", out_xlsx, n_ok))
+  if (length(rendered_png)) {
+    message(sprintf("Rendered %d PNG(s): %s",
+                    length(rendered_png), paste(basename(rendered_png), collapse = ", ")))
+  }
   if (length(fred_failed)) {
     cli_or_message(sprintf("FRED series not populated (placeholder written): %s",
                            paste(fred_failed, collapse = ", ")))

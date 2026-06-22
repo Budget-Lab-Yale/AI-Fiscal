@@ -137,6 +137,7 @@ orchestrator (00_ai_fiscal_sim.R)
 | `code/11_validation.R` | Standalone input-side diagnostic against CBO / SOI / NIPA / DFA. Not in main pipeline. |
 | `code/13_macro_params_table.R` | Helper for 09's `cell_params` sheet. |
 | `code/15_blsmm_debt_gdp.R` | Optional BLSMM debt/GDP tie-in. Reads `revenue_to_gdp_<year>.csv`. |
+| `code/paper_figure_data.R` | Post-processor (not in the orchestrator). Assembles the policy draft's exhibits into `paper_figure_data_<year>.xlsx` in draft order, and regenerates the two appendix context charts (Fig A1 GDP growth, A2 labor share) from FRED — data sheets + PNGs. |
 | `code/make_synthetic_tax_units.R` | Regenerate the committed synthetic fixture from a real vintage. |
 
 ## Config conventions

@@ -191,6 +191,7 @@ tests/      # testthat suite (Rscript tests/testthat.R)
 | `13_macro_params_table.R` | Helper used by 09 to assemble the per-cell `cell_params` sheet. |
 | `15_blsmm_debt_gdp.R` | Pipe per-scenario revenue/GDP deltas through the Budget Lab Small Macro Model to recover scenario-specific 2030 debt/GDP. Requires `BLSMM_DIR`; skips gracefully if unset. |
 | `make_synthetic_tax_units.R` | Regenerate the synthetic PUF/SCF fixture. |
+| `paper_figure_data.R` | Post-processor (run after the pipeline). Assembles only the draft's exhibits into `paper_figure_data_<year>.xlsx` in paper order, and regenerates the two appendix context charts (Fig A1 GDP growth, A2 labor share) from FRED — data sheets + PNGs. Needs network for A1/A2; degrades gracefully offline. |
 
 ## Running
 
@@ -239,6 +240,7 @@ All artifacts land in `results/aggregates/`. Per year (default 2030):
 | `ai_fiscal_publishable_<year>_<vintage>.xlsx` + `ai_fiscal_publishable_<year>_latest.xlsx` | 09 | Publishable bundle |
 | `results/figures/<year>/*.{png,pdf}` | 10 | Publishable figure suite |
 | `blsmm_debt_to_gdp_<year>.csv` + `blsmm_debt_to_gdp` xlsx sheet + `results/figures/<year>/blsmm_debt_to_gdp_<year>_{fixed,reallocate}.{png,pdf}` | 15 | Optional — per-scenario 2030 debt/GDP from BLSMM; produced only if `BLSMM_DIR` is set |
+| `results/figures/<year>/paper_figure_data_<year>.xlsx` + `A1_gdp_growth_<year>` / `A2_labor_share_<year>` PNGs | `paper_figure_data.R` | Paper-only exhibit workbook (draft order) + the two FRED-sourced appendix context charts |
 
 Both `.xlsx` bundles are self-documenting. The `variable_list` sheet
 describes every column on every data sheet; the `scenario_guide`
