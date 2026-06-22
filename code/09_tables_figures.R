@@ -716,9 +716,9 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
     "n/a"
   }
   share_mode_text <- if (identical(meta$share_mode, "R")) {
-    "Share mode shown: Reallocate (R). The Karger labor-share decline is imposed. Fixed-share (F) twins live in the share_mode_comparison sheet."
+    "Share mode shown: Reallocate (R). The Karger labor-share decline is imposed; fixed-share (F) twins are reported separately."
   } else if (identical(meta$share_mode, "F")) {
-    "Share mode shown: Fixed (F). The labor-capital split is held at baseline (g_k = g_y, alpha = 1). Reallocate (R) twins live in the share_mode_comparison sheet."
+    "Share mode shown: Fixed (F). The labor-capital split is held at baseline (g_k = g_y, alpha = 1); reallocate (R) twins are reported separately."
   } else {
     sprintf("Share mode shown: %s.", meta$share_mode)
   }

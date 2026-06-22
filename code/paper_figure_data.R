@@ -372,58 +372,98 @@ cli_or_message <- function(msg) {
 # --------------------------------------------------------------------------
 # Manifest — one row per draft exhibit, in draft order.
 #   tab     : worksheet name in the output (<= 31 chars, Excel limit)
-#   caption : the draft's caption line, verbatim
+#   caption : the draft's caption line, verbatim (the sheet Title)
+#   desc    : short, human one-liner for the Contents index
 #   units   : the draft's units / subtitle line (NA if none)
 #   kind    : "tbl"  -> a sheet in the publishable bundle (copied with header)
-#             "fig"  -> a sheet in figure_data_<year>.xlsx (copied verbatim)
+#             "fig"  -> a sheet in figure_data_<year>.xlsx (data grid copied)
 #             "fred" -> regenerated from FRED via `builder`
-#   source  : sheet name in the relevant workbook (NA for "fred")
+#   source  : INTERNAL sheet name in the relevant workbook (NA for "fred").
+#             Provenance only — never written to the public workbook.
+#   cite    : public "Source:" citation line (NA -> the model default)
 #   builder : function(params) -> data.frame, for kind == "fred"
-#   note    : extra provenance text
+#   note    : extra methodology text shown in the "Notes:" line
 # --------------------------------------------------------------------------
 
 .PAPER_MANIFEST <- list(
-  list(tab = "Table 1",  caption = "Table 1. Key Parameters",
+  list(tab = "T1",  caption = "Table 1. Key Parameters",
+       desc = "Key model parameters by AI-adoption scenario",
        units = NA_character_, kind = "tbl", source = "key_parameters", builder = NULL,
+       cite = NA_character_,
        note = "Slow / Moderate / Rapid AI-adoption variants; Karger et al. 2026, CBO 2025, TBL calculations."),
-  list(tab = "Figure 1", caption = "Figure 1. Tax revenue is higher when AI adoption is faster and when inequality rises",
+  list(tab = "F1", caption = "Figure 1. Tax revenue is higher when AI adoption is faster and when inequality rises",
+       desc = "Headline federal revenue change by scenario",
        units = "Change in federal revenue, including corporate tax wedge, FY 2030, Billions USD",
-       kind = "fig", source = "01_headline_revenue", builder = NULL, note = NA_character_),
-  list(tab = "Figure 2", caption = "Figure 2. Capital and corporate revenue increases offset labor revenue losses in most scenarios",
+       kind = "fig", source = "01_headline_revenue", builder = NULL, cite = NA_character_, note = NA_character_),
+  list(tab = "F2", caption = "Figure 2. Capital and corporate revenue increases offset labor revenue losses in most scenarios",
+       desc = "Revenue change decomposed by type of income",
        units = "Change in federal revenue by type of income, FY 2030, Billions USD",
-       kind = "fig", source = "04_decomposition", builder = NULL, note = NA_character_),
-  list(tab = "Figure 3", caption = "Figure 3. Revenue gains are driven by corporate and individual income tax revenue increases",
+       kind = "fig", source = "04_decomposition", builder = NULL, cite = NA_character_, note = NA_character_),
+  list(tab = "F3", caption = "Figure 3. Revenue gains are driven by corporate and individual income tax revenue increases",
+       desc = "Revenue change by tax instrument",
        units = "Change in federal revenue by tax instrument, FY 2030, Billions USD",
-       kind = "fig", source = "03_instrument_breakdown", builder = NULL, note = NA_character_),
-  list(tab = "Figure 4", caption = "Figure 4. Federal revenue grows non-linearly with the size of the GDP shock",
+       kind = "fig", source = "03_instrument_breakdown", builder = NULL, cite = NA_character_, note = NA_character_),
+  list(tab = "F4", caption = "Figure 4. Federal revenue grows non-linearly with the size of the GDP shock",
+       desc = "Revenue vs. total factor income growth",
        units = "Change in federal revenue (y-axis) plotted against total factor income growth (x-axis), FY 2030, Billions USD",
-       kind = "fig", source = "11_revenue_vs_gross_factor", builder = NULL, note = NA_character_),
-  list(tab = "Figure 5", caption = "Figure 5. Federal revenue is higher in all scenarios when capital-labor shares are held fixed.",
+       kind = "fig", source = "11_revenue_vs_gross_factor", builder = NULL, cite = NA_character_, note = NA_character_),
+  list(tab = "F5", caption = "Figure 5. Federal revenue is higher in all scenarios when capital-labor shares are held fixed.",
+       desc = "Revenue under fixed vs. reallocated factor shares",
        units = "Change in federal revenue, including corporate tax wedge, FY 2030, Billions USD",
-       kind = "fig", source = "12_share_mode_comparison", builder = NULL, note = NA_character_),
-  list(tab = "Figure 6", caption = "Figure 6. Overall inequality changes are driven by assumptions about labor income inequality",
+       kind = "fig", source = "12_share_mode_comparison", builder = NULL, cite = NA_character_, note = NA_character_),
+  list(tab = "F6", caption = "Figure 6. Overall inequality changes are driven by assumptions about labor income inequality",
+       desc = "Change in income inequality (Gini)",
        units = "Change in within-scenario Gini coefficient, FY 2030. Positive = inequality rises.",
-       kind = "fig", source = "07_gini_delta", builder = NULL, note = NA_character_),
-  list(tab = "Figure 7", caption = "Figure 7. Despite a falling labor share, average tax rates tend to rise slightly in the Moderate AI scenario",
+       kind = "fig", source = "07_gini_delta", builder = NULL, cite = NA_character_, note = NA_character_),
+  list(tab = "F7", caption = "Figure 7. Despite a falling labor share, average tax rates tend to rise slightly in the Moderate AI scenario",
+       desc = "Average tax rate change by income decile",
        units = "Percentage point change in average tax rate by decile, excluding corporate income tax, FY 2030",
-       kind = "fig", source = "14_atr_decile_ai_M_R_S0_V1", builder = NULL, note = NA_character_),
-  list(tab = "Figure A1", caption = "Figure A1. How AI Scenario GDP Growth Assumptions Compare to Historical GDP Growth",
+       kind = "fig", source = "14_atr_decile_ai_M_R_S0_V1", builder = NULL, cite = NA_character_, note = NA_character_),
+  list(tab = "FA1", caption = "Figure A1. How AI Scenario GDP Growth Assumptions Compare to Historical GDP Growth",
+       desc = "AI scenario vs. historical GDP growth",
        units = "GDP growth (5-yr annualized, log). CBO projection 2026 onward.",
        kind = "fred", source = NA_character_, builder = .build_fred_gdp_growth,
        render = .render_gdp_growth,
-       note = "Real GDP from FRED GDPC1 (Bil. Chn. 2017$). 5-yr annualized log growth; projection extends GDP with CBO g_2026 / g_2027plus. Reference lines = AI scenario GDP CAGRs (scenario_params.yaml)."),
-  list(tab = "Figure A2", caption = "Figure A2. How AI Scenario Labor Share Assumptions Compare to the Historical Labor Share",
+       cite = "BEA/BLS via FRED (GDPC1), CBO 2025 baseline, NBER recessions; The Budget Lab at Yale.",
+       note = "Real GDP from FRED GDPC1 (Bil. Chn. 2017$). 5-yr annualized log growth; projection extends GDP with the CBO baseline path. Reference lines = AI scenario GDP CAGRs."),
+  list(tab = "FA2", caption = "Figure A2. How AI Scenario Labor Share Assumptions Compare to the Historical Labor Share",
+       desc = "AI scenario vs. historical labor share",
        units = "Labor share of income (nonfarm business, percent)",
        kind = "fred", source = NA_character_, builder = .build_fred_labor_share,
        render = .render_labor_share,
-       note = "Labor share from FRED PRS85006173 (BLS NFB labor share, index 2017=100), rescaled to percent at the 2017 level. Reference lines = AI scenario 2030 labor shares = 1 - s1 (scenario_params.yaml)."),
-  list(tab = "Figure A3", caption = "Figure A3. Federal revenue gains versus change in pre-tax income",
+       cite = "BLS via FRED (PRS85006173), NBER recessions; The Budget Lab at Yale.",
+       note = "Labor share from FRED PRS85006173 (BLS NFB labor share, index 2017=100), rescaled to percent at the 2017 level. Reference lines = AI scenario 2030 labor shares."),
+  list(tab = "FA3", caption = "Figure A3. Federal revenue gains versus change in pre-tax income",
+       desc = "Revenue gains vs. pre-tax income change",
        units = "Change in federal revenue (y-axis) plotted against pre-tax income growth (x-axis), FY 2030, Billions USD",
-       kind = "fig", source = "10_revenue_vs_income", builder = NULL, note = NA_character_),
-  list(tab = "Figure A4", caption = "Figure A4. The debt-to-GDP ratio falls more when AI adoption is faster",
+       kind = "fig", source = "10_revenue_vs_income", builder = NULL, cite = NA_character_, note = NA_character_),
+  list(tab = "FA4", caption = "Figure A4. The debt-to-GDP ratio falls more when AI adoption is faster",
+       desc = "Debt-to-GDP by scenario (BLSMM)",
        units = NA_character_, kind = "tbl", source = "blsmm_debt_to_gdp", builder = NULL,
+       cite = NA_character_,
        note = "Per-scenario 2030 debt/GDP from the Budget Lab Small Macro Model (BLSMM).")
 )
+
+# Public-facing "Source:" citation for a manifest entry. Model exhibits get
+# the AI-Fiscal model citation; FRED/other exhibits carry an explicit `cite`.
+# Internal sheet slugs (e$source) are never surfaced.
+.source_citation <- function(e, year) {
+  if (!is.null(e$cite) && !is.na(e$cite)) return(e$cite)
+  sprintf("The Budget Lab at Yale AI-Fiscal microsimulation model, FY %d.", year)
+}
+
+# Per-column display widths from the body grid ONLY — the header block's long
+# caption / Subtitle / Notes lines live in column A but overflow into the
+# empty cells beside them, so they must not drive column A's width. `m` is a
+# character matrix that includes the data's column-header row. Widths are
+# padded for legibility and capped so a long text column can't dominate.
+.body_col_widths <- function(m, min_w = 9, max_w = 46) {
+  if (is.null(m) || !length(m)) return(NULL)
+  m <- as.matrix(m)
+  m[is.na(m)] <- ""
+  w <- apply(m, 2L, function(col) max(nchar(col), 0L))
+  pmin(pmax(w + 2L, min_w), max_w)
+}
 
 build_paper_figure_data <- function(
   year      = 2030L,
@@ -455,49 +495,57 @@ build_paper_figure_data <- function(
                                     border = "bottom")
 
   # ---- Contents (index) sheet -------------------------------------------
+  # Public-facing index: a short human description per exhibit, no internal
+  # sheet slugs. Identity block (rows 1-4) mirrors the Budget Lab template.
   contents <- data.frame(
-    Order   = seq_along(.PAPER_MANIFEST),
-    Exhibit = vapply(.PAPER_MANIFEST, function(e) e$tab, character(1)),
-    Caption = vapply(.PAPER_MANIFEST, function(e) e$caption, character(1)),
-    Source  = vapply(.PAPER_MANIFEST, function(e) {
-      if (e$kind == "fred") "FRED (regenerated)"
-      else if (e$kind == "tbl") sprintf("publishable bundle: %s", e$source)
-      else sprintf("figure_data: %s", e$source)
-    }, character(1)),
+    Sheet       = vapply(.PAPER_MANIFEST, function(e) e$tab, character(1)),
+    Caption     = vapply(.PAPER_MANIFEST, function(e) e$caption, character(1)),
+    Description = vapply(.PAPER_MANIFEST, function(e) e$desc, character(1)),
     stringsAsFactors = FALSE
   )
-  openxlsx::addWorksheet(wb, "Contents")
-  openxlsx::writeData(wb, "Contents",
-                      sprintf("AI-Fiscal — paper exhibits (FY %d)", year),
-                      startRow = 1, startCol = 1)
-  openxlsx::addStyle(wb, "Contents", title_st, rows = 1, cols = 1)
-  openxlsx::writeData(wb, "Contents", contents, startRow = 3, startCol = 1,
+  openxlsx::addWorksheet(wb, "Data TOC")
+  ident <- c(
+    sprintf("AI-Fiscal — paper exhibits (FY %d)", year),
+    format(Sys.Date(), "%B %Y"),
+    "The Budget Lab at Yale",
+    "Tables and Figures"
+  )
+  for (i in seq_along(ident)) {
+    openxlsx::writeData(wb, "Data TOC", ident[i], startRow = i, startCol = 1)
+  }
+  openxlsx::addStyle(wb, "Data TOC", title_st, rows = 1, cols = 1)
+  openxlsx::addStyle(wb, "Data TOC", meta_st, rows = 2:4, cols = 1, gridExpand = TRUE)
+  toc_start <- length(ident) + 2L   # blank row after the identity block
+  openxlsx::writeData(wb, "Data TOC", contents, startRow = toc_start, startCol = 1,
                       headerStyle = hdr_st)
-  openxlsx::setColWidths(wb, "Contents", cols = 1:4, widths = c(8, 12, 90, 38))
-  openxlsx::freezePane(wb, "Contents", firstActiveRow = 4)
+  openxlsx::setColWidths(wb, "Data TOC", cols = 1:3, widths = c(12, 90, 48))
+  openxlsx::freezePane(wb, "Data TOC", firstActiveRow = toc_start + 1L)
 
   out_dir <- dirname(out_xlsx)
   n_ok <- 0L; missing_src <- character(); fred_failed <- character()
   rendered_png <- character()
   for (e in .PAPER_MANIFEST) {
     openxlsx::addWorksheet(wb, e$tab)
+    col_widths <- NULL   # set by a branch that writes a body grid
 
-    # Draft-side header block (rows 1-4), then the body from row 6.
+    # Single header block (rows 1-4), then a blank row, then the body from
+    # row 6 — one consistent template across every exhibit, matching the
+    # Budget Lab figure-workbook layout (Title / Subtitle / Notes / Source).
     openxlsx::writeData(wb, e$tab, e$caption, startRow = 1, startCol = 1)
     openxlsx::addStyle(wb, e$tab, title_st, rows = 1, cols = 1)
     if (!is.na(e$units)) {
-      openxlsx::writeData(wb, e$tab, e$units, startRow = 2, startCol = 1)
+      openxlsx::writeData(wb, e$tab, sprintf("Subtitle: %s", e$units),
+                          startRow = 2, startCol = 1)
       openxlsx::addStyle(wb, e$tab, meta_st, rows = 2, cols = 1)
     }
-    src_desc <- switch(e$kind,
-                       fred = "Source: FRED (regenerated by this script)",
-                       sprintf("Source: %s", e$source))
-    openxlsx::writeData(wb, e$tab, src_desc, startRow = 3, startCol = 1)
-    openxlsx::addStyle(wb, e$tab, meta_st, rows = 3, cols = 1)
     if (!is.na(e$note)) {
-      openxlsx::writeData(wb, e$tab, e$note, startRow = 4, startCol = 1)
-      openxlsx::addStyle(wb, e$tab, meta_st, rows = 4, cols = 1)
+      openxlsx::writeData(wb, e$tab, sprintf("Notes: %s", e$note),
+                          startRow = 3, startCol = 1)
+      openxlsx::addStyle(wb, e$tab, meta_st, rows = 3, cols = 1)
     }
+    openxlsx::writeData(wb, e$tab, sprintf("Source: %s", .source_citation(e, year)),
+                        startRow = 4, startCol = 1)
+    openxlsx::addStyle(wb, e$tab, meta_st, rows = 4, cols = 1)
 
     body_row <- 6L
     if (e$kind == "fig") {
@@ -508,13 +556,24 @@ build_paper_figure_data <- function(
                             startRow = body_row, startCol = 1)
         next
       }
-      # Copy the figure-data sheet verbatim (it already carries its own
-      # Title/Subtitle/Notes header + the plotted data). colNames=FALSE +
-      # skipEmptyRows=FALSE preserves the exact grid.
+      # Copy ONLY the data grid from the figure-data sheet. Those sheets
+      # carry their own 3-row Title/Subtitle/Notes meta block + a blank row
+      # before the data header (10_figures.R writes data_start = 5L). Drop
+      # that block so we don't stack a second header under ours — this sheet
+      # already owns the single header above.
       block <- openxlsx::read.xlsx(fig_xlsx, sheet = e$source,
                                    colNames = FALSE, skipEmptyRows = FALSE)
+      .FIG_META_ROWS <- 4L
+      if (nrow(block) > .FIG_META_ROWS) {
+        block <- block[-seq_len(.FIG_META_ROWS), , drop = FALSE]
+      }
       openxlsx::writeData(wb, e$tab, block, startRow = body_row, startCol = 1,
                           colNames = FALSE)
+      # Style the (now first) row of the grid as a header, matching the
+      # tbl/fred sheets.
+      openxlsx::addStyle(wb, e$tab, hdr_st, rows = body_row,
+                         cols = seq_len(ncol(block)), gridExpand = TRUE)
+      col_widths <- .body_col_widths(block)   # block already includes the header row
       n_ok <- n_ok + 1L
     } else if (e$kind == "tbl") {
       if (!e$source %in% pub_sheets) {
@@ -527,6 +586,7 @@ build_paper_figure_data <- function(
       df <- openxlsx::read.xlsx(pub_xlsx, sheet = e$source)
       openxlsx::writeData(wb, e$tab, df, startRow = body_row, startCol = 1,
                           headerStyle = hdr_st)
+      col_widths <- .body_col_widths(rbind(names(df), as.matrix(df)))
       n_ok <- n_ok + 1L
     } else if (e$kind == "fred") {
       df <- if (pull_fred && !is.null(e$builder)) {
@@ -543,6 +603,7 @@ build_paper_figure_data <- function(
       } else {
         openxlsx::writeData(wb, e$tab, df, startRow = body_row, startCol = 1,
                             headerStyle = hdr_st)
+        col_widths <- .body_col_widths(rbind(names(df), as.matrix(df)))
         n_ok <- n_ok + 1L
         # Render the matching PNG (full + _clean), mirroring 10_figures.R.
         if (!is.null(e$render)) {
@@ -554,7 +615,14 @@ build_paper_figure_data <- function(
         }
       }
     }
-    openxlsx::setColWidths(wb, e$tab, cols = 1:12, widths = "auto")
+    # Size columns from the body grid and freeze the header block + column
+    # headers (rows 1-6) so they stay visible on scroll. Sheets that hit a
+    # missing/failed source above leave col_widths NULL and keep defaults.
+    if (!is.null(col_widths)) {
+      openxlsx::setColWidths(wb, e$tab, cols = seq_along(col_widths),
+                             widths = col_widths)
+      openxlsx::freezePane(wb, e$tab, firstActiveRow = body_row + 1L)
+    }
   }
 
   dir.create(dirname(out_xlsx), recursive = TRUE, showWarnings = FALSE)
