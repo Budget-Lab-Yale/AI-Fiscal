@@ -281,13 +281,44 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
   data.table::fwrite(results_df, out_csv)
   cli::cli_inform("Wrote {.path {out_csv}} ({nrow(results_df)} rows)")
 
+  # Public-facing column headers for the xlsx sheet (this feeds the paper
+  # workbook's Figure A4). The internal `blsmm_*` names stay on results_df
+  # for the CSV and the plot code below; only the displayed sheet is renamed.
+  # rgfr* is BLSMM's federal-revenue path (see docs/ai_fiscal_methodology.md);
+  # rgfop* is left as its model token (undocumented here — don't mislabel).
+  results_pub <- results_df
+  .PUB_COLS <- c(
+    scenario_id                      = "Scenario ID",
+    variant                          = "Variant",
+    variant_label                    = "AI Adoption",
+    share_mode                       = "Share Mode",
+    share_mode_label                 = "Share Mode (label)",
+    labor                            = "Labor",
+    labor_label                      = "Labor Scenario",
+    realization                      = "Realization",
+    r_ai_annual_target               = "AI GDP CAGR Target",
+    delta_rev_to_gdp_cbo_pp          = "Δ Revenue-to-GDP vs CBO (pp)",
+    prod_bump_pp_per_yr              = "Productivity Bump (pp/yr)",
+    blsmm_gstar_year_pct             = "GDP Growth g* (%)",
+    blsmm_annualized_growth_horizon  = "Annualized Growth (2025–Year)",
+    blsmm_year_real_growth           = "Real GDP Growth (Year)",
+    blsmm_rgfr_year_pct              = "Federal Revenue Path rgfr* (%)",
+    blsmm_rgfop_year_pct             = "rgfop* (%)",
+    blsmm_debt_year_B                = "Debt ($B)",
+    blsmm_gdp_nominal_year_B         = "Nominal GDP ($B)",
+    blsmm_debt_to_gdp_year_pct       = "Debt-to-GDP (%)",
+    delta_debt_to_gdp_vs_baseline_pp = "Δ Debt-to-GDP vs Baseline (pp)"
+  )
+  hit <- names(results_pub) %in% names(.PUB_COLS)
+  names(results_pub)[hit] <- .PUB_COLS[names(results_pub)[hit]]
+
   # Append to xlsx bundles where present. Mirrors 08 + 09's vintage / _latest
   # convention. We don't know the vintage stamp here, so glob.
   for (pat in c(sprintf("ai_fiscal_%d_.*\\.xlsx",             year),
                 sprintf("ai_fiscal_publishable_%d_.*\\.xlsx", year))) {
     fps <- list.files(agg_dir, pattern = pat, full.names = TRUE)
     for (fp in fps) {
-      ok <- tryCatch(.append_xlsx_sheet(fp, "blsmm_debt_to_gdp", results_df),
+      ok <- tryCatch(.append_xlsx_sheet(fp, "blsmm_debt_to_gdp", results_pub),
                      error = function(e) {
                        cli::cli_warn(c(
                          "Failed to append BLSMM sheet to {.path {fp}}.",
