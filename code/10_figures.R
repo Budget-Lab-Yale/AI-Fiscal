@@ -61,7 +61,7 @@ PAL_VARIANT     <- c(Slow     = YBL_PALE,
 # expansive (pulls apart), neutral for proportional. The AI-exposure
 # entry is a palette reservation only — no exposure scenario exists in
 # this repo's 03_shock_labor.R (S0/S2/S3 only; an exposure variant
-# lives in the archived dev repo, and a CPS-cell version is sketched
+# lives in the archived internal development tree, and a CPS-cell version is sketched
 # in docs/v2_architecture.md §3).
 PAL_LABOR       <- c(Proportional  = YBL_GRAY,
                      `AI-exposure` = YBL_MUTED,

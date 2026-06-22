@@ -22,7 +22,7 @@ pre-realization NIPA corporate base.
   Derivation of the retired standalone `cit_avoidance` parameter
   (superseded by the runtime-calibrated `eta_corp`). Kept because the
   NIPA effective-rate arithmetic remains a useful cross-check on
-  `eta_corp`'s magnitude. Ported from the archived dev repo 2026-06-11.
+  `eta_corp`'s magnitude. Ported from the archived internal development tree 2026-06-11.
 - `validation_benchmarks.csv` — published benchmarks used by
   `code/11_validation.R` to spot-check the pinned vintage against
   CBO/Treasury (federal IIT, CIT, payroll, total revenue), IRS SOI

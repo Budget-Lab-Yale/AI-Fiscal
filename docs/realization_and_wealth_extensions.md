@@ -10,16 +10,15 @@
 > `config/scenario_params.yaml`, and no V2/V3 code path in `code/`.
 > Where this document says "today", "already in the code", or names a
 > config key in the present tense, it is describing the **archived
-> private dev repo** (`Budget-Lab-Yale/ai_fiscal`), from which this
-> doc was ported — *not* the public release you are reading. Read it
-> as a design sketch for v0.2.0+, nothing more.
+> internal development tree** from which this doc was ported — *not*
+> the public release you are reading. Read it as a design sketch for
+> v0.2.0+, nothing more.
 
-> Ported 2026-06-11 from the archived dev repo
-> (`ai_fiscal/docs/realization_and_wealth_extensions.md`) as part of
-> the repo consolidation. Variant labels follow the archived repo's
-> history; note this repo's R1 cascade is the archived repo's R4. The
+> Ported 2026-06-11 from the archived internal development tree as
+> part of the repo consolidation. Variant labels follow that tree's
+> history; note this repo's R1 cascade is the archived tree's R4. The
 > V2/V3 realization variants referenced here exist only in the
-> archived repo's code.
+> archived tree's code.
 
 **Status:** Planning. Drafted 2026-05-22 by merging the prior
 `realization_rate_memo.Rmd` and `wealth_frame_migration.md`.
@@ -147,8 +146,9 @@ driven by a wealth-frame allocator.
 ### 2.3 What is calibrated where today, and where it needs to come from
 
 The "Income frame (v0.1.0)" column describes what the **released**
-model does; the V2/V3 / step-up entries are the archived repo's
-machinery and are shown only to motivate the wealth-frame target.
+model does; the V2/V3 / step-up entries are the archived internal
+development tree's machinery and are shown only to motivate the
+wealth-frame target.
 
 | Quantity            | Income frame (v0.1.0)              | Wealth-frame source (proposed)                                                                     |
 |---------------------|------------------------------------|----------------------------------------------------------------------------------------------------|
@@ -199,7 +199,7 @@ flows to the PUF `kg_lt` column according to a realization rule:
   $\varphi$. Not consumed by Tax-Simulator (annual-flow object),
   reported as a diagnostic.
 
-The placeholder value carried in the **archived dev repo** was
+The placeholder value carried in the **archived internal development tree** was
 `realization.rate_r: 0.60`. **No such key exists in this release's
 `config/scenario_params.yaml`** — it would be introduced only when
 the V2/V3 work lands. The remainder of this section documents the

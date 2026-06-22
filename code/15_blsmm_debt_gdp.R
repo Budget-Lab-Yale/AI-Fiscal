@@ -1,7 +1,7 @@
 # ==============================================================================
 # Scenario-specific 2030 debt/GDP via the Budget Lab Small Macro Model (BLSMM).
 #
-# For each ai_fiscal scenario in results/aggregates/revenue_to_gdp_<year>.csv:
+# For each AI-Fiscal scenario in results/aggregates/revenue_to_gdp_<year>.csv:
 #   - Apply the CBO-anchored revenue/GDP delta as a linear ramp to BLSMM's
 #     rgfr_star over 2026-<year> (held at full level after <year>).
 #   - Solve for a constant per-year productivity bump (added to glqstar) such
@@ -18,7 +18,7 @@
 #     (delta_rev_to_gdp_cbo), since BLSMM's baseline rev/GDP is already
 #     anchored to CBO (~17.6% in 2030).
 #   * The growth target is the *annualized* 5-yr rate (compounding from
-#     HORIZON_START_YEAR to year), matching how ai_fiscal/02_params.R
+#     HORIZON_START_YEAR to year), matching how code/02_params.R
 #     derives g_y from r_ai_annual.
 #
 # External dependency
@@ -26,7 +26,7 @@
 #     1. BLSMM_DIR env var
 #     2. ../Budget-Lab-Small-Macro-Model relative to this repo
 #   If unresolved or unreadable, all three functions in this file warn and
-#   return NULL, leaving the rest of the ai_fiscal pipeline untouched.
+#   return NULL, leaving the rest of the AI-Fiscal pipeline untouched.
 #
 # Outputs (under results/aggregates/ + results/figures/<year>/)
 #   blsmm_debt_to_gdp_<year>.csv
@@ -273,7 +273,7 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
   )
   results_df <- rbind(baseline_row, results_df)
 
-  # Restore cwd for the writes (paths under ai_fiscal repo).
+  # Restore cwd for the writes (paths under AI-Fiscal repo).
   setwd(ai_fiscal_root)
 
   out_csv <- file.path(agg_dir, sprintf("blsmm_debt_to_gdp_%d.csv", year))
@@ -409,7 +409,7 @@ assemble_blsmm_figures <- function(year       = NULL,
 }
 
 # Orchestrator entry point: run the BLSMM step end-to-end, swallowing
-# (and logging) any failure so the rest of the ai_fiscal pipeline can
+# (and logging) any failure so the rest of the AI-Fiscal pipeline can
 # continue.
 run_blsmm_step <- function(year      = NULL,
                            agg_dir   = "results/aggregates",

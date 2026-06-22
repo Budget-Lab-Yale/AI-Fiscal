@@ -64,7 +64,7 @@ time_it <- function(label, expr) {
 }
 
 # --- pipeline ------------------------------------------------------
-cat("ai_fiscal smoke profile\n")
+cat("AI-Fiscal smoke profile\n")
 cat(sprintf("  data_dir = %s\n", data_dir))
 cat(sprintf("  variant  = %s\n", variant))
 cat(sprintf("  cells    = %d\n\n", n_cells))

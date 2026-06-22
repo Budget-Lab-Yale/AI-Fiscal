@@ -352,7 +352,7 @@ build_ai_fiscal_runs <- function(specs,
   cli::cli_inform(c(
     "AI-Fiscal pre-flight",
     "*" = "R:                 {R.version.string}",
-    "*" = "ai_fiscal rev:     {ai_rev}",
+    "*" = "AI-Fiscal rev:     {ai_rev}",
     "*" = "Tax-Simulator dir: {ts_root}",
     "*" = "Tax-Simulator rev: {ts_rev}",
     "*" = "Tax-Data dir:      {data_dir}",
@@ -372,7 +372,7 @@ build_ai_fiscal_runs <- function(specs,
     dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
   }
   log_con <- file(log_file, open = "wt")
-  cat(sprintf("# ai_fiscal release run @ %s\n# argv: %s\n\n",
+  cat(sprintf("# AI-Fiscal release run @ %s\n# argv: %s\n\n",
               format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"),
               paste(argv, collapse = " ")),
       file = log_con)

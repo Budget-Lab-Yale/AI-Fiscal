@@ -116,7 +116,7 @@ spec, severing that tie.
     decile-rank extrapolation above.
 
 **Naming guard:** don't reuse "S1" for the exposure form (S1 is the
-archived dev repo's AI-exposure scenario, different construction).
+archived internal development tree's AI-exposure scenario, different construction).
 Give v2 forms descriptive codes; see §7 on the scenario-ID problem.
 
 ## 4. Capital module

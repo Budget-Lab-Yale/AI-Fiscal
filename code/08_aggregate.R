@@ -839,7 +839,7 @@ build_atr_decile <- function(output_root, runscript_path, year,
                             argv, bundle_type = NULL) {
   fields <- c("Generated", "Policy year", "Tax-Simulator vintage",
               "Tax-Simulator output root", "Runscript", "Scenarios",
-              "Number of scenarios", "R version", "ai_fiscal git rev",
+              "Number of scenarios", "R version", "AI-Fiscal git rev",
               "Orchestrator argv")
   values <- c(format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"),
               as.character(year),

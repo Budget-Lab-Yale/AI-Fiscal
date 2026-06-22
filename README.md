@@ -2,15 +2,15 @@
 
 ## Introduction
 
-This repo models the fiscal impact of AI-driven macroeconomic shocks 
-using the Budget Lab tax microsimulation model. Version v0.1.0 is used 
-to produce the results in "How potential AI futures would play out in 
-the current tax system". <TODO ADD LINK> 
+This repo models the fiscal impact of AI-driven macroeconomic shocks
+using the Budget Lab tax microsimulation model. Version v0.1.0 is used
+to produce the results in "How potential AI futures would play out in
+the current tax system". <TODO ADD LINK>
 
-The model takes as inputs a shock to GDP, a shock to the labor-share of factor income, 
-a number of economic assumptions, and merged income and wealth data. It produces an 
+The model takes as inputs a shock to GDP, a shock to the labor-share of factor income,
+a number of economic assumptions, and merged income and wealth data. It produces an
 estimate of the change in federal revenue (total and by
-instrument) and the distribution of post-tax-and-transfer income. 
+instrument) and the distribution of post-tax-and-transfer income.
 Methodology lives in `docs/ai_fiscal_methodology.md`.
 
 The run is fully parameterized by a single file,
@@ -40,10 +40,10 @@ Every run produces:
 3. A timestamped log file at `logs/release_<timestamp>.log`.
 
 This is the v0.1.0 income-frame release. Future work will examine alternative
-assumptions regarding the realization of capital income, the treatment of 
-tax-preferred retirement income, and labor-side AI exposure metrics (left as S1), 
-among other potential improvements. The full development history includes early efforts 
-to work on these topics. 
+assumptions regarding the realization of capital income, the treatment of
+tax-preferred retirement income, and labor-side AI exposure metrics (left as S1),
+among other potential improvements. The full development history includes early efforts
+to work on these topics.
 
 ## External dependencies
 

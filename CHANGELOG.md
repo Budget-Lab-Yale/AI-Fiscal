@@ -10,7 +10,7 @@ the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Repo consolidation: this is now the single canonical repo (the
-  private dev tree is archived). Lineage is documented in `CLAUDE.md`.
+  internal development tree is archived). Lineage is documented in `CLAUDE.md`.
 - `docs/v2_architecture.md` — ideation sketch for the v2 model
   generation (CBO baseline module, separable labor/capital modules,
   upstream capital sizing).
