@@ -1,0 +1,397 @@
+# Build a paper-only figure/table workbook: exactly the exhibits that
+# appear in the policy draft ("How potential AI futures would play out in
+# the current tax system"), in the draft's order, drawn from the
+# already-produced model outputs.
+#
+# This is a thin post-processor over the full figure/table outputs — it
+# selects, re-orders, and re-labels; it does not recompute the model.
+# Run it after the pipeline (08 -> 09 -> 10 [-> 15]) has produced:
+#   results/figures/<year>/figure_data_<year>.xlsx            (per-figure data, from 10)
+#   results/aggregates/ai_fiscal_publishable_<year>_latest.xlsx
+#       (key_parameters sheet -> Table 1; blsmm_debt_to_gdp sheet -> Fig A4; from 09/15)
+#
+# The two appendix context charts (Fig A1 GDP growth, Fig A2 labor share)
+# are NOT produced by the model pipeline — in the draft they are
+# Datawrapper charts built from historical macro series. This script
+# regenerates their underlying data directly from FRED (no API key — the
+# public fredgraph.csv endpoint), so the workbook is self-contained.
+#
+# Output:
+#   results/figures/<year>/paper_figure_data_<year>.xlsx
+#
+# Draft-exhibit -> source mapping. The model-figure mapping was verified
+# 2026-06-22 by hashing the draft's embedded images against the rendered
+# figure PNGs (7/8 byte-identical; the rest confirmed visually). If the
+# figure suite in 10_figures.R changes slugs, update .PAPER_MANIFEST.
+#
+#   Table 1   -> key_parameters            (publishable bundle)
+#   Figure 1  -> 01_headline_revenue
+#   Figure 2  -> 04_decomposition
+#   Figure 3  -> 03_instrument_breakdown
+#   Figure 4  -> 11_revenue_vs_gross_factor
+#   Figure 5  -> 12_share_mode_comparison
+#   Figure 6  -> 07_gini_delta
+#   Figure 7  -> 14_atr_decile_ai_M_R_S0_V1
+#   Figure A1 -> FRED GDPC1     (5-yr annualized log GDP growth + CBO projection)
+#   Figure A2 -> FRED PRS85006173 (nonfarm-business labor share, percent)
+#   Figure A3 -> 10_revenue_vs_income
+#   Figure A4 -> blsmm_debt_to_gdp         (publishable bundle)
+
+suppressPackageStartupMessages({
+  library(openxlsx)
+})
+
+# --------------------------------------------------------------------------
+# Config for the FRED-sourced appendix series (A1 / A2)
+# --------------------------------------------------------------------------
+
+.FRED_GDP_ID    <- "GDPC1"        # Real GDP, quarterly, Bil. Chn. 2017$ (annual avg = GDPCA)
+.FRED_LABOR_ID  <- "PRS85006173"  # Nonfarm Business Sector: Labor Share (Index 2017=100)
+
+# The BLS index is 2017=100; the figure plots the labor share in percent.
+# Anchor the index to the nonfarm-business labor-share level in the index
+# base year (2017 ~ 56.5%, matching the BLS/Haver LXNFBL level the draft
+# used). fraction_y = index_y / index_2017 * .LS_ANCHOR_2017. Validated to
+# reproduce the draft's historical series at 1947 / 2017 / 2025 to <0.1pp.
+.LS_ANCHOR_YEAR <- 2017L
+.LS_ANCHOR_2017 <- 0.565
+
+.GDP_GROWTH_MA_YEARS  <- 5L       # window for the annualized log-growth measure
+.GDP_PROJECTION_END   <- 2036L    # how far to carry the CBO projection line
+
+# --------------------------------------------------------------------------
+# FRED download (public fredgraph.csv endpoint — no API key required)
+# --------------------------------------------------------------------------
+
+# Returns a data.frame(date = Date, value = numeric) or NULL on any failure
+# (offline, timeout, bad series). Callers degrade gracefully to a placeholder.
+.fred_series <- function(series_id, timeout = 30L) {
+  url <- sprintf("https://fred.stlouisfed.org/graph/fredgraph.csv?id=%s", series_id)
+  tmp <- tempfile(fileext = ".csv")
+  ok <- tryCatch({
+    old <- options(timeout = timeout); on.exit(options(old), add = TRUE)
+    utils::download.file(url, tmp, mode = "wb", quiet = TRUE)
+    TRUE
+  }, error = function(e) {
+    cli_or_message(sprintf("FRED download failed for %s: %s", series_id, conditionMessage(e)))
+    FALSE
+  })
+  if (!ok || !file.exists(tmp) || file.info(tmp)$size == 0) return(NULL)
+  df <- tryCatch(utils::read.csv(tmp, stringsAsFactors = FALSE), error = function(e) NULL)
+  if (is.null(df) || ncol(df) < 2L || !nrow(df)) return(NULL)
+  # fredgraph.csv: col1 = observation_date, col2 = <series_id>. Coerce; FRED
+  # marks missing as ".".
+  out <- data.frame(
+    date  = as.Date(df[[1]]),
+    value = suppressWarnings(as.numeric(df[[2]])),
+    stringsAsFactors = FALSE
+  )
+  out <- out[!is.na(out$date), , drop = FALSE]
+  if (!nrow(out)) return(NULL)
+  out
+}
+
+# Light wrapper so the script works whether or not cli is attached.
+cli_or_message <- function(msg) {
+  if (requireNamespace("cli", quietly = TRUE)) cli::cli_warn(msg) else message(msg)
+}
+
+# Aggregate a (date, value) series to annual means. Returns data.frame(
+# year, value, n_obs). `n_obs` lets callers keep only complete years
+# (4 quarters for a quarterly series) when extending a projection.
+.fred_annual <- function(df) {
+  if (is.null(df)) return(NULL)
+  yr <- as.integer(format(df$date, "%Y"))
+  ok <- !is.na(df$value)
+  agg <- aggregate(df$value[ok], by = list(year = yr[ok]), FUN = mean)
+  cnt <- aggregate(df$value[ok], by = list(year = yr[ok]), FUN = length)
+  out <- merge(agg, cnt, by = "year")
+  names(out) <- c("year", "value", "n_obs")
+  out[order(out$year), ]
+}
+
+# --------------------------------------------------------------------------
+# Scenario parameters (reference lines come from the model's single source
+# of truth, not hard-coded round numbers).
+# --------------------------------------------------------------------------
+
+.read_scenario_params <- function(
+  yaml_path = file.path("config", "scenario_params.yaml")
+) {
+  if (!requireNamespace("yaml", quietly = TRUE) || !file.exists(yaml_path)) return(NULL)
+  y <- tryCatch(yaml::read_yaml(yaml_path), error = function(e) NULL)
+  if (is.null(y)) return(NULL)
+  v <- y$shock$variants
+  list(
+    g_2026     = y$cbo_baseline$g_2026,
+    g_2027plus = y$cbo_baseline$g_2027plus,
+    # AI GDP CAGR per variant (Slow / Moderate / Rapid).
+    gdp_cagr   = c(Slow = v$S$r_ai_annual, Moderate = v$M$r_ai_annual, Rapid = v$R$r_ai_annual),
+    # 2030 labor share per variant = 1 - s1.
+    labor_2030 = c(Slow = 1 - v$S$s1, Moderate = 1 - v$M$s1, Rapid = 1 - v$R$s1)
+  )
+}
+
+# --------------------------------------------------------------------------
+# A1 — GDP growth: 5-yr annualized log growth of real GDP, historical
+# (solid) plus a CBO-baseline projection (dashed), with the three AI
+# scenario CAGR reference lines.
+# --------------------------------------------------------------------------
+
+.build_fred_gdp_growth <- function(params) {
+  ann <- .fred_annual(.fred_series(.FRED_GDP_ID))
+  if (is.null(ann) || is.null(params)) return(NULL)
+  # Real GDP by complete year (4 quarters); GDPC1 annual mean == GDPCA.
+  ann <- ann[ann$n_obs >= 4L, ]
+  if (nrow(ann) < .GDP_GROWTH_MA_YEARS + 1L) return(NULL)
+  gdp <- setNames(ann$value, ann$year)
+  last_hist <- max(ann$year)
+
+  # Extend the GDP level with the CBO baseline path: g_2026 in 2026, then
+  # g_2027plus for every later year, through the projection horizon.
+  proj_years <- (last_hist + 1L):.GDP_PROJECTION_END
+  for (yy in proj_years) {
+    rate <- if (yy == 2026L) params$g_2026 else params$g_2027plus
+    gdp[as.character(yy)] <- gdp[as.character(yy - 1L)] * (1 + rate)
+  }
+
+  n <- .GDP_GROWTH_MA_YEARS
+  log_growth5 <- function(y) {
+    a <- gdp[as.character(y)]; b <- gdp[as.character(y - n)]
+    if (is.na(a) || is.na(b)) return(NA_real_)
+    (log(a) - log(b)) / n
+  }
+
+  all_years <- (min(ann$year) + n):.GDP_PROJECTION_END
+  hist_g <- vapply(all_years, function(y) if (y <= last_hist) log_growth5(y) else NA_real_, numeric(1))
+  # Projection line includes the seam (last_hist) so the dashed line joins
+  # the solid one.
+  cbo_g  <- vapply(all_years, function(y) if (y >= last_hist) log_growth5(y) else NA_real_, numeric(1))
+
+  data.frame(
+    Year             = all_years,
+    `GDP Growth`     = hist_g,
+    `CBO Projection` = cbo_g,
+    `Slow (2030)`    = params$gdp_cagr[["Slow"]],
+    `Moderate (2030)`= params$gdp_cagr[["Moderate"]],
+    `Rapid (2030)`   = params$gdp_cagr[["Rapid"]],
+    check.names = FALSE, stringsAsFactors = FALSE
+  )
+}
+
+# --------------------------------------------------------------------------
+# A2 — labor share: BLS nonfarm-business labor share in percent, with the
+# three AI scenario 2030 labor-share reference lines.
+# --------------------------------------------------------------------------
+
+.build_fred_labor_share <- function(params) {
+  ann <- .fred_annual(.fred_series(.FRED_LABOR_ID))
+  if (is.null(ann) || is.null(params)) return(NULL)
+  idx <- setNames(ann$value, ann$year)
+  anchor_idx <- idx[as.character(.LS_ANCHOR_YEAR)]
+  if (is.na(anchor_idx) || anchor_idx == 0) return(NULL)
+  scale <- .LS_ANCHOR_2017 / anchor_idx
+  data.frame(
+    Year             = ann$year,
+    `Labor Share`    = ann$value * scale,
+    `Slow (2030)`    = params$labor_2030[["Slow"]],
+    `Moderate (2030)`= params$labor_2030[["Moderate"]],
+    `Rapid (2030)`   = params$labor_2030[["Rapid"]],
+    check.names = FALSE, stringsAsFactors = FALSE
+  )
+}
+
+# --------------------------------------------------------------------------
+# Manifest — one row per draft exhibit, in draft order.
+#   tab     : worksheet name in the output (<= 31 chars, Excel limit)
+#   caption : the draft's caption line, verbatim
+#   units   : the draft's units / subtitle line (NA if none)
+#   kind    : "tbl"  -> a sheet in the publishable bundle (copied with header)
+#             "fig"  -> a sheet in figure_data_<year>.xlsx (copied verbatim)
+#             "fred" -> regenerated from FRED via `builder`
+#   source  : sheet name in the relevant workbook (NA for "fred")
+#   builder : function(params) -> data.frame, for kind == "fred"
+#   note    : extra provenance text
+# --------------------------------------------------------------------------
+
+.PAPER_MANIFEST <- list(
+  list(tab = "Table 1",  caption = "Table 1. Key Parameters",
+       units = NA_character_, kind = "tbl", source = "key_parameters", builder = NULL,
+       note = "Slow / Moderate / Rapid AI-adoption variants; Karger et al. 2026, CBO 2025, TBL calculations."),
+  list(tab = "Figure 1", caption = "Figure 1. Tax revenue is higher when AI adoption is faster and when inequality rises",
+       units = "Change in federal revenue, including corporate tax wedge, FY 2030, Billions USD",
+       kind = "fig", source = "01_headline_revenue", builder = NULL, note = NA_character_),
+  list(tab = "Figure 2", caption = "Figure 2. Capital and corporate revenue increases offset labor revenue losses in most scenarios",
+       units = "Change in federal revenue by type of income, FY 2030, Billions USD",
+       kind = "fig", source = "04_decomposition", builder = NULL, note = NA_character_),
+  list(tab = "Figure 3", caption = "Figure 3. Revenue gains are driven by corporate and individual income tax revenue increases",
+       units = "Change in federal revenue by tax instrument, FY 2030, Billions USD",
+       kind = "fig", source = "03_instrument_breakdown", builder = NULL, note = NA_character_),
+  list(tab = "Figure 4", caption = "Figure 4. Federal revenue grows non-linearly with the size of the GDP shock",
+       units = "Change in federal revenue (y-axis) plotted against total factor income growth (x-axis), FY 2030, Billions USD",
+       kind = "fig", source = "11_revenue_vs_gross_factor", builder = NULL, note = NA_character_),
+  list(tab = "Figure 5", caption = "Figure 5. Federal revenue is higher in all scenarios when capital-labor shares are held fixed.",
+       units = "Change in federal revenue, including corporate tax wedge, FY 2030, Billions USD",
+       kind = "fig", source = "12_share_mode_comparison", builder = NULL, note = NA_character_),
+  list(tab = "Figure 6", caption = "Figure 6. Overall inequality changes are driven by assumptions about labor income inequality",
+       units = "Change in within-scenario Gini coefficient, FY 2030. Positive = inequality rises.",
+       kind = "fig", source = "07_gini_delta", builder = NULL, note = NA_character_),
+  list(tab = "Figure 7", caption = "Figure 7. Despite a falling labor share, average tax rates tend to rise slightly in the Moderate AI scenario",
+       units = "Percentage point change in average tax rate by decile, excluding corporate income tax, FY 2030",
+       kind = "fig", source = "14_atr_decile_ai_M_R_S0_V1", builder = NULL, note = NA_character_),
+  list(tab = "Figure A1", caption = "Figure A1. How AI Scenario GDP Growth Assumptions Compare to Historical GDP Growth",
+       units = "GDP growth (5-yr annualized, log). CBO projection 2026 onward.",
+       kind = "fred", source = NA_character_, builder = .build_fred_gdp_growth,
+       note = "Real GDP from FRED GDPC1 (Bil. Chn. 2017$). 5-yr annualized log growth; projection extends GDP with CBO g_2026 / g_2027plus. Reference lines = AI scenario GDP CAGRs (scenario_params.yaml)."),
+  list(tab = "Figure A2", caption = "Figure A2. How AI Scenario Labor Share Assumptions Compare to the Historical Labor Share",
+       units = "Labor share of income (nonfarm business, percent)",
+       kind = "fred", source = NA_character_, builder = .build_fred_labor_share,
+       note = "Labor share from FRED PRS85006173 (BLS NFB labor share, index 2017=100), rescaled to percent at the 2017 level. Reference lines = AI scenario 2030 labor shares = 1 - s1 (scenario_params.yaml)."),
+  list(tab = "Figure A3", caption = "Figure A3. Federal revenue gains versus change in pre-tax income",
+       units = "Change in federal revenue (y-axis) plotted against pre-tax income growth (x-axis), FY 2030, Billions USD",
+       kind = "fig", source = "10_revenue_vs_income", builder = NULL, note = NA_character_),
+  list(tab = "Figure A4", caption = "Figure A4. The debt-to-GDP ratio falls more when AI adoption is faster",
+       units = NA_character_, kind = "tbl", source = "blsmm_debt_to_gdp", builder = NULL,
+       note = "Per-scenario 2030 debt/GDP from the Budget Lab Small Macro Model (BLSMM).")
+)
+
+build_paper_figure_data <- function(
+  year      = 2030L,
+  fig_xlsx  = file.path("results", "figures", as.character(year),
+                        sprintf("figure_data_%d.xlsx", year)),
+  pub_xlsx  = file.path("results", "aggregates",
+                        sprintf("ai_fiscal_publishable_%d_latest.xlsx", year)),
+  out_xlsx  = file.path("results", "figures", as.character(year),
+                        sprintf("paper_figure_data_%d.xlsx", year)),
+  pull_fred = TRUE
+) {
+  if (!file.exists(fig_xlsx)) {
+    stop(sprintf("figure_data workbook not found: %s\n  Run code/10_figures.R (or the orchestrator) first.", fig_xlsx))
+  }
+  if (!file.exists(pub_xlsx)) {
+    stop(sprintf("publishable bundle not found: %s\n  Run code/09_tables_figures.R (or the orchestrator) first.", pub_xlsx))
+  }
+
+  fig_sheets <- openxlsx::getSheetNames(fig_xlsx)
+  pub_sheets <- openxlsx::getSheetNames(pub_xlsx)
+  params     <- if (pull_fred && any(vapply(.PAPER_MANIFEST, function(e) e$kind == "fred", logical(1)))) {
+    .read_scenario_params()
+  } else NULL
+
+  wb <- openxlsx::createWorkbook()
+  title_st <- openxlsx::createStyle(textDecoration = "bold", fontSize = 12)
+  meta_st  <- openxlsx::createStyle(textDecoration = "italic", fontColour = "#555555")
+  hdr_st   <- openxlsx::createStyle(textDecoration = "bold", fgFill = "#f0f0f0",
+                                    border = "bottom")
+
+  # ---- Contents (index) sheet -------------------------------------------
+  contents <- data.frame(
+    Order   = seq_along(.PAPER_MANIFEST),
+    Exhibit = vapply(.PAPER_MANIFEST, function(e) e$tab, character(1)),
+    Caption = vapply(.PAPER_MANIFEST, function(e) e$caption, character(1)),
+    Source  = vapply(.PAPER_MANIFEST, function(e) {
+      if (e$kind == "fred") "FRED (regenerated)"
+      else if (e$kind == "tbl") sprintf("publishable bundle: %s", e$source)
+      else sprintf("figure_data: %s", e$source)
+    }, character(1)),
+    stringsAsFactors = FALSE
+  )
+  openxlsx::addWorksheet(wb, "Contents")
+  openxlsx::writeData(wb, "Contents",
+                      sprintf("AI-Fiscal — paper exhibits (FY %d)", year),
+                      startRow = 1, startCol = 1)
+  openxlsx::addStyle(wb, "Contents", title_st, rows = 1, cols = 1)
+  openxlsx::writeData(wb, "Contents", contents, startRow = 3, startCol = 1,
+                      headerStyle = hdr_st)
+  openxlsx::setColWidths(wb, "Contents", cols = 1:4, widths = c(8, 12, 90, 38))
+  openxlsx::freezePane(wb, "Contents", firstActiveRow = 4)
+
+  n_ok <- 0L; missing_src <- character(); fred_failed <- character()
+  for (e in .PAPER_MANIFEST) {
+    openxlsx::addWorksheet(wb, e$tab)
+
+    # Draft-side header block (rows 1-4), then the body from row 6.
+    openxlsx::writeData(wb, e$tab, e$caption, startRow = 1, startCol = 1)
+    openxlsx::addStyle(wb, e$tab, title_st, rows = 1, cols = 1)
+    if (!is.na(e$units)) {
+      openxlsx::writeData(wb, e$tab, e$units, startRow = 2, startCol = 1)
+      openxlsx::addStyle(wb, e$tab, meta_st, rows = 2, cols = 1)
+    }
+    src_desc <- switch(e$kind,
+                       fred = "Source: FRED (regenerated by this script)",
+                       sprintf("Source: %s", e$source))
+    openxlsx::writeData(wb, e$tab, src_desc, startRow = 3, startCol = 1)
+    openxlsx::addStyle(wb, e$tab, meta_st, rows = 3, cols = 1)
+    if (!is.na(e$note)) {
+      openxlsx::writeData(wb, e$tab, e$note, startRow = 4, startCol = 1)
+      openxlsx::addStyle(wb, e$tab, meta_st, rows = 4, cols = 1)
+    }
+
+    body_row <- 6L
+    if (e$kind == "fig") {
+      if (!e$source %in% fig_sheets) {
+        missing_src <- c(missing_src, sprintf("%s (figure_data sheet '%s')", e$tab, e$source))
+        openxlsx::writeData(wb, e$tab,
+                            sprintf("[missing] sheet '%s' not found in %s", e$source, basename(fig_xlsx)),
+                            startRow = body_row, startCol = 1)
+        next
+      }
+      # Copy the figure-data sheet verbatim (it already carries its own
+      # Title/Subtitle/Notes header + the plotted data). colNames=FALSE +
+      # skipEmptyRows=FALSE preserves the exact grid.
+      block <- openxlsx::read.xlsx(fig_xlsx, sheet = e$source,
+                                   colNames = FALSE, skipEmptyRows = FALSE)
+      openxlsx::writeData(wb, e$tab, block, startRow = body_row, startCol = 1,
+                          colNames = FALSE)
+      n_ok <- n_ok + 1L
+    } else if (e$kind == "tbl") {
+      if (!e$source %in% pub_sheets) {
+        missing_src <- c(missing_src, sprintf("%s (publishable sheet '%s')", e$tab, e$source))
+        openxlsx::writeData(wb, e$tab,
+                            sprintf("[missing] sheet '%s' not found in %s", e$source, basename(pub_xlsx)),
+                            startRow = body_row, startCol = 1)
+        next
+      }
+      df <- openxlsx::read.xlsx(pub_xlsx, sheet = e$source)
+      openxlsx::writeData(wb, e$tab, df, startRow = body_row, startCol = 1,
+                          headerStyle = hdr_st)
+      n_ok <- n_ok + 1L
+    } else if (e$kind == "fred") {
+      df <- if (pull_fred && !is.null(e$builder)) {
+        tryCatch(e$builder(params), error = function(err) {
+          cli_or_message(sprintf("%s: FRED build error: %s", e$tab, conditionMessage(err)))
+          NULL
+        })
+      } else NULL
+      if (is.null(df) || !nrow(df)) {
+        fred_failed <- c(fred_failed, e$tab)
+        openxlsx::writeData(wb, e$tab,
+                            "FRED series unavailable (offline or fetch failed). Re-run with network access to populate.",
+                            startRow = body_row, startCol = 1)
+      } else {
+        openxlsx::writeData(wb, e$tab, df, startRow = body_row, startCol = 1,
+                            headerStyle = hdr_st)
+        n_ok <- n_ok + 1L
+      }
+    }
+    openxlsx::setColWidths(wb, e$tab, cols = 1:12, widths = "auto")
+  }
+
+  dir.create(dirname(out_xlsx), recursive = TRUE, showWarnings = FALSE)
+  openxlsx::saveWorkbook(wb, out_xlsx, overwrite = TRUE)
+  message(sprintf("Wrote %s (%d exhibit sheets + Contents).", out_xlsx, n_ok))
+  if (length(fred_failed)) {
+    cli_or_message(sprintf("FRED series not populated (placeholder written): %s",
+                           paste(fred_failed, collapse = ", ")))
+  }
+  if (length(missing_src)) {
+    warning("Missing source sheets:\n  ", paste(missing_src, collapse = "\n  "))
+  }
+  invisible(out_xlsx)
+}
+
+if (!interactive() && sys.nframe() == 0L) {
+  argv <- commandArgs(trailingOnly = TRUE)
+  yr <- if (length(argv) >= 1L) as.integer(argv[[1]]) else 2030L
+  build_paper_figure_data(year = yr)
+}
