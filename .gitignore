@@ -44,10 +44,11 @@ output/
 # per-user / per-machine and should not travel via this repo.
 .claude/
 
-# scripts/: local ad-hoc shell wrappers (cluster-specific paths,
-# personal scratch dirs). The reference SBATCH driver is `slurm_run.sh`
-# at the repo root; `scripts/` is for everything else a user wants
-# to keep locally without sending upstream.
+# Cluster job wrappers and ad-hoc shell scripts (cluster-specific
+# paths, personal scratch dirs). `slurm_run.sh` is a local SBATCH
+# driver kept untracked; `scripts/` is for everything else a user
+# wants to keep locally without sending upstream.
+slurm_run.sh
 scripts/
 
 # Logs

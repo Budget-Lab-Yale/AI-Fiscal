@@ -1,17 +1,23 @@
 # AI-Fiscal — v0.1.0 release build
 
-**How potential AI futures would play out in the current tax system.**
+## Introduction
 
-Simulating the fiscal impact of an AI-driven labor-to-capital income
-shift, using the Budget Lab tax microsimulation.
+This repo models the fiscal impact of AI-driven macroeconomic shocks 
+using the Budget Lab tax microsimulation model. Version v0.1.0 is used 
+to produce the results in "How potential AI futures would play out in 
+the current tax system". <TODO ADD LINK> 
 
-**Objective.** Estimate the change in federal revenue (total and by
-instrument) and the distribution of post-tax-and-transfer income under
-shocks to productivity and the capital-labor share. This is the
-simplified release build: the pipeline runs a single, fixed grid and
-is intended to be read end-to-end by external reviewers.
-
+The model takes as inputs a shock to GDP, a shock to the labor-share of factor income, 
+a number of economic assumptions, and merged income and wealth data. It produces an 
+estimate of the change in federal revenue (total and by
+instrument) and the distribution of post-tax-and-transfer income. 
 Methodology lives in `docs/ai_fiscal_methodology.md`.
+
+The run is fully parameterized by a single file,
+`config/scenario_params.yaml` (see [Parameters](#parameters)). In
+v0.1.0 the shock parameters are calibrated to the AI-adoption scenarios
+in Karger et al. 2026 (NBER w35046,
+<https://www.nber.org/papers/w35046>).
 
 ## What this version runs
 
@@ -22,23 +28,22 @@ A single 18-cell grid, hard-coded into the orchestrator:
 | Shock variant   | S, M, R                  | Karger Slow / Moderate / Rapid (Tables 19 / 39 of NBER w35046) |
 | Share mode      | R, F                     | R = reallocate (Karger), F = fixed labor-capital split |
 | Labor scenario  | S0, S2, S3               | Proportional, Compressive, Expansive |
-| Realization     | V1                       | Mechanical (all gains realized in-year) |
-| Retirement      | R1                       | Income-flow cascade (full slice realized) |
-| Asset base      | all_assets               | All wealth columns |
 
 Every run produces:
 
-1. The microsim counterfactual for each cell (× 3 decomposition
-   flavors: both, labor-only, capital-only).
+1. The microsim counterfactual for each cell, run in three
+   decomposition flavors — *both* (the full shock), *labor-only*
+   (Step A labor redistribution alone), and *capital-only* (Step B
+   capital allocation alone) — so the revenue change can be split into
+   labor, capital, and interaction components.
 2. The publishable workbook + figure suite + decomposition table.
 3. A timestamped log file at `logs/release_<timestamp>.log`.
 
-This is the v0.1.0 income-frame release. Alternative realization
-treatments (V2 / V3), retirement cascades (R1 / R2), labor-side AI
-exposure (S1), and asset bases (non_housing / productive_capital /
-taxable_capital_income) have all been removed from this branch so
-reviewers see only the published methodology. The full development
-history (including those code paths) is on the `main` branch.
+This is the v0.1.0 income-frame release. Future work will examine alternative
+assumptions regarding the realization of capital income, the treatment of 
+tax-preferred retirement income, and labor-side AI exposure metrics (left as S1), 
+among other potential improvements. The full development history includes early efforts 
+to work on these topics. 
 
 ## External dependencies
 
@@ -61,7 +66,12 @@ convention. The lockfile is pinned to R 4.4.2, matching the
 ### Tax microsimulation data (Budget Lab PUF + SCF, merged)
 
 Reproducers need access to the Budget Lab Tax-Data vintage (PUF +
-SCF, merged). External readers without PUF access can use the
+SCF, merged). Its provenance (2015 PUF → aged to the baseline year →
+SCF asset merge), the exact columns the pipeline requires, and the
+privacy constraint that keeps it out of the repo are documented in
+[`docs/data_requirements.md`](docs/data_requirements.md).
+
+External readers without PUF access can use the
 synthetic fixture below for I/O / schema smoke tests.
 
 Per-year tax-unit files at `tax_data/baseline/tax_units_<year>.csv`
@@ -97,6 +107,10 @@ Cloned out-of-tree. Upstream:
 https://github.com/Budget-Lab-Yale/Tax-Simulator. The release pipeline
 requires a resolvable Tax-Simulator working tree (set
 `TAX_SIMULATOR_DIR` or rely on the pinned default).
+
+All three patches below were re-verified against upstream `main`
+(`3108703`, 2026-05-29) on 2026-06-22 and remain required — none have
+been addressed upstream.
 
 Three local-fork patches are required (kept in the Tax-Simulator
 working tree, not part of upstream). Detailed diagnosis and the
@@ -203,25 +217,8 @@ terminal *and* to `logs/release_<timestamp>.log`.
 | `--overwrite` | Overwrite existing counterfactual scenario folders. |
 | `--log PATH` | Override the default log path. |
 
-There are no flags for variant / labor / realization / retirement /
-asset_base selection — the grid is fixed.
-
-### SLURM
-
-`slurm_run.sh` at the repo root is a single-job SBATCH driver for the
-18-cell grid (fits in 128 G / 8 CPUs / 18 hr). Set required env
-vars and submit:
-
-```bash
-export TAX_SIMULATOR_DIR=/path/to/Tax-Simulator
-export BLSMM_DIR=/path/to/Budget-Lab-Small-Macro-Model   # optional
-sbatch slurm_run.sh
-```
-
-Any extra flags are forwarded to the orchestrator
-(`Rscript code/00_ai_fiscal_sim.R ...`). The `module load` line in
-the script is Yale-Roberts-specific; adapt for your cluster.
-`scripts/` is gitignored for local ad-hoc wrappers.
+There are no flags for the scenario axes (variant / labor /
+realization / retirement / asset base) — the 18-cell grid is fixed.
 
 ### Outputs
 

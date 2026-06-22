@@ -18,6 +18,14 @@ as of 2026-05-26.** (The AI-Fiscal README cites different numbers
 because those refer to the *patched* local fork, where commenting out
 the two calls shifts subsequent lines.)
 
+**Re-verified 2026-06-22 against upstream `main` @ `3108703`
+(2026-05-29).** All three are still required — none have been
+addressed upstream. Minor line drift since the reference point: Issue 1's
+matrix multiply is now `time_burden.R:235` (was 234) and Issue 3's
+year-level site is now `src/sim/run.R:146` (was 142); call sites for
+Issues 1 and 2 (`src/sim/run.R:90` / `:93`) are unchanged, and no
+`MC_CORES` / `SLURM_CPUS_PER_TASK` awareness exists anywhere in `src/`.
+
 | # | Issue | Location | Severity | PR-ready? |
 |---|---|---|---|---|
 | 1 | `build_timeburden_table` segfaults under `--multicore scenario` | `src/sim/run.R:90` → `src/data/post_processing/time_burden.R:234` | Blocks parallel runs | No — root cause unverified |
@@ -163,3 +171,14 @@ genuinely ready to upstream as-is.
 - **Issue 1** → issue, not PR. Hand the maintainer the root-cause
   hypothesis (fork × multithreaded BLAS) and the exact crash site; the
   real fix needs the cluster + data to verify.
+
+## Filed upstream (2026-06-22)
+
+All three filed as issues on `Budget-Lab-Yale/Tax-Simulator`:
+
+- Issue 1 (timeburden segfault) → [#128](https://github.com/Budget-Lab-Yale/Tax-Simulator/issues/128)
+- Issue 2 (horizontal breaks) → [#129](https://github.com/Budget-Lab-Yale/Tax-Simulator/issues/129)
+- Issue 3 (mc.cores) → [#130](https://github.com/Budget-Lab-Yale/Tax-Simulator/issues/130)
+
+#129 and #130 offer to follow up with a PR if the maintainers pick a
+direction.
