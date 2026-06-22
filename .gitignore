@@ -17,6 +17,9 @@ data/tax_data
 data/matched/*
 !data/matched/.gitkeep
 
+# Local scratch area for ad-hoc inputs / one-off source workbooks.
+data/temp/
+
 # results/aggregates/: track only the canonical *_latest.xlsx bundles
 # (mirrored on every run by 08 and 09). Timestamp-vintaged xlsx and
 # the CSV/PDF artifacts are local archival and stay out of git to
