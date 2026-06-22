@@ -216,8 +216,8 @@ Tax-Simulator unconditionally `library(tidyverse)` and does some
 top-level assignments. Sourcing it in-process pollutes the
 orchestrator's global env and risks ggplot2 / scales version
 collisions. A clean subprocess avoids both. Tradeoff: subprocess
-overhead per run (~3s at startup), which is invisible against an
-18-hour pipeline.
+overhead per run (~3s at startup), which is invisible against a
+~10-minute pipeline (full grid, 8 cores).
 
 ## Testing
 

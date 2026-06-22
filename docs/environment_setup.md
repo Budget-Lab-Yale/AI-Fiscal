@@ -157,8 +157,10 @@ export MC_CORES="${SLURM_CPUS_PER_TASK:-8}"                       # Tax-Simulato
 
 ## Step 8 — submit
 
-The full 18-cell × 3-flavor grid is an ~18-hour, multi-GB job; submit
-it via SLURM rather than running it in a login session. The local
+The full 18-cell × 3-flavor grid runs in ~10 minutes on 8 cores
+(`--multicore scenario`, `MC_CORES=8`) but produces a multi-GB
+Tax-Simulator detail tree; submit it via SLURM rather than running it
+in a login session, both for the cores and the scratch space. The local
 driver lives at `slurm_run.sh` (gitignored — it is per-user / per-
 cluster and bundles Steps 1, 5, 7 + the submit). A minimal version:
 
@@ -167,7 +169,7 @@ cluster and bundles Steps 1, 5, 7 + the submit). A minimal version:
 #SBATCH --job-name=AI-Fiscal_release
 #SBATCH --output=<repo>/logs/sbatch_%j.out
 #SBATCH --error=<repo>/logs/sbatch_%j.err
-#SBATCH --time=18:00:00
+#SBATCH --time=01:00:00          # ~10 min actual; generous headroom
 #SBATCH --mem=128G
 #SBATCH --cpus-per-task=8
 

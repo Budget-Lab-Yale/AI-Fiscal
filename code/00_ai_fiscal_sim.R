@@ -332,7 +332,7 @@ build_ai_fiscal_runs <- function(specs,
 
 # Print a pre-flight banner with the resolved versions / paths the run
 # depends on, before any heavy work, so a misconfigured environment is
-# obvious up front rather than minutes into an 18-hour SLURM job. Every
+# obvious up front rather than partway into the Tax-Simulator run. Every
 # lookup is non-fatal: an unresolved value prints a marker and the run
 # proceeds to abort at the natural point with the proper error message.
 # `.git_short_rev` is provided by 00_utils.R (sourced first).
