@@ -71,7 +71,7 @@ Review waves 3–5 (guards, registry, test hardening):
   identity tolerances converted to relative form; helper announces
   real-vintage vs synthetic substrate. 132 PASS (was 95).
 
-## [0.1.0] — 2026-MM-DD
+## [0.1.0] — 2026-06-22
 
 Initial public release. Income-frame microsimulation of an AI-driven
 labor-to-capital income shift, built on the Budget Lab Tax-Simulator.
