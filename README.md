@@ -47,6 +47,14 @@ to work on these topics.
 
 ## External dependencies
 
+This project is deliberately not self-contained — the microdata, the
+Tax-Simulator engine and its patches, the package libraries, and the
+cluster job driver all live outside the repo. For an end-to-end
+cold-start checklist that assembles all of them (and the non-obvious
+gotchas),
+see [`docs/environment_setup.md`](docs/environment_setup.md). The
+subsections below cover each dependency individually.
+
 ### R environment
 
 R 4.4 or newer. Package versions are pinned via [`renv`](https://rstudio.github.io/renv/).
