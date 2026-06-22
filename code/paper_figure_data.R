@@ -44,6 +44,13 @@ suppressPackageStartupMessages({
   library(openxlsx)
 })
 
+# The YBL brand kit (colours, PAL_VARIANT, .fig_theme/.fig_save) lives in
+# 00_utils.R so the appendix charts here match the figure suite from
+# 10_figures.R. Sourcing utils alone keeps this post-processor light — it
+# does not pull in the whole figure pipeline. Idempotent (no top-level
+# side effects); harmless under the orchestrator, which sources it earlier.
+source("code/00_utils.R")
+
 # --------------------------------------------------------------------------
 # Config for the FRED-sourced appendix series (A1 / A2)
 # --------------------------------------------------------------------------
@@ -214,45 +221,8 @@ cli_or_message <- function(msg) {
 # Datawrapper exhibits. Emits a full (titled) and a _clean (paper-ready)
 # PNG, mirroring the 10_figures.R convention.
 
-# Palette subset, matching code/10_figures.R.
-.PAL <- list(navy = "#101f5b", blue = "#286dc0", cyan = "#18a1cd",
-             orange = "#fa8c00", gray = "#4a4a4a", text = "#222222",
-             caption = "#666666", grid = "#e8e8e8")
-
-.paper_theme <- function() {
-  ggplot2::theme_minimal(base_size = 11) +
-    ggplot2::theme(
-      plot.title          = ggplot2::element_text(face = "bold", size = 14,
-                                                   color = .PAL$text,
-                                                   margin = ggplot2::margin(b = 4)),
-      plot.subtitle       = ggplot2::element_text(size = 11, color = .PAL$text,
-                                                   margin = ggplot2::margin(b = 10)),
-      plot.caption        = ggplot2::element_text(size = 9, color = .PAL$caption,
-                                                   face = "italic", hjust = 0,
-                                                   margin = ggplot2::margin(t = 8)),
-      plot.title.position   = "plot",
-      plot.caption.position = "plot",
-      axis.title          = ggplot2::element_text(size = 10, color = .PAL$text),
-      axis.text           = ggplot2::element_text(size = 9, color = "#555555"),
-      axis.ticks          = ggplot2::element_blank(),
-      panel.grid.minor    = ggplot2::element_blank(),
-      panel.grid.major.x  = ggplot2::element_blank(),
-      panel.grid.major.y  = ggplot2::element_line(color = .PAL$grid, linewidth = 0.3),
-      plot.margin         = ggplot2::margin(12, 16, 12, 12)
-    )
-}
-
-# Save a full (titled) PNG and a _clean (no title/subtitle/caption) PNG.
-.save_paper_png <- function(plot, out_dir, slug, year, w = 7.6, h = 4.8) {
-  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  full  <- file.path(out_dir, sprintf("%s_%d.png", slug, year))
-  clean <- file.path(out_dir, sprintf("%s_%d_clean.png", slug, year))
-  ggplot2::ggsave(full, plot, width = w, height = h, dpi = 200, bg = "white")
-  ggplot2::ggsave(clean,
-                  plot + ggplot2::labs(title = NULL, subtitle = NULL, caption = NULL),
-                  width = w, height = h, dpi = 200, bg = "white")
-  c(full = full, clean = clean)
-}
+# Palette / theme / PNG-save come from the shared brand kit in 00_utils.R
+# (YBL_* colours, PAL_VARIANT, .fig_theme(), .fig_save()).
 
 # NBER recession bands as decimal-year intervals, from FRED USREC (monthly
 # 0/1). Returns data.frame(start, end) or NULL (offline / unavailable).
@@ -292,7 +262,7 @@ cli_or_message <- function(msg) {
     stringsAsFactors = FALSE
   )
   refs$label <- factor(refs$label, levels = c("Slow", "Moderate", "Rapid"))
-  pal <- c(Slow = .PAL$blue, Moderate = .PAL$cyan, Rapid = .PAL$orange)
+  pal <- PAL_VARIANT   # shared sequential variant scale (Slow -> Rapid)
   list(
     hline = ggplot2::geom_hline(data = refs,
                                 ggplot2::aes(yintercept = value, color = label),
@@ -306,26 +276,26 @@ cli_or_message <- function(msg) {
   )
 }
 
-.render_gdp_growth <- function(df, year, out_dir) {
+.render_gdp_growth <- function(df, year, out_dir, rec_bands = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE) ||
       !requireNamespace("scales", quietly = TRUE)) return(NULL)
   hist <- df[!is.na(df[["GDP Growth"]]),     c("Year", "GDP Growth")];     names(hist) <- c("year", "value")
   proj <- df[!is.na(df[["CBO Projection"]]), c("Year", "CBO Projection")]; names(proj) <- c("year", "value")
   xmin <- min(hist$year); xmax <- max(df$Year)
-  rec  <- .clamp_bands(.fred_recession_bands(), xmin)
+  rec  <- .clamp_bands(rec_bands, xmin)
   refl <- .scenario_ref_layers(df, c("Slow (2030)", "Moderate (2030)", "Rapid (2030)"), xmax)
 
   p <- ggplot2::ggplot()
   if (!is.null(rec)) {
     p <- p + ggplot2::geom_rect(data = rec,
                                 ggplot2::aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf),
-                                fill = .PAL$gray, alpha = 0.10, inherit.aes = FALSE)
+                                fill = YBL_GRAY, alpha = 0.10, inherit.aes = FALSE)
   }
   p <- p + refl$hline +
     ggplot2::geom_line(data = hist, ggplot2::aes(year, value),
-                       color = .PAL$navy, linewidth = 0.9) +
+                       color = YBL_NAVY, linewidth = 0.9) +
     ggplot2::geom_line(data = proj, ggplot2::aes(year, value),
-                       color = .PAL$navy, linetype = "dashed", linewidth = 0.8) +
+                       color = YBL_NAVY, linetype = "dashed", linewidth = 0.8) +
     refl$text + refl$scale +
     ggplot2::scale_y_continuous(labels = scales::label_percent(accuracy = 1)) +
     ggplot2::labs(
@@ -335,27 +305,27 @@ cli_or_message <- function(msg) {
       caption  = sprintf("Source: BEA/BLS via FRED (GDPC1), CBO 2025 baseline, NBER recessions; The Budget Lab at Yale. FY %d.", year)
     ) +
     ggplot2::coord_cartesian(xlim = c(xmin, xmax)) +
-    .paper_theme()
-  .save_paper_png(p, out_dir, "A1_gdp_growth", year)
+    .fig_theme()
+  .fig_save(p, out_dir, "A1_gdp_growth", year, w = 7.6, h = 4.8)
 }
 
-.render_labor_share <- function(df, year, out_dir) {
+.render_labor_share <- function(df, year, out_dir, rec_bands = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE) ||
       !requireNamespace("scales", quietly = TRUE)) return(NULL)
   hist <- df[!is.na(df[["Labor Share"]]), c("Year", "Labor Share")]; names(hist) <- c("year", "value")
   xmin <- min(hist$year); xmax <- max(df$Year)
-  rec  <- .clamp_bands(.fred_recession_bands(), xmin)
+  rec  <- .clamp_bands(rec_bands, xmin)
   refl <- .scenario_ref_layers(df, c("Slow (2030)", "Moderate (2030)", "Rapid (2030)"), xmax)
 
   p <- ggplot2::ggplot()
   if (!is.null(rec)) {
     p <- p + ggplot2::geom_rect(data = rec,
                                 ggplot2::aes(xmin = start, xmax = end, ymin = -Inf, ymax = Inf),
-                                fill = .PAL$gray, alpha = 0.10, inherit.aes = FALSE)
+                                fill = YBL_GRAY, alpha = 0.10, inherit.aes = FALSE)
   }
   p <- p + refl$hline +
     ggplot2::geom_line(data = hist, ggplot2::aes(year, value),
-                       color = .PAL$navy, linewidth = 0.9) +
+                       color = YBL_NAVY, linewidth = 0.9) +
     refl$text + refl$scale +
     ggplot2::scale_y_continuous(labels = scales::label_percent(accuracy = 1)) +
     ggplot2::labs(
@@ -365,8 +335,8 @@ cli_or_message <- function(msg) {
       caption  = sprintf("Source: BLS via FRED (PRS85006173), NBER recessions; The Budget Lab at Yale. FY %d.", year)
     ) +
     ggplot2::coord_cartesian(xlim = c(xmin, xmax)) +
-    .paper_theme()
-  .save_paper_png(p, out_dir, "A2_labor_share", year)
+    .fig_theme()
+  .fig_save(p, out_dir, "A2_labor_share", year, w = 7.6, h = 4.8)
 }
 
 # --------------------------------------------------------------------------
@@ -486,6 +456,12 @@ build_paper_figure_data <- function(
   pub_sheets <- openxlsx::getSheetNames(pub_xlsx)
   params     <- if (pull_fred && any(vapply(.PAPER_MANIFEST, function(e) e$kind == "fred", logical(1)))) {
     .read_scenario_params()
+  } else NULL
+  # NBER recession bands are shared by every FRED render (A1, A2); fetch the
+  # USREC series once here rather than re-downloading it inside each render.
+  rec_bands  <- if (pull_fred && any(vapply(.PAPER_MANIFEST,
+                    function(e) !is.null(e$render), logical(1)))) {
+    .fred_recession_bands()
   } else NULL
 
   wb <- openxlsx::createWorkbook()
@@ -607,7 +583,7 @@ build_paper_figure_data <- function(
         n_ok <- n_ok + 1L
         # Render the matching PNG (full + _clean), mirroring 10_figures.R.
         if (!is.null(e$render)) {
-          pngs <- tryCatch(e$render(df, year, out_dir), error = function(err) {
+          pngs <- tryCatch(e$render(df, year, out_dir, rec_bands), error = function(err) {
             cli_or_message(sprintf("%s: PNG render failed: %s", e$tab, conditionMessage(err)))
             NULL
           })

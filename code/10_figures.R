@@ -35,27 +35,11 @@ source("code/09_tables_figures.R")
 # ---------------------------------------------------------------------
 # Palette + theme
 # ---------------------------------------------------------------------
-
-YBL_NAVY    <- "#101f5b"
-YBL_BLUE    <- "#286dc0"
-YBL_LIGHT   <- "#63aaff"
-YBL_PALE    <- "#bcd4ea"
-YBL_CYAN    <- "#18a1cd"
-YBL_ORANGE  <- "#fa8c00"
-YBL_RED     <- "#c5371e"
-YBL_GRAY    <- "#4a4a4a"
-YBL_MUTED   <- "#72a4d7"
-YBL_TEXT    <- "#222222"
-YBL_CAPTION <- "#666666"
-YBL_GRID    <- "#e8e8e8"
-
-# Variant on a sequential ramp (Slow=light → Rapid=dark). Keyed by the
-# *_label factor levels so scale_*_manual() positions colours by name,
-# not by position — reordering the factor in .attach_axis_labels won't
-# silently recolour the chart.
-PAL_VARIANT     <- c(Slow     = YBL_PALE,
-                     Moderate = YBL_BLUE,
-                     Rapid    = YBL_NAVY)
+# The YBL colour constants (YBL_NAVY etc.), the sequential PAL_VARIANT
+# scale, and the shared .fig_theme() / .fig_caption() / .strip_for_paper()
+# / .fig_save() helpers live in code/00_utils.R (sourced above) so the
+# appendix charts in paper_figure_data.R reuse the same brand kit. The
+# figure-specific semantic scales below stay here.
 
 # Labor map: cool for compressive (pulls toward mean), warm for
 # expansive (pulls apart), neutral for proportional. The AI-exposure
@@ -107,48 +91,6 @@ INSTRUMENT_LABEL <- c(
   macro_cit_delta      = "Macro CIT"
 )
 
-.fig_theme <- function() {
-  if (!requireNamespace("ggplot2", quietly = TRUE)) {
-    cli::cli_abort("ggplot2 is required for code/10_figures.R.")
-  }
-  ggplot2::theme_minimal(base_size = 11) +
-    ggplot2::theme(
-      plot.title          = ggplot2::element_text(
-        face = "bold", size = 14, color = YBL_TEXT,
-        margin = ggplot2::margin(b = 4)
-      ),
-      plot.subtitle       = ggplot2::element_text(
-        size = 11, color = YBL_TEXT,
-        margin = ggplot2::margin(b = 10)
-      ),
-      plot.caption        = ggplot2::element_text(
-        size = 9, color = YBL_CAPTION, face = "italic", hjust = 0,
-        margin = ggplot2::margin(t = 8)
-      ),
-      plot.title.position   = "plot",
-      plot.caption.position = "plot",
-      axis.title          = ggplot2::element_text(size = 10, color = YBL_TEXT),
-      axis.text           = ggplot2::element_text(size = 9,  color = "#555555"),
-      axis.ticks          = ggplot2::element_blank(),
-      panel.grid.minor    = ggplot2::element_blank(),
-      panel.grid.major.x  = ggplot2::element_blank(),
-      panel.grid.major.y  = ggplot2::element_line(color = YBL_GRID, linewidth = 0.3),
-      panel.spacing       = ggplot2::unit(1.1, "lines"),
-      strip.text          = ggplot2::element_text(
-        face = "bold", size = 10, color = YBL_TEXT,
-        margin = ggplot2::margin(b = 4)
-      ),
-      strip.background    = ggplot2::element_blank(),
-      legend.position     = "top",
-      legend.justification = "left",
-      legend.title        = ggplot2::element_text(size = 10, color = YBL_TEXT),
-      legend.text         = ggplot2::element_text(size = 9,  color = YBL_TEXT),
-      legend.margin       = ggplot2::margin(0, 0, 0, 0),
-      legend.box.margin   = ggplot2::margin(b = 4),
-      plot.margin         = ggplot2::margin(12, 16, 12, 12)
-    )
-}
-
 .dollar_B <- function(x) {
   sign  <- ifelse(x < 0, "-", "")
   paste0(sign, "$", formatC(abs(x), format = "f", big.mark = ",", digits = 0), "B")
@@ -172,52 +114,6 @@ INSTRUMENT_LABEL <- c(
       strip.background.x = ggplot2::element_blank()
     )
   }
-}
-
-.fig_caption <- function(year, extra = NULL) {
-  sprintf("Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY %d.",
-          year)
-}
-
-# Strip title / subtitle / caption from a ggplot so it can be dropped
-# into a paper where those live in the body text. Kept as a helper so
-# .fig_save can emit both versions from one render input.
-#
-# Figures that carry equation-style axis labels in their full version
-# can attach plain-prose overrides via attr(p, "clean_x") and
-# attr(p, "clean_y"); .strip_for_paper applies those to the clean
-# render so paper exhibits read without LaTeX-y notation. Setting the
-# attribute to NA explicitly drops the axis label in the clean render
-# (use when no replacement makes sense).
-.strip_for_paper <- function(plot) {
-  p <- plot +
-    ggplot2::labs(title = NULL, subtitle = NULL, caption = NULL) +
-    ggplot2::theme(plot.title    = ggplot2::element_blank(),
-                   plot.subtitle = ggplot2::element_blank(),
-                   plot.caption  = ggplot2::element_blank())
-  cx <- attr(plot, "clean_x")
-  cy <- attr(plot, "clean_y")
-  if (!is.null(cx)) p <- p + ggplot2::xlab(if (is.na(cx)) NULL else cx)
-  if (!is.null(cy)) p <- p + ggplot2::ylab(if (is.na(cy)) NULL else cy)
-  p
-}
-
-# Save a ggplot as PNG (web). PDF outputs were dropped — every consumer
-# rasterises anyway, and the PDFs doubled the diff size on every run.
-# Emits two PNGs per figure: the full version (title / subtitle /
-# caption present, for review) and a "_clean" version with those text
-# elements stripped (for embedding in a paper that supplies its own
-# title and notes). Both renders share the same dimensions; the clean
-# version's panel naturally expands to fill the freed space.
-.fig_save <- function(plot, out_dir, slug, year, w = 6.5, h = 4.5) {
-  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  full_fp  <- file.path(out_dir, sprintf("%s_%d.png", slug, year))
-  clean_fp <- file.path(out_dir, sprintf("%s_%d_clean.png", slug, year))
-  ggplot2::ggsave(full_fp,  plot,
-                  width = w, height = h, dpi = 200, bg = "white")
-  ggplot2::ggsave(clean_fp, .strip_for_paper(plot),
-                  width = w, height = h, dpi = 200, bg = "white")
-  invisible(c(full = full_fp, clean = clean_fp))
 }
 
 # Wrap a fig_*() return value (list(plot, data), or NULL when the function
@@ -859,12 +755,7 @@ fig_share_mode_reallocation_delta <- function(wide, year) {
 # at share_mode=R.
 fig_atr_decile_one <- function(atr_d, axes_row, year) {
   if (!nrow(atr_d)) return(NULL)
-  d <- copy(atr_d)
-  d[, atr_base   := tax_base_d_B / pretax_base_d_B]
-  d[, atr_cf_std := tax_cf_d_B   / pretax_cf_d_B]
-  d[!is.finite(atr_base),   atr_base   := NA_real_]
-  d[!is.finite(atr_cf_std), atr_cf_std := NA_real_]
-  d[, dATR := atr_cf_std - atr_base]
+  d <- .compute_dATR_std(atr_d)   # same ΔATR definition as figs 14b/14c
 
   plot_d <- d[, .(decile, dATR)]
   plot_d[, decile := factor(decile, levels = seq_len(10))]
