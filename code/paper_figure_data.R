@@ -376,7 +376,25 @@ cli_or_message <- function(msg) {
   list(tab = "F4", caption = "Figure 4. Federal revenue grows non-linearly with the size of the GDP shock",
        desc = "Revenue vs. total factor income growth",
        units = "Change in federal revenue (y-axis) plotted against total factor income growth (x-axis), FY 2030, Billions USD",
-       kind = "fig", source = "11_revenue_vs_gross_factor", builder = NULL, cite = NA_character_, note = NA_character_),
+       kind = "fig", source = "11_revenue_vs_gross_factor", builder = NULL, cite = NA_character_, note = NA_character_,
+       # Keep only the additive revenue decomposition (microsim + macro CIT =
+       # total) and the gross factor-income expansion; drop the per-instrument
+       # and per-channel detail. .apply_scenario_name then turns scenario_id
+       # into the readable Scenario column.
+       postprocess = function(df) {
+         sel <- c("scenario_id", "total", "macro_cit_delta",
+                  "total_with_macro_cit", "delta_factor_gross")
+         miss <- setdiff(sel, names(df))
+         if (length(miss)) {
+           stop(sprintf("F4 postprocess: source sheet missing columns: %s",
+                        paste(miss, collapse = ", ")))
+         }
+         out <- df[, sel]
+         names(out) <- c("scenario_id", "Revenue (Microsimulation)",
+                         "Revenue (Macro CIT)", "Change in Total Revenue",
+                         "Gross Factor Income Expansion")
+         out
+       }),
   list(tab = "F5", caption = "Figure 5. Federal revenue is higher in all scenarios when capital-labor shares are held fixed.",
        desc = "Revenue under fixed vs. reallocated factor shares",
        units = "Change in federal revenue, including corporate tax wedge, FY 2030, Billions USD",
@@ -433,6 +451,64 @@ cli_or_message <- function(msg) {
   m[is.na(m)] <- ""
   w <- apply(m, 2L, function(col) max(nchar(col), 0L))
   pmin(pmax(w + 2L, min_w), max_w)
+}
+
+# --------------------------------------------------------------------------
+# Readable scenario labels for the public-facing workbook
+#
+# Source figure/table grids identify each row by the canonical scenario_id
+# (e.g. "ai_M_R_S0_V1") alongside the raw axis code/label columns. For the
+# public workbook we collapse all of that into a single readable "Scenario"
+# column. The wording is built from the canonical axis registry in
+# 00_utils.R (.AXIS_VARIANTS / .AXIS_LABOR / .scenario_id_regex) so it stays
+# in sync with the rest of the pipeline. Realization is always "Mechanical"
+# in this release, so it is omitted as non-informative.
+# --------------------------------------------------------------------------
+
+# Meta rows (Title / Subtitle / Notes / blank) the figure-data sheets carry
+# before the data header; 10_figures.R writes the header on the next row.
+.FIG_META_ROWS <- 4L
+
+# Scenario-axis identifier columns collapsed into the single "Scenario"
+# column. Everything else on a grid (data dimensions such as `component`,
+# `instrument`, `decile`, and the value columns) is preserved as-is.
+.SCEN_AXIS_COLS <- c(
+  "scenario_id", "variant", "variant_label", "share_mode", "share_mode_label",
+  "labor", "labor_label", "realization", "realization_label"
+)
+
+# Verbose share-mode wording for the public label (the registry's terse
+# "Reallocate" / "Fixed share" read awkwardly inline).
+.SCEN_SHARE_VERBOSE <- c(R = "Reallocated shares", F = "Fixed shares")
+
+# Vectorized scenario_id -> readable name. Baseline rows -> "Baseline"; any
+# id that doesn't match the canonical release pattern is returned verbatim
+# (a visible signal rather than a silent NA).
+.scenario_display_name <- function(ids) {
+  rx <- .scenario_id_regex()
+  vapply(as.character(ids), function(id) {
+    if (is.na(id) || !nzchar(id)) return(NA_character_)
+    if (grepl("baseline", id, ignore.case = TRUE)) return("Baseline")
+    m <- regmatches(id, regexec(rx, id))[[1]]
+    if (length(m) != 5L) return(id)
+    paste(paste(.AXIS_VARIANTS[[m[2]]], "AI"),
+          .SCEN_SHARE_VERBOSE[[m[3]]],
+          paste(.AXIS_LABOR[[m[4]]], "labor"),
+          sep = " · ")
+  }, character(1), USE.NAMES = FALSE)
+}
+
+# Replace the scenario-axis identifier columns with a single readable
+# "Scenario" column in first position. No-op on grids without a scenario_id
+# column (the FRED appendix charts, the transposed Table 1).
+.apply_scenario_name <- function(df) {
+  if (is.null(df) || !is.data.frame(df) || !"scenario_id" %in% names(df)) {
+    return(df)
+  }
+  scen <- .scenario_display_name(df[["scenario_id"]])
+  keep <- setdiff(names(df), .SCEN_AXIS_COLS)
+  data.frame(Scenario = scen, df[, keep, drop = FALSE],
+             check.names = FALSE, stringsAsFactors = FALSE)
 }
 
 build_paper_figure_data <- function(
@@ -532,24 +608,19 @@ build_paper_figure_data <- function(
                             startRow = body_row, startCol = 1)
         next
       }
-      # Copy ONLY the data grid from the figure-data sheet. Those sheets
-      # carry their own 3-row Title/Subtitle/Notes meta block + a blank row
-      # before the data header (10_figures.R writes data_start = 5L). Drop
-      # that block so we don't stack a second header under ours — this sheet
-      # already owns the single header above.
-      block <- openxlsx::read.xlsx(fig_xlsx, sheet = e$source,
-                                   colNames = FALSE, skipEmptyRows = FALSE)
-      .FIG_META_ROWS <- 4L
-      if (nrow(block) > .FIG_META_ROWS) {
-        block <- block[-seq_len(.FIG_META_ROWS), , drop = FALSE]
-      }
-      openxlsx::writeData(wb, e$tab, block, startRow = body_row, startCol = 1,
-                          colNames = FALSE)
-      # Style the (now first) row of the grid as a header, matching the
-      # tbl/fred sheets.
-      openxlsx::addStyle(wb, e$tab, hdr_st, rows = body_row,
-                         cols = seq_len(ncol(block)), gridExpand = TRUE)
-      col_widths <- .body_col_widths(block)   # block already includes the header row
+      # Read the data grid from the figure-data sheet as a typed data frame.
+      # Those sheets carry their own Title/Subtitle/Notes meta block + a
+      # blank row before the data header (.FIG_META_ROWS rows), then the
+      # header. Reading from the header row (vs. a raw character block) lets
+      # us re-label the grid and preserves numeric cells as numbers. This
+      # sheet already owns the single header block above.
+      df <- openxlsx::read.xlsx(fig_xlsx, sheet = e$source,
+                                startRow = .FIG_META_ROWS + 1L, colNames = TRUE)
+      if (!is.null(e$postprocess)) df <- e$postprocess(df)
+      df <- .apply_scenario_name(df)
+      openxlsx::writeData(wb, e$tab, df, startRow = body_row, startCol = 1,
+                          headerStyle = hdr_st)
+      col_widths <- .body_col_widths(rbind(names(df), as.matrix(df)))
       n_ok <- n_ok + 1L
     } else if (e$kind == "tbl") {
       if (!e$source %in% pub_sheets) {
@@ -560,6 +631,8 @@ build_paper_figure_data <- function(
         next
       }
       df <- openxlsx::read.xlsx(pub_xlsx, sheet = e$source)
+      if (!is.null(e$postprocess)) df <- e$postprocess(df)
+      df <- .apply_scenario_name(df)
       openxlsx::writeData(wb, e$tab, df, startRow = body_row, startCol = 1,
                           headerStyle = hdr_st)
       col_widths <- .body_col_widths(rbind(names(df), as.matrix(df)))
