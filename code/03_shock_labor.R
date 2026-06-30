@@ -46,10 +46,33 @@ shock_labor <- function(dt, params, scenario) {
     }
   }
 
+  # Shared precondition for every scenario: negatives/zeros are held at
+  # baseline and the positive subset absorbs the full aggregate adjustment, so
+  # the positive-subset target net of negative-baseline mass must be positive
+  # and there must be a positive subset to carry it. Centralizing the guard here
+  # keeps S0 (proportional) and S2/S3 (log-affine) from diverging -- both fail
+  # cleanly rather than via an opaque uniroot error or a silent sign flip. The
+  # expansionary release grid keeps y1_l_pos comfortably positive; a sufficiently
+  # contractionary g_l would otherwise violate it.
+  pos <- dt$y_l > 0
+  neg <- dt$y_l < 0
+  if (!any(pos)) {
+    cli::cli_abort("No positive labor income in sample; labor shock undefined.")
+  }
+  neg_baseline <- sum(dt$weight[neg] * dt$y_l[neg])
+  y1_l_pos     <- y1_l - neg_baseline
+  if (!is.finite(y1_l_pos) || y1_l_pos <= 0) {
+    cli::cli_abort(c(
+      "Positive-subset labor target must be positive and finite (got {.val {y1_l_pos}}).",
+      x = "y1_l target = {.val {y1_l}}, negative-baseline mass = {.val {neg_baseline}}.",
+      i = "The labor-income target net of negative-baseline mass must stay above zero; a sufficiently contractionary {.field g_l} violates this."
+    ))
+  }
+
   y_l1 <- switch(scenario,
-    S0 = .shock_proportional(dt, y1_l),
-    S2 = .shock_log_affine(dt, y1_l, lambda = lambda_s2),
-    S3 = .shock_log_affine(dt, y1_l, lambda = lambda_s3),
+    S0 = .shock_proportional(dt, pos, y1_l_pos),
+    S2 = .shock_log_affine(dt, pos, y1_l_pos, lambda = lambda_s2),
+    S3 = .shock_log_affine(dt, pos, y1_l_pos, lambda = lambda_s3),
     cli::cli_abort(c(
       "Unknown {.arg labor_scenario}: {.val {scenario}}.",
       i = "Choose one of {.val S0}, {.val S2}, {.val S3}."
@@ -73,48 +96,25 @@ shock_labor <- function(dt, params, scenario) {
   out
 }
 
-.shock_proportional <- function(dt, y1_l) {
-  pos <- dt$y_l > 0
-  neg <- dt$y_l < 0
-  if (!any(pos)) {
-    cli::cli_abort("No positive labor income in sample; proportional scale undefined.")
-  }
-  y0_l_pos     <- sum(dt$weight[pos] * dt$y_l[pos])
-  neg_baseline <- sum(dt$weight[neg] * dt$y_l[neg])
-  rho_pos      <- (y1_l - neg_baseline) / y0_l_pos
-  # rho_pos <= 0 means the post-shock target can't be reached by scaling the
-  # positive subset upward without flipping signs (the adjustment net of
-  # negative-baseline mass exceeds the positive base). Mirrors the lambda <= 0
-  # abort on the S2/S3 path -- expansionary release cells keep rho_pos near 1,
-  # but a contractionary target would otherwise silently negate every earner.
-  if (!is.finite(rho_pos) || rho_pos <= 0) {
-    cli::cli_abort(c(
-      "Proportional scale rho_pos must be positive and finite (got {.val {rho_pos}}).",
-      x = "y1_l target = {.val {y1_l}}, negative-baseline mass = {.val {neg_baseline}}, positive base = {.val {y0_l_pos}}.",
-      i = "The labor-income target net of negative-baseline mass must stay above zero."
-    ))
-  }
-  y_l1 <- dt$y_l
+.shock_proportional <- function(dt, pos, y1_l_pos) {
+  # Positive subset scales by rho_pos = y1_l_pos / Y0^L_pos$. shock_labor() has
+  # already guaranteed any(pos) and y1_l_pos > 0, and Y0^L_pos$ > 0 by
+  # construction, so rho_pos is positive and finite.
+  y0_l_pos  <- sum(dt$weight[pos] * dt$y_l[pos])
+  rho_pos   <- y1_l_pos / y0_l_pos
+  y_l1      <- dt$y_l
   y_l1[pos] <- rho_pos * dt$y_l[pos]
   y_l1
 }
 
-.shock_log_affine <- function(dt, y1_l, lambda) {
-  pos <- dt$y_l > 0
-  if (!any(pos)) {
-    cli::cli_abort("No positive labor income in sample; log-affine transform undefined.")
-  }
-
+.shock_log_affine <- function(dt, pos, y1_l_pos, lambda) {
+  # any(pos) and y1_l_pos > 0 are guaranteed by shock_labor(); the latter keeps
+  # agg_residual sign-changing so uniroot resolves and the renormalization scale
+  # stays positive.
   w   <- dt$weight[pos]
   L   <- dt$y_l[pos]
   ln  <- log(L)
   mu0 <- sum(w * ln) / sum(w)
-
-  # Hold negative- and zero-baseline labor at baseline; the positive subset
-  # absorbs the full aggregate adjustment.
-  neg <- dt$y_l < 0
-  neg_baseline <- sum(dt$weight[neg] * dt$y_l[neg])
-  y1_l_pos <- y1_l - neg_baseline
 
   agg_residual <- function(mu1) {
     sum(w * exp(mu1 + lambda * (ln - mu0))) - y1_l_pos
