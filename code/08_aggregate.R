@@ -574,7 +574,7 @@ build_atr_decile <- function(output_root, runscript_path, year,
       "Reduces labor-income inequality. Rationale: AI commoditizes high-skill premia (top wages pulled toward mean).",
       "Leaves labor-income inequality unchanged.",
       "Increases labor-income inequality. Rationale: AI super-charges top earners (winner-take-most).",
-      "Publishable default: K0 is built from the on-1040 realized base, so the baseline realization rate is already implicit in X."
+      "Publishable default: Y0^K is built from the on-1040 realized base, so the baseline realization rate is already implicit in X."
     )
   )
   # Guide rows are hand-written (prose per row, presentational order);

@@ -76,9 +76,24 @@ shock_labor <- function(dt, params, scenario) {
 .shock_proportional <- function(dt, y1_l) {
   pos <- dt$y_l > 0
   neg <- dt$y_l < 0
+  if (!any(pos)) {
+    cli::cli_abort("No positive labor income in sample; proportional scale undefined.")
+  }
   y0_l_pos     <- sum(dt$weight[pos] * dt$y_l[pos])
   neg_baseline <- sum(dt$weight[neg] * dt$y_l[neg])
   rho_pos      <- (y1_l - neg_baseline) / y0_l_pos
+  # rho_pos <= 0 means the post-shock target can't be reached by scaling the
+  # positive subset upward without flipping signs (the adjustment net of
+  # negative-baseline mass exceeds the positive base). Mirrors the lambda <= 0
+  # abort on the S2/S3 path -- expansionary release cells keep rho_pos near 1,
+  # but a contractionary target would otherwise silently negate every earner.
+  if (!is.finite(rho_pos) || rho_pos <= 0) {
+    cli::cli_abort(c(
+      "Proportional scale rho_pos must be positive and finite (got {.val {rho_pos}}).",
+      x = "y1_l target = {.val {y1_l}}, negative-baseline mass = {.val {neg_baseline}}, positive base = {.val {y0_l_pos}}.",
+      i = "The labor-income target net of negative-baseline mass must stay above zero."
+    ))
+  }
   y_l1 <- dt$y_l
   y_l1[pos] <- rho_pos * dt$y_l[pos]
   y_l1
