@@ -10,7 +10,7 @@ paper — they are flagged inline.*
 ## The question
 
 Step A's S2/S3 scenarios rescale the standard deviation of log labor
-income by `σ_post / σ_pre = 1 ± k · g_y`. We've pinned `k = 1.0` as a
+income by a factor `λ = σ_post / σ_pre = 1 ± k · g_y`. We've pinned `k = 1.0` as a
 placeholder — the literal "proportional-to-g_y" mapping the user's
 intuition called for. What value of k is defensible, and what range
 should we sweep as sensitivity?
@@ -22,8 +22,8 @@ Under the release config's 5-yr cumulative `g_y ∈ {0.59%, 3.58%,
 in `02_params.R` from `r_ai_annual = {2.0%, 2.6%, 3.3%}` and the CBO
 baseline path; Slow ≈ baseline, hence the small bump), at `k = 1`:
 
-- S3 σ-factor (1 + k·g_y):   1.006 / 1.036 / 1.072   (log-wage dispersion up to ~7%)
-- S2 σ-factor (1 − k·g_y):   0.994 / 0.964 / 0.928
+- S3 λ-factor (1 + k·g_y):   1.006 / 1.036 / 1.072   (log-wage dispersion up to ~7%)
+- S2 λ-factor (1 − k·g_y):   0.994 / 0.964 / 0.928
 
 The dispersion bite is therefore modest under the released variants —
 material only for the Rapid variant. The transformation is
@@ -96,7 +96,7 @@ estimate if the number exists.**
   `k` is increasing in `g_y`. We've assumed constant k. Theoretical
   defense possible but not free; defer unless Karger or A-R make it
   central.
-- **Dispersion measure choice.** Current σ is on log YiL on the
+- **Dispersion measure choice.** Current σ is on log y_l on the
   positive subset. Alternatives (variance of log income including
   zeros, P90/P10, top 1% share) could imply different k's. We pick
   σ(log w) for tractability of the log-affine transform; flag the

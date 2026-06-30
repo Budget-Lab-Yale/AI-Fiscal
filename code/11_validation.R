@@ -75,10 +75,10 @@ compute_aggregates <- function(dt) {
     pensions_soi_2022             = wsum(dt$txbl_pens_dist),
     ira_distributions_soi_2022    = wsum(dt$txbl_ira_dist),
 
-    # Pipeline-derived L0 / K0 / Y0 (after passthrough split)
-    L0_data                       = wsum(dt$YiL),
-    K0_data                       = wsum(dt$YiK),
-    Y0_data                       = wsum(dt$YiL + dt$YiK)
+    # Pipeline-derived Y0^L / Y0^K / Y0 (after passthrough split)
+    y0_l_data                     = wsum(dt$y_l),
+    y0_k_data                     = wsum(dt$y_k),
+    y0_data                       = wsum(dt$y_l + dt$y_k)
   )
 }
 
@@ -110,14 +110,14 @@ compute_top_shares <- function(dt) {
 
   list(
     top1_wages              = weighted_top_share(dt$wages,         dt$weight, 0.01),
-    top1_YiL                = weighted_top_share(dt$YiL,           dt$weight, 0.01),
-    top1_YiK                = weighted_top_share(dt$YiK,           dt$weight, 0.01),
+    top1_y_l                = weighted_top_share(dt$y_l,           dt$weight, 0.01),
+    top1_y_k                = weighted_top_share(dt$y_k,           dt$weight, 0.01),
     top1_equities           = weighted_top_share(dt$equities,      dt$weight, 0.01),
     top1_pass_throughs      = weighted_top_share(dt$pass_throughs, dt$weight, 0.01),
     top1_retirement         = weighted_top_share(dt$retirement,    dt$weight, 0.01),
     top1_net_worth_proxy    = weighted_top_share(net_worth,        dt$weight, 0.01),
     top10_wages             = weighted_top_share(dt$wages,         dt$weight, 0.10),
-    top10_YiK               = weighted_top_share(dt$YiK,           dt$weight, 0.10),
+    top10_y_k               = weighted_top_share(dt$y_k,           dt$weight, 0.10),
     top10_equities          = weighted_top_share(dt$equities,      dt$weight, 0.10),
     top10_net_worth_proxy   = weighted_top_share(net_worth,        dt$weight, 0.10)
   )
@@ -357,12 +357,12 @@ run_validation <- function(year = NULL, receipts = NULL, tol = 0.10) {
   print_asset_aggregates(asset_agg)
 
   section("7. Macro K/Y diagnostic")
-  L0d <- agg$L0_data; K0d <- agg$K0_data; Y0d <- agg$Y0_data
-  cat(sprintf("  L0$ = %s\n", fmt_T(L0d)))
-  cat(sprintf("  K0$ = %s\n", fmt_T(K0d)))
-  cat(sprintf("  Y0$ = %s\n", fmt_T(Y0d)))
-  cat(sprintf("  data K0/Y0 = %.4f   param 1-L0 = %.4f   diff = %+5.2f pp\n",
-              K0d / Y0d, params$K0, 100 * (K0d / Y0d - params$K0)))
+  y0_l <- agg$y0_l_data; y0_k <- agg$y0_k_data; y0 <- agg$y0_data
+  cat(sprintf("  Y0^L$ = %s\n", fmt_T(y0_l)))
+  cat(sprintf("  Y0^K$ = %s\n", fmt_T(y0_k)))
+  cat(sprintf("  Y0$ = %s\n", fmt_T(y0)))
+  cat(sprintf("  data Y0^K/Y0 = %.4f   param theta0_k = %.4f   diff = %+5.2f pp\n",
+              y0_k / y0, params$theta0_k, 100 * (y0_k / y0 - params$theta0_k)))
   cat("  Expected: large negative gap. NIPA includes employer FICA, retained\n")
   cat("  corporate earnings, and imputed housing rent that fall outside the\n")
   cat("  microsim's tax-base income concept.\n")

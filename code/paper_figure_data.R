@@ -137,8 +137,8 @@ cli_or_message <- function(msg) {
     g_2027plus = y$cbo_baseline$g_2027plus,
     # AI GDP CAGR per variant (Slow / Moderate / Rapid).
     gdp_cagr   = c(Slow = v$S$r_ai_annual, Moderate = v$M$r_ai_annual, Rapid = v$R$r_ai_annual),
-    # 2030 labor share per variant = 1 - s1.
-    labor_2030 = c(Slow = 1 - v$S$s1, Moderate = 1 - v$M$s1, Rapid = 1 - v$R$s1)
+    # 2030 labor share per variant = 1 - theta1_k.
+    labor_2030 = c(Slow = 1 - v$S$theta1_k, Moderate = 1 - v$M$theta1_k, Rapid = 1 - v$R$theta1_k)
   )
 }
 

@@ -1,20 +1,23 @@
 # Read scenario_params.yaml and resolve the active variant. Derives the
-# overall AI growth bump gy from r_ai_annual (Karger Table 19) and the CBO
-# baseline path, then the factor-evolution scalars (gk, alpha) from (s1, gy, L0):
+# overall AI growth bump g_y from r_ai_annual (Karger Table 19) and the CBO
+# baseline path, then the per-factor cumulative growth rates (g_k, g_l) from
+# the baseline and post-shock factor shares (theta0_l, theta1_k, g_y):
 #   horizon  = baseline_year - cbo_baseline.horizon_start_year   (= 5 for 2030)
 #   cum_base = (1 + g_2026) * (1 + g_2027plus)^(horizon - 1)
-#   gy       = (1 + r_ai_annual)^horizon / cum_base - 1
-#   K0    = 1 - L0
-#   K1    = s1 * (1 + gy)
-#   L1    = (1 - s1) * (1 + gy)
-#   gk    = (K1 - K0) / K0
-#   alpha = (1 / gk) * (L1 - L0) / L0
+#   g_y      = (1 + r_ai_annual)^horizon / cum_base - 1
+#   theta0_k = 1 - theta0_l
+#   theta1_l = 1 - theta1_k
+#   g_k      = (theta1_k * (1 + g_y) - theta0_k) / theta0_k
+#   g_l      = (theta1_l * (1 + g_y) - theta0_l) / theta0_l
+# g_y, g_k, g_l are cumulative growth rates over the horizon (the methodology
+# uses g for cumulative, r for annual); they apply to aggregate capital and
+# labor income as Y1^K = Y0^K (1 + g_k) and Y1^L = Y0^L (1 + g_l).
 #
 # `share_mode` selects the factor-evolution counterfactual:
-#   R (default): reallocate — use the Karger s1 for the chosen variant
-#                so the labor share falls toward s1.
-#   F          : fixed share — override s1 := 1 - L0 so the post-shock
-#                capital share equals baseline. gk = gy, alpha = 1.
+#   R (default): reallocate — use the Karger post-shock capital share
+#                theta1_k for the chosen variant so the labor share falls.
+#   F          : fixed share — override theta1_k := theta0_k so the post-shock
+#                capital share equals baseline. g_k = g_l = g_y.
 #
 # load_params() validates that every required key is present and aborts with
 # a list of any gaps.
@@ -35,7 +38,7 @@ source("code/00_utils.R")
            "cit_to_gdp_baseline_year")),
   "shock.baseline_labor_share",
   unlist(lapply(c("S", "M", "R"), function(v) {
-    sprintf("shock.variants.%s.%s", v, c("s1", "r_ai_annual"))
+    sprintf("shock.variants.%s.%s", v, c("theta1_k", "r_ai_annual"))
   })),
   "labor_inequality.k",
   paste0("passthrough.",
@@ -154,28 +157,27 @@ load_params <- function(path = "config/scenario_params.yaml",
       "Variant {.val {active}}: {.field r_ai_annual} must be a number > -1 (got {.val {v$r_ai_annual}})."
     )
   }
-  gy         <- (1 + v$r_ai_annual)^horizon / cum_base - 1
+  g_y        <- (1 + v$r_ai_annual)^horizon / cum_base - 1
 
-  L0 <- raw$shock$baseline_labor_share
-  if (!is.numeric(L0) || is.na(L0) || L0 <= 0 || L0 >= 1) {
+  theta0_l <- raw$shock$baseline_labor_share
+  if (!is.numeric(theta0_l) || is.na(theta0_l) || theta0_l <= 0 || theta0_l >= 1) {
     cli::cli_abort(
-      "{.field shock.baseline_labor_share} must be strictly inside (0, 1); got {.val {L0}}."
+      "{.field shock.baseline_labor_share} must be strictly inside (0, 1); got {.val {theta0_l}}."
     )
   }
-  K0 <- 1 - L0
+  theta0_k <- 1 - theta0_l
   # Under share_mode = "F" we pin the post-shock capital share to baseline
-  # (s1 := 1 - L0 = K0) so the labor-capital split is preserved while gy
-  # is unchanged. gk collapses to gy and alpha to 1.
-  s1 <- if (share_mode == "F") K0 else v$s1
-  if (!is.numeric(s1) || is.na(s1) || s1 <= 0 || s1 >= 1) {
+  # (theta1_k := theta0_k) so the labor-capital split is preserved while g_y
+  # is unchanged. g_k and g_l both collapse to g_y.
+  theta1_k <- if (share_mode == "F") theta0_k else v$theta1_k
+  if (!is.numeric(theta1_k) || is.na(theta1_k) || theta1_k <= 0 || theta1_k >= 1) {
     cli::cli_abort(
-      "Variant {.val {active}}: post-shock capital share {.field s1} must be strictly inside (0, 1); got {.val {s1}}. A typo like {.val 46.2} instead of {.val 0.462} would otherwise sail through."
+      "Variant {.val {active}}: post-shock capital share {.field theta1_k} must be strictly inside (0, 1); got {.val {theta1_k}}. A typo like {.val 46.2} instead of {.val 0.462} would otherwise sail through."
     )
   }
-  K1 <- s1 * (1 + gy)
-  L1 <- (1 - s1) * (1 + gy)
-  gk <- (K1 - K0) / K0
-  alpha <- if (gk == 0) NA_real_ else (1 / gk) * (L1 - L0) / L0
+  theta1_l <- 1 - theta1_k
+  g_k <- (theta1_k * (1 + g_y) - theta0_k) / theta0_k
+  g_l <- (theta1_l * (1 + g_y) - theta0_l) / theta0_l
 
   k_inequality <- raw$labor_inequality$k
 
@@ -186,13 +188,13 @@ load_params <- function(path = "config/scenario_params.yaml",
     raw            = raw,
     active_variant = active,
     share_mode     = share_mode,
-    L0 = L0, K0 = K0,
-    s1 = s1, gy = gy,
+    theta0_l = theta0_l, theta0_k = theta0_k,
+    theta1_l = theta1_l, theta1_k = theta1_k,
+    g_y = g_y,
     r_ai_annual    = v$r_ai_annual,
     horizon        = horizon,
     cum_base       = cum_base,
-    K1 = K1, L1 = L1,
-    gk = gk, alpha = alpha,
+    g_k = g_k, g_l = g_l,
     k_inequality   = k_inequality,
     retirement_cal = retirement_cal
   )

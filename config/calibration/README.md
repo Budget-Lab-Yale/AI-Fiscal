@@ -46,11 +46,11 @@ This is conceptually correct because `04_allocate_capital.R` routes
 `kappa_corp` wedge.
 
 `eta_corp` is derived per (variant, share_mode) cell from the
-microsim's baseline aggregate capital income `K0$` so that
-`tau_cit * (K0$ * kappa_corp) / eta_corp` equals CBO's baseline-year
+microsim's baseline aggregate capital income `Y0^K$` so that
+`tau_cit * (Y0^K$ * kappa_corp) / eta_corp` equals CBO's baseline-year
 CIT level. The AI CIT delta then equals
 `tau_cit * (X * kappa_corp) / eta_corp`, which algebraically reduces
-to `X * CBO_CIT$ / K0$`.
+to `X * CBO_CIT$ / Y0^K$`.
 
 ## Sources
 

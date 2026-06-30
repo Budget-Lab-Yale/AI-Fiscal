@@ -1,6 +1,6 @@
 # Load the merged PUF + SCF tax-unit file and apply the Smith-Yagan-Zidar
 # 2019 passthrough labor / capital split. Output: data.table with original
-# columns plus YiL, YiK, and per-unit active-profit capital shares.
+# columns plus y_l, y_k, and per-unit active-profit capital shares.
 #
 # SYZ 2019 rule (applied at the tax-unit level — no owner-manager
 # n-bar bridging; the firm-level threshold is treated as a tax-unit
@@ -61,7 +61,7 @@ load_tax_units <- function(year, data_dir = "data/tax_data") {
   dt
 }
 
-# Columns the SYZ split + YiL / YiK calculations need on the input
+# Columns the SYZ split + y_l / y_k calculations need on the input
 # tax-units table. Listed centrally so a vintage mismatch fails fast
 # with a clear message instead of data.table's raw "object 'X' not found".
 .REQUIRED_TAX_UNIT_COLS <- c(
@@ -69,9 +69,9 @@ load_tax_units <- function(year, data_dir = "data/tax_data") {
   # SYZ active / passive profit columns:
   "scorp_active", "scorp_active_loss", "scorp_passive", "scorp_passive_loss",
   "part_active",  "part_active_loss",  "part_passive",  "part_passive_loss",
-  # YiL composition:
+  # y_l composition:
   "sole_prop", "farm",
-  # YiK composition:
+  # y_k composition:
   "txbl_int", "exempt_int", "div_ord", "div_pref",
   "kg_st", "kg_lt", "other_gains",
   "rent", "rent_loss", "estate", "estate_loss",
@@ -102,11 +102,11 @@ apply_passthrough_split <- function(dt, params) {
   dt <- compute_yi_capital(dt, pt$passive_capital_share)
 
   # One NA in any of the ~20 component income columns propagates into
-  # YiL/YiK and would only surface much later as weird aggregates.
-  if (anyNA(dt$YiL) || anyNA(dt$YiK)) {
+  # y_l/y_k and would only surface much later as weird aggregates.
+  if (anyNA(dt$y_l) || anyNA(dt$y_k)) {
     cli::cli_abort(c(
       "NA values after the SYZ split.",
-      x = "YiL: {sum(is.na(dt$YiL))} NA{?s}; YiK: {sum(is.na(dt$YiK))} NA{?s}.",
+      x = "y_l: {sum(is.na(dt$y_l))} NA{?s}; y_k: {sum(is.na(dt$y_k))} NA{?s}.",
       i = "An NA in any component income column propagates; inspect the vintage."
     ))
   }
@@ -188,9 +188,9 @@ compute_passive_nets <- function(dt) {
   dt
 }
 
-# YiL = wages + Schedule C / F + labor share of passthrough profit.
+# y_l = wages + Schedule C / F + labor share of passthrough profit.
 compute_yi_labor <- function(dt, cap_passive) {
-  dt[, YiL := wages + sole_prop + farm +
+  dt[, y_l := wages + sole_prop + farm +
        (1 - scorp_active_cap_share) * scorp_active_net +
        (1 - cap_passive)            * scorp_passive_net +
        (1 - part_active_cap_share)  * part_active_net  +
@@ -198,10 +198,10 @@ compute_yi_labor <- function(dt, cap_passive) {
   dt
 }
 
-# YiK = pure-capital PUF items + capital share of passthrough profit + realized
+# y_k = pure-capital PUF items + capital share of passthrough profit + realized
 # retirement distributions.
 compute_yi_capital <- function(dt, cap_passive) {
-  dt[, YiK := txbl_int + exempt_int + div_ord + div_pref +
+  dt[, y_k := txbl_int + exempt_int + div_ord + div_pref +
        kg_st + kg_lt + other_gains +
        rent_net + estate_net +
        txbl_ira_dist + txbl_pens_dist +

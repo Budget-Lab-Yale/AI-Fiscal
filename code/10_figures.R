@@ -548,10 +548,10 @@ fig_sensitivity_heatmap <- function(wide, year) {
 # 9. Variant scaling — ΔR vs AI growth-shock magnitude g_y
 # ---------------------------------------------------------------------
 
-fig_variant_scaling <- function(wide, gy_by_variant, year) {
-  d <- merge(wide, gy_by_variant, by = "variant")
+fig_variant_scaling <- function(wide, g_y_by_variant, year) {
+  d <- merge(wide, g_y_by_variant, by = "variant")
 
-  p <- ggplot2::ggplot(d, ggplot2::aes(x = gy, y = total_with_macro_cit,
+  p <- ggplot2::ggplot(d, ggplot2::aes(x = g_y, y = total_with_macro_cit,
                                     color = labor_label,
                                     shape = labor_label,
                                     group = interaction(labor_label, realization_label))) +
@@ -614,7 +614,7 @@ fig_revenue_vs_income <- function(wide, income_long, year) {
 
 # Companion to fig_revenue_vs_income with the x-axis swapped for the
 # gross factor-income expansion implied by the variant — labor growth
-# (L0$ * alpha * gk) plus the gross capital expansion X (K1$ - K0$),
+# (Y0^L$ * g_l) plus the gross capital expansion X (Y1^K$ - Y0^K$),
 # both before any leakage from the macro CIT wedge or retirement
 # deferral. This is the pre-leakage analog of ΔY pretax and isolates
 # how revenue scales with the underlying factor shock rather than the
@@ -684,7 +684,7 @@ fig_share_mode_comparison <- function(wide, year) {
     ggplot2::labs(
       title    = "Reallocate vs fixed-share, paired by shock",
       subtitle = sprintf(
-        "Total ΔR including macro CIT, FY %d ($B). Same gy per variant; only the labor-capital reallocation differs.",
+        "Total ΔR including macro CIT, FY %d ($B). Same g_y per variant; only the labor-capital reallocation differs.",
         year
       ),
       x        = NULL, y = NULL,
@@ -731,7 +731,7 @@ fig_share_mode_reallocation_delta <- function(wide, year) {
     ggplot2::labs(
       title    = "Revenue change attributable to labor-capital reallocation",
       subtitle = sprintf(
-        "Reallocate minus Fixed share, FY %d ($B). Same gy on both sides.",
+        "Reallocate minus Fixed share, FY %d ($B). Same g_y on both sides.",
         year
       ),
       x        = NULL, y = NULL,
@@ -1044,7 +1044,7 @@ fig_atr_decile_by_growth <- function(atr_d, axes_sub, year) {
                                        delta_R_micro_cap_B / X_to_units_B,
                                        NA_real_)]
   # Effective per-X CIT rate. Under the new (post-2026-05-22) calibration
-  # this equals delta_R_CIT / X = CBO_CIT_baseline / K0$, by construction.
+  # this equals delta_R_CIT / X = CBO_CIT_baseline / Y0^K$, by construction.
   out[, cit_floor_etr       := ifelse(X_B > 0,
                                        delta_R_CIT_B / X_B, NA_real_)]
   # Old union-base diagnostic — kept for the per-scenario table but no
@@ -1488,19 +1488,19 @@ assemble_figures <- function(
 
   # Macro per scenario (for the decomp plot) plus per-scenario axes
   # (for shares / gini which only have scenario_id) plus a per-variant
-  # gy lookup (for the variant-scaling plot — .load_macro_per_scenario
-  # drops gy, so read it from the raw macro CSV).
+  # g_y lookup (for the variant-scaling plot — .load_macro_per_scenario
+  # drops g_y, so read it from the raw macro CSV).
   macro_per_scn <- .load_macro_per_scenario(runscript_path)
   axes_per_scn  <- macro_per_scn[, .(scenario_id, variant, share_mode,
                                      labor, realization)]
 
   macro_raw     <- fread(macro_csv)
-  # gy is invariant across share_mode for a given variant; drop the
+  # g_y is invariant across share_mode for a given variant; drop the
   # share_mode column before deduplicating so the unique() call returns
   # one row per variant.
-  gy_by_variant <- unique(macro_raw[, .(variant, gy)])
+  g_y_by_variant <- unique(macro_raw[, .(variant, g_y)])
   stopifnot(
-    uniqueN(gy_by_variant$variant) == nrow(gy_by_variant)
+    uniqueN(g_y_by_variant$variant) == nrow(g_y_by_variant)
   )
 
   # Existing figures: pin to share_mode = R (the canonical Karger
@@ -1650,7 +1650,7 @@ assemble_figures <- function(
       .fig_entry("08_sensitivity_heatmap",
                  fig_sensitivity_heatmap(wide_R, year), w = 12.0, h = 4.5),
       .fig_entry("09_variant_scaling",
-                 fig_variant_scaling(wide_R, gy_by_variant, year),
+                 fig_variant_scaling(wide_R, g_y_by_variant, year),
                  w = 9.0, h = 5.0),
       .fig_entry("10_revenue_vs_income",
                  fig_revenue_vs_income(wide_R, income, year), w = 9.0, h = 5.0),

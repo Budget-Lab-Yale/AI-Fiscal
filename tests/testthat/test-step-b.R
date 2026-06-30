@@ -25,15 +25,15 @@ test_that("X reaches tax units in full (CIT acts upstream)", {
   expect_equal(macro$X_to_units, macro$X, tolerance = 1e-9)
 })
 
-test_that("CIT delta scales with X relative to K0$", {
-  expected_ratio <- macro$cbo_cit_baseline_dollar / macro$K0_dollar
+test_that("CIT delta scales with X relative to Y0^K$", {
+  expected_ratio <- macro$cbo_cit_baseline_dollar / macro$y0_k_dollar
   expect_equal(macro$delta_R_CIT / macro$X, expected_ratio,
                tolerance = 1e-9)
 })
 
 test_that("eta calibration recovers CBO CIT level at baseline", {
   corp <- params$raw$corporate
-  baseline_cit <- corp$cit_statutory * macro$K0_dollar * corp$kappa_corp /
+  baseline_cit <- corp$cit_statutory * macro$y0_k_dollar * corp$kappa_corp /
     macro$eta_corp
   expect_equal(baseline_cit, macro$cbo_cit_baseline_dollar,
                tolerance = 1e-6 * macro$cbo_cit_baseline_dollar)

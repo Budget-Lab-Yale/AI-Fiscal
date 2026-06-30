@@ -7,7 +7,7 @@
 # interpolation). Returns the smallest x[i] whose cumulative weight
 # share is >= p. Vectorized in `p`. Aborts on empty/NA/zero-weight
 # input rather than returning NA silently: this feeds the SYZ W*
-# threshold, and an NA here would cascade through YiL/YiK unseen.
+# threshold, and an NA here would cascade through y_l/y_k unseen.
 weighted_quantile <- function(x, w, p) {
   if (!length(x) || length(x) != length(w)) {
     cli::cli_abort(

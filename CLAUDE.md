@@ -23,13 +23,13 @@ that this pipeline constructs.
 - Not a general-equilibrium model — prices, wages outside the shock,
   and the asset stock are held at baseline. Capital flow is
   distributed across households without revaluing the stock.
-- Not a wealth-frame simulation in v0.1.0 — $X$ is sized off the
+- Not a wealth-frame simulation in v1.0 — $X$ is sized off the
   on-1040 *realized* base, so realization rates are built in by
-  construction. Wealth-frame migration is on the v0.2.0+ roadmap.
+  construction. Wealth-frame migration is on a future-release roadmap.
 - Not behavioral — labor supply and realization-rate responses are
   not modeled in the primary specification.
 
-## Scope of v0.1.0
+## Scope of v1.0
 
 The release pipeline runs a fixed 18-cell scenario grid with no CLI
 overrides for the scenario axes. Everything is in
@@ -38,7 +38,7 @@ overrides for the scenario axes. Everything is in
 | Axis        | Codes | Meaning |
 |---|---|---|
 | Variant     | `S`, `M`, `R`     | Karger Slow / Moderate / Rapid AI adoption (Tables 19 / 39 of NBER w35046) |
-| Share mode  | `R`, `F`          | R = reallocate (Karger labor-share decline); F = fixed (s1 := 1 - L0) |
+| Share mode  | `R`, `F`          | R = reallocate (Karger labor-share decline); F = fixed (theta1_k := theta0_k) |
 | Labor       | `S0`, `S2`, `S3`  | Proportional / Compressive / Expansive labor-income redistribution |
 | Realization | `V1`              | Mechanical (all gross LTCG realized in-year) |
 
@@ -66,9 +66,9 @@ orchestrator (00_ai_fiscal_sim.R)
   │     - load_tax_units(year, data_dir)
   │     - apply_passthrough_split(dt, params)   <- Smith-Yagan-Zidar
   │
-  ├── resolve (gk, alpha) per (variant, share_mode) (02_params.R)
+  ├── resolve (g_k, g_l) per (variant, share_mode) (02_params.R)
   │     - load_params(yaml_path, variant, share_mode)
-  │     - derives (gk, alpha) from (s1, gy, L0)
+  │     - derives (g_k, g_l) from (theta1_k, g_y, theta0_l)
   │
   ├── for each (variant, share_mode):
   │     - Step B (04_allocate_capital.R) once, cached
@@ -82,7 +82,7 @@ orchestrator (00_ai_fiscal_sim.R)
   ├── for each (variant, share_mode, labor_scenario):
   │     - Step A (03_shock_labor.R)
   │         - S0: rho_pos = L1_pos$ / L0_pos$
-  │         - S2/S3: log-affine map with sigma = 1 ∓ k * g_y
+  │         - S2/S3: log-affine map with lambda = 1 ∓ k * g_y
   │     - for each flavor in {both, labor_only, capital_only}:
   │         - build_counterfactual(dt_baseline, step_a, step_b, flavor)
   │         - write_counterfactual_scenario(dt_cf, year, sid)
@@ -125,7 +125,7 @@ orchestrator (00_ai_fiscal_sim.R)
 | `code/00_ai_fiscal_sim.R` | Orchestrator. Loops the 18-cell grid; CLI parser; log tee. |
 | `code/00_utils.R` | Shared helpers + asset-column registry. **Source first** in every other file. |
 | `code/01_load_data.R` | Load merged PUF + SCF; SYZ pass-through split. Handles vintage column rename (`value.*` → bare; `dc` → `retirement`). |
-| `code/02_params.R` | Resolve `(gk, alpha)` from `(s1, gy, L0)`. Validates yaml keys present. |
+| `code/02_params.R` | Resolve `(g_k, g_l)` from `(theta1_k, g_y, theta0_l)`. Validates yaml keys present. |
 | `code/03_shock_labor.R` | **Step A** — labor redistribution (S0 / S2 / S3). |
 | `code/04_allocate_capital.R` | **Step B** — macro CIT, across-unit allocation, within-unit allocation, R1 cascade. |
 | `code/05_realization.R` | **Step C** — V1 mechanical realization. Tiny file by design. |

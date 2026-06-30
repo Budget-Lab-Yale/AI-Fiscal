@@ -1,4 +1,4 @@
-# Central parameter file for AI fiscal simulation (v0.1.0 release build).
+# Central parameter file for AI fiscal simulation (v1.0 release build).
 #
 # This file is the single source of truth for every tunable parameter.
 # Every leaf parameter carries two metadata siblings:
@@ -28,7 +28,7 @@ baseline_year_source: "Match Karger 5-yr horizon; microsim aged to 2030."
 # CBO baseline real-GDP growth path (publication 62105: 2025 = 1.9%,
 # 2026 = 2.2%, 2027+ = 1.8% flat). The Tax-Simulator aging pipeline
 # grows the PUF/SCF microsim to baseline_year along this same path, so
-# tax_units_<baseline_year>.csv is the no-AI level. gy (derived in
+# tax_units_<baseline_year>.csv is the no-AI level. g_y (derived in
 # code/02_params.R) is the multiplicative AI bump applied on top.
 # ---------------------------------------------------------------------
 cbo_baseline:
@@ -59,7 +59,7 @@ cbo_baseline:
 # ---------------------------------------------------------------------
 # Shock targets — Karger et al. 2026 (NBER w35046), 5-yr horizon to
 # baseline_year.
-#   s1           = period-1 capital share = 1 - (post-shock labor share)
+#   theta1_k     = post-shock capital share = 1 - (post-shock labor share)
 #   r_ai_annual  = median 2030 annualized GDP growth rate under AI
 #
 # Variant codes S / M / R map to Karger Slow / Moderate / Rapid. The
@@ -72,23 +72,23 @@ shock:
 
   variants:
     S:                          # Slow:     2030 labor 55.0%; AI GDP CAGR 2.0%/yr
-      s1: 0.450
-      s1_status: sourced
-      s1_source: "1 - Karger Table 39 2030 labor share for Slow (55.0%)."
+      theta1_k: 0.450
+      theta1_k_status: sourced
+      theta1_k_source: "1 - Karger Table 39 2030 labor share for Slow (55.0%)."
       r_ai_annual: 0.020
       r_ai_annual_status: sourced
       r_ai_annual_source: "Karger 2026 (NBER w35046) Table 19, Slow scenario, median 2030 annualized GDP growth rate."
     M:                          # Moderate: 2030 labor 53.8%; AI GDP CAGR 2.6%/yr
-      s1: 0.462
-      s1_status: sourced
-      s1_source: "1 - Karger Table 39 2030 labor share for Moderate (53.8%)."
+      theta1_k: 0.462
+      theta1_k_status: sourced
+      theta1_k_source: "1 - Karger Table 39 2030 labor share for Moderate (53.8%)."
       r_ai_annual: 0.026
       r_ai_annual_status: sourced
       r_ai_annual_source: "Karger 2026 (NBER w35046) Table 19, Moderate scenario, median 2030 annualized GDP growth rate."
     R:                          # Rapid:    2030 labor 51.3%; AI GDP CAGR 3.3%/yr
-      s1: 0.487
-      s1_status: sourced
-      s1_source: "1 - Karger Table 39 2030 labor share for Rapid (51.3%)."
+      theta1_k: 0.487
+      theta1_k_status: sourced
+      theta1_k_source: "1 - Karger Table 39 2030 labor share for Rapid (51.3%)."
       r_ai_annual: 0.033
       r_ai_annual_status: sourced
       r_ai_annual_source: "Karger 2026 (NBER w35046) Table 19, Rapid scenario, median 2030 annualized GDP growth rate."
@@ -97,10 +97,10 @@ shock:
 # Magnitude of the S2/S3 dispersion shift, tied to the productivity
 # shock g_y. The release pipeline loops over labor scenarios {S0, S2,
 # S3}; this scalar controls the S2/S3 bite.
-#   sigma_S2 = 1 - k * g_y   (compressive)
-#   sigma_S3 = 1 + k * g_y   (expansive)
+#   lambda_S2 = 1 - k * g_y   (compressive)
+#   lambda_S3 = 1 + k * g_y   (expansive)
 # k = 1 is the literal proportional-to-g_y mapping. Aborts at run time
-# if sigma <= 0.
+# if lambda <= 0.
 # ---------------------------------------------------------------------
 labor_inequality:
   k: 1.0
@@ -111,7 +111,7 @@ labor_inequality:
 # Passthrough labor / capital split (Smith-Yagan-Zidar 2019). At each
 # tax unit, partition active S-corp / partnership profit at the wage
 # threshold W*; treat passive profit separately. Labor share absorbed
-# into YiL; capital share into YiK. SYZ apply W* directly at the
+# into the per-unit labor income y_l; capital share into y_k. SYZ apply W* directly at the
 # tax-unit level, so no owner-manager n-bar adjustment is applied.
 # ---------------------------------------------------------------------
 passthrough:
@@ -141,13 +141,14 @@ passthrough:
 # delta is pinned by calibrating a single scale factor eta against the
 # CBO baseline-year CIT level:
 #
-#   eta := tau_cit * (K0$ * kappa_corp) /
+#   eta := tau_cit * (Y0_K$ * kappa_corp) /
 #          (cbo_baseline.cit_to_gdp_baseline_year * gdp_baseline_year_B$)
 #   delta_R_CIT = tau_cit * kappa_corp * X / eta
 #
 # eta absorbs both the household-realized-vs-pre-realization wedge and
 # the statutory-vs-effective gap. Algebraically delta_R_CIT / X =
-# CBO_CIT_baseline / K0$. The full X flows to households.
+# CBO_CIT_baseline / Y0_K$, where Y0_K$ is aggregate baseline capital
+# income (sum of weight * y_k). The full X flows to households.
 # ---------------------------------------------------------------------
 corporate:
   kappa_corp: 0.50

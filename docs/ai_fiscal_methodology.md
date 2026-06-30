@@ -59,23 +59,31 @@ validated against aggregates from NIPA, SOI, and the Distributional
 Financial Accounts (DFA) upstream in the data pipeline. This project
 uses the PUF-SCF matched file as the ground truth.
 
+We specify a tax unit's income as $Y_{j,i}^{X}$, where $X$ specifies the
+type of income (labor, capital, etc.), $j \in \{0,1\}$ specifies before
+or after the shock, and $i$ is a tax-unit index. The aggregate income
+values lack the $i$ subscript (e.g. $Y_0^L = \sum_i w_i\,Y_{0,i}^L$).
+Each tax unit has a PUF weight $w_i$ that has been adjusted to match the
+SSA and CBO targets discussed above. In the code these per-unit measures
+are the columns `y_l` and `y_k`.
+
 ### Per-unit labor and capital aggregates
 
-Once the merged file is loaded, we construct two per-unit aggregates
-that drive all downstream redistribution:
+Once the merged file is loaded, we group a tax filer's pre-shock income
+into two buckets:
 
-- **Analytic labor income** ($\mathrm{YiL}_i$): wages, sole-proprietor
+- **Labor income** ($Y_{0,i}^L$): wages, sole-proprietor
   and farm income, and the labor portion of each unit's S-Corp and
   partnership net profit.
-- **Analytic capital income** ($\mathrm{YiK}_i$): interest (taxable
+- **Capital income** ($Y_{0,i}^K$): interest (taxable
   and exempt), dividends (ordinary and preferential), realized capital
   gains, other gains, net rent and estate income, taxable IRA and
   pension distributions, plus the capital portion of S-Corp and
   partnership net profit.
 
-These analytic aggregates are used only for designing the shock; the
+These values are used only for designing the shock; the
 counterfactual file ultimately uses the underlying PUF columns, not
-$\mathrm{YiL}$ or $\mathrm{YiK}$.
+$Y_{0,i}^L$ or $Y_{0,i}^K$.
 
 ### Splitting pass-through profit between labor and capital
 
@@ -105,14 +113,21 @@ share of pass-through profit sits above $W^\star$ either way.
 ## Macro shock parameterization
 
 Table 1 reports the values that are implied by our implementation of
-Karger et al. (2026) economic forecasts. The three key parameters
-are:
+Karger et al. (2026) economic forecasts. The key parameters are:
 
 - a post-shock labor / capital share of factor income ($\theta_1^L$,
   $\theta_1^K$) at the policy horizon, reported as a 5-year-ahead
-  median across analyst forecasts; and
-- an annualized real GDP growth rate $r^{\mathrm{AI}}$ over the same
-  horizon, again as a median across forecasts.
+  median across analyst forecasts;
+- an annualized real GDP growth rate $r_{ai}$ over the same
+  horizon, again as a median across forecasts; and
+- a labor-income inequality parameter ($\lambda$) that alters the
+  distribution of positive labor income.
+
+For each variant, we estimate a version with and without the shift in
+the capital-labor share (denoted $\chi \in \{R, F\}$). We therefore have
+a policy shock defined by $\{r_{ai}, \theta_1^L, \theta_1^K\}$. We use
+$g$ to denote five-year cumulative growth rates and $r$ to denote annual
+growth rates.
 
 Three intensity variants are published: Slow, Moderate, and Rapid
 (labeled S, M, R). We take 2030 as the baseline year to match
@@ -129,17 +144,17 @@ Budget Office's (CBO) no-AI growth path (2026 = 2.2%, 2027+ = 1.8%).
 |                                                            | **Slow (S)** | **Moderate (M)** | **Rapid (R)** |
 |------------------------------------------------------------|-------------:|-----------------:|--------------:|
 | *AI-adoption inputs (5-year horizon, 2025–2030)*           |              |                  |               |
-| Annual GDP growth under AI ($r^{\mathrm{AI}}$)             |       2.0%   |        2.6%      |       3.3%    |
+| Annual GDP growth under AI ($r_{ai}$)                      |       2.0%   |        2.6%      |       3.3%    |
 | 2030 capital share ($\theta_1^K$)                          |      45.0%   |       46.2%      |      48.7%    |
 | 2030 labor share ($\theta_1^L = 1 - \theta_1^K$)           |      55.0%   |       53.8%      |      51.3%    |
 | *Derived growth bumps, cumulative over 5 years, above CBO* |              |                  |               |
-| GDP ($g_y$)                                                |      0.59%   |        3.58%     |       7.17%   |
-| Capital ($g_k$)                                            |      1.72%   |        7.54%     |      17.28%   |
-| Labor ($\alpha \cdot g_k$)                                 |     −0.32%   |        0.41%     |      −0.94%   |
-| *Labor-income inequality parameter $\sigma$ (k = 1)*       |              |                  |               |
-| Compressive ($\sigma_{S2} = 1 - k \cdot g_y$)              |      0.994   |        0.964     |       0.928   |
-| Proportional ($\sigma_{S0}$)                               |      1.000   |        1.000     |       1.000   |
-| Expansive ($\sigma_{S3} = 1 + k \cdot g_y$)                |      1.006   |        1.036     |       1.072   |
+| GDP ($g_Y$)                                                |      0.59%   |        3.58%     |       7.17%   |
+| Capital ($g_K$)                                            |      1.72%   |        7.54%     |      17.28%   |
+| Labor ($g_L$)                                              |     −0.32%   |        0.41%     |      −0.94%   |
+| *Labor-income inequality parameter $\lambda$ (k = 1)*      |              |                  |               |
+| Compressive ($\lambda_{S2} = 1 - k \cdot g_Y$)             |      0.994   |        0.964     |       0.928   |
+| Proportional ($\lambda_{S0}$)                              |      1.000   |        1.000     |       1.000   |
+| Expansive ($\lambda_{S3} = 1 + k \cdot g_Y$)               |      1.006   |        1.036     |       1.072   |
 
 *Sources.* Karger, Buehler, Cox, Saint-Jacques, and Bjorkegren (2026);
 CBO (2025); Budget Lab calculations.
@@ -158,36 +173,34 @@ shares of factor income, with capital shares
 $\theta_t^K = 1 - \theta_t^L$. Let $H = 5$ be the Karger horizon and
 
 $$
-\mathrm{G_{CBO}} \;=\; (1 + g^{\mathrm{CBO}}_{2026}) \cdot (1 + g^{\mathrm{CBO}}_{2027+})^{H-1}
+\mathrm{G_{CBO}} \;=\; (1 + r^{\mathrm{CBO}}_{2026}) \cdot (1 + r^{\mathrm{CBO}}_{2027+})^{H-1}
 $$
 
 be cumulative CBO growth from 2025 to 2030. Then
 
 $$
-g_y \;=\; \frac{(1 + r^{\mathrm{AI}})^H}{\mathrm{G_{CBO}}} - 1
+g_Y \;=\; \frac{(1 + r_{ai})^H}{\mathrm{G_{CBO}}} - 1
 $$
 
 is the additional 5-year growth in nominal factor income caused by
 AI. For the three variants this deviation works out to roughly +0.6%
 (S), +3.6% (M), and +7.2% (R) above the CBO baseline at year 2030.
 
-We then derive the per-factor growth rates from the share and growth
-targets:
+The growth rates of capital ($g_K$) and labor ($g_L$) follow from
+$g_Y$ and the pre- and post-shock factor income shares:
 
 $$
-\begin{aligned}
-g_k &= \frac{\theta_1^K \cdot (1 + g_y) - \theta_0^K}{\theta_0^K}, \\
-\alpha &= \frac{1}{g_k} \cdot \frac{\theta_1^L \cdot (1 + g_y) - \theta_0^L}{\theta_0^L}.
-\end{aligned}
+g_K = \frac{\theta_1^K \cdot (1 + g_Y) - \theta_0^K}{\theta_0^K}, \qquad
+g_L = \frac{\theta_1^L \cdot (1 + g_Y) - \theta_0^L}{\theta_0^L}.
 $$
 
-We refer to $\alpha$ as the normalized labor growth rate: under a
-reallocation shock $\alpha < 1$ (labor grows more slowly than
-capital); under no reallocation, $\alpha = 1$. We apply $\alpha
-\cdot g_k$ as the growth rate on per-unit labor income and $g_k$ as
-the growth rate on per-unit capital income.
+We apply $g_K$ as the growth rate on per-unit capital income and $g_L$
+as the growth rate on per-unit labor income. Under a reallocation shock
+$g_L < g_K$ (labor grows more slowly than capital); under no
+reallocation ($\chi = F$, with $\theta_1^K := \theta_0^K$),
+$g_L = g_K = g_Y$.
 
-We apply $(g_k, \alpha)$ as growth rates, not as level targets. The
+We apply $(g_K, g_L)$ as growth rates, not as level targets. The
 microsimulation's measured labor share differs from the NIPA share
 Karger reports — the microsim aggregates exclude employer FICA,
 undistributed C-corp profits, and imputed housing rent — but the
@@ -203,8 +216,8 @@ readers separate the productivity and reallocation channels:
 - **Reallocate (R)** — use $\theta_1^K$ from Karger: capital grows
   faster than labor.
 - **Fixed share (F)** — pin $\theta_1^K := \theta_0^K$ so the
-  post-shock factor split equals the baseline. Same $g_y$, but
-  $g_k = g_y$ and $\alpha = 1$: labor and capital both grow at the
+  post-shock factor split equals the baseline. Same $g_Y$, but
+  $g_K = g_L = g_Y$: labor and capital both grow at the
   productivity rate.
 
 The fixed-share option isolates the productivity increase from the
@@ -217,7 +230,7 @@ and "the mix of who earns that output has shifted."
 The labor-side step computes a counterfactual labor income aggregate
 
 $$
-L_1 \;=\; L_0 \cdot \bigl(1 + \alpha \cdot g_k\bigr)
+Y_1^L \;=\; Y_0^L \cdot \bigl(1 + g_L\bigr)
 $$
 
 and redistributes it across tax units. We offer three redistribution
@@ -231,17 +244,17 @@ occupation-level AI exposure.
 We hold constant the labor income for tax units with negative
 baseline labor income and scale the labor income of all tax units
 with positive baseline labor income by a single multiplier $\rho$ so
-the aggregate hits $L_1$:
+the aggregate hits $Y_1^L$:
 
 $$
-\mathrm{YiL}_{1,i} \;=\;
+Y_{1,i}^L \;=\;
 \begin{cases}
-\rho \cdot \mathrm{YiL}_i & \text{if } \mathrm{YiL}_i > 0, \\
-\mathrm{YiL}_i           & \text{otherwise.}
+\rho \cdot Y_{0,i}^L & \text{if } Y_{0,i}^L > 0, \\
+Y_{0,i}^L           & \text{otherwise.}
 \end{cases}
 $$
 
-By construction, $\sum_i w_i \cdot \mathrm{YiL}_{1,i} = L_1$. The
+By construction, $\sum_i w_i \cdot Y_{1,i}^L = Y_1^L$. The
 proportional scenario preserves the baseline distribution of
 positive labor income.
 
@@ -254,18 +267,18 @@ dispersion-shift specifications using a log-affine transformation
 applied to tax units with positive labor income:
 
 $$
-\ln \mathrm{YiL}_{1,i} \;=\; \mu_1 + \sigma \cdot \bigl(\ln \mathrm{YiL}_i - \mu_0\bigr),
+\ln Y_{1,i}^L \;=\; \mu_1 + \lambda \cdot \bigl(\ln Y_{0,i}^L - \mu_0\bigr),
 $$
 
 where $\mu_0$ is the weighted log-mean of positive baseline labor
 income, $\mu_1$ is solved so the positive-subset aggregate matches
-$L_1$ after scaling, and $\sigma$ is the ratio of post- to pre-shock
-standard deviation of $\ln \mathrm{YiL}$ on the positive subset. We
-tie $\sigma$ to the productivity shock $g_y$ through
+$Y_1^L$ after scaling, and $\lambda$ is the ratio of post- to pre-shock
+standard deviation of $\ln Y_{0,i}^L$ on the positive subset. We
+tie $\lambda$ to the productivity shock $g_Y$ through
 
 $$
-\sigma_{S2} \;=\; 1 - k \cdot g_y \quad\text{(compressive)}, \qquad
-\sigma_{S3} \;=\; 1 + k \cdot g_y \quad\text{(expansive)}.
+\lambda_{S2} \;=\; 1 - k \cdot g_Y \quad\text{(compressive)}, \qquad
+\lambda_{S3} \;=\; 1 + k \cdot g_Y \quad\text{(expansive)}.
 $$
 
 For now we assume $k = 1$ — a proportional mapping between growth and
@@ -286,7 +299,7 @@ more likely.
 This section details the allocation of the excess capital income
 generated by the shock to individual tax units and — within tax
 units — across streams of capital income. Given how we define the
-baseline capital-income flow ($K_0$ as a function of taxable income
+baseline capital-income flow ($Y_0^K$ as a function of taxable income
 reported on tax returns), we are growing an already-realized stream
 of taxable income. For this initial version of the model, we assume
 that realization rates are held constant, meaning that capital income
@@ -298,7 +311,7 @@ productivity shock or the capital-labor shift.
 The aggregate capital income flow added by the shock is
 
 $$
-X \;=\; g_k \cdot K_0.
+X \;=\; g_K \cdot Y_0^K.
 $$
 
 Corporate income tax operates **upstream** of household realizations,
@@ -307,7 +320,7 @@ corporate-tax effect of the shock as a macro bolt-on, anchored to CBO's
 baseline-year CIT level, rather than as a household-side wedge that 
 mechanically subtracts from $X$.
 
-A fraction $\kappa$ of $K_0$ flows through C-corporations in the
+A fraction $\kappa$ of $Y_0^K$ flows through C-corporations in the
 household-realized frame. To scale that household-realized slice up
 to the pre-realization corporate tax base — and absorb the
 statutory-vs-effective gap (avoidance, NOLs, credits, profit
@@ -317,14 +330,14 @@ multiplying the baseline (2030 in this case) CIT revenue to GDP ratio (from
 CBO's 2026 Budget and Economic Outlook) by baseline GDP:
 
 $$
-\eta \;=\; \frac{\tau_C^{\mathrm{stat}} \cdot K_0 \cdot \kappa}{ R^{\mathrm{CIT}}_{\mathrm{CBO}}}
+\eta \;=\; \frac{\tau_C^{\mathrm{stat}} \cdot Y_0^K \cdot \kappa}{ R^{\mathrm{CIT}}_{\mathrm{CBO}}}
 $$
 
 The AI CIT delta then scales linearly with $X$:
 
 $$
 \Delta R^{\mathrm{CIT}} \;=\; \frac{\tau_C^{\mathrm{stat}} \cdot \kappa \cdot X}{\eta}
-\;\equiv\; \frac{X}{K_0} \cdot \Delta R^{\mathrm{CIT}}_{\mathrm{CBO}}.
+\;\equiv\; \frac{X}{Y_0^K} \cdot R^{\mathrm{CIT}}_{\mathrm{CBO}}.
 $$
 
 The compact form on the right is exact and intuitive: the AI CIT
@@ -349,10 +362,10 @@ We distribute $X$ across tax units in
 proportion to each unit's share of total household wealth:
 
 $$
-X_i \;=\; X \cdot \frac{A_i}{\sum_j w_j A_j},
+X_i \;=\; X \cdot \frac{A_{0,i}}{\sum_m w_m A_{0,m}},
 $$
 
-where $A_i$ is the sum of the unit's SCF-imputed wealth columns
+where $A_{0,i}$ is the sum of the unit's SCF-imputed wealth columns
 (cash, equities, bonds, retirement balances, life insurance,
 annuities, trusts, real-estate funds, primary and other home values
 gross of mortgage debt, pass-through equity, and miscellaneous
@@ -367,10 +380,10 @@ an area we plan to explore in the future.
 The asset base contains both income-bearing and non-income-bearing
 classes. Of the income-bearing classes, four matter for tax
 purposes: equities (taxable), bonds, pass-through equity, and
-retirement balances. Let $A_{i,{\mathrm{inc}}}$ be their sum for a
+retirement balances. Let $A_{0,i}^{\mathrm{Inc}}$ be their sum for a
 given tax unit. We allocate each unit's $X_i$ across the four
 classes proportional to its baseline holdings within
-$A_{i,{\mathrm{inc}}}$.
+$A_{0,i}^{\mathrm{Inc}}$.
 
 Units with zero income-bearing holdings route their entire $X_i$ to
 retirement, preserving the aggregate identity $\sum_i w_i X_i =
@@ -415,7 +428,7 @@ The release pipeline realizes new long-term capital-gains flows
 in-year under V1 (mechanical): the gross AI LTCG flow enters `kg_lt`
 at accrual rather than being discounted by a hold-then-realize rate.
 The argument parallels the constant-realization choice for retirement
-— $K_0$ is sized off the on-1040 *realized* base, so re-applying a
+— $Y_0^K$ is sized off the on-1040 *realized* base, so re-applying a
 realization discount would double-count. Full derivation in
 [`ai_fiscal_methodology_appendix.md`](ai_fiscal_methodology_appendix.md)
 §C; implementation in `code/05_realization.R::apply_realization`.
@@ -431,7 +444,7 @@ scenario folder under the pinned Tax-Data vintage. The construction
 steps:
 
 1. **Labor scaling.** Each unit's labor scaling factor
-   $\rho_i = \mathrm{YiL}_{1,i} / \mathrm{YiL}_i$ is applied to
+   $\rho_i = Y_{1,i}^L / Y_{0,i}^L$ is applied to
    every uniformly-labor PUF column: wages, overtime, tips,
    sole-prop, farm, partnership self-employment, plus the
    per-spouse splits.
@@ -454,7 +467,7 @@ steps:
    inflation-adjusted basis.
 
 4. **Schema restoration.** Every analytic column we constructed
-   along the way ($\mathrm{YiL}, \mathrm{YiK}, \rho_i$, the $X_*$
+   along the way ($Y_{0,i}^L, Y_{0,i}^K, \rho_i$, the $X_*$
    flows, capital-share blends) is dropped, so the output reads
    as a vanilla baseline file with shifted income totals.
 
@@ -522,12 +535,12 @@ $$
 The publishable change in the revenue-to-GDP ratio is then
 
 $$
-\Delta\!\left(\frac{R}{Y}\right)^{\mathrm{cbo}} \;=\; \frac{R^{\mathrm{cbo}}_{\mathrm{scen}}}{Y_{\mathrm{base}} (1 + g_y)} - \bigl(\frac{R}{Y}\bigr)^{\mathrm{CBO}}_{\mathrm{base}} \;=\; \frac{\Delta R}{Y_{\mathrm{base}} (1 + g_y)} - \bigl(\frac{R}{Y}\bigr)^{\mathrm{CBO}}_{\mathrm{base}} \cdot \frac{g_y}{1 + g_y}.
+\Delta\!\left(\frac{R}{Y}\right)^{\mathrm{cbo}} \;=\; \frac{R^{\mathrm{cbo}}_{\mathrm{scen}}}{Y_{\mathrm{base}} (1 + g_Y)} - \bigl(\frac{R}{Y}\bigr)^{\mathrm{CBO}}_{\mathrm{base}} \;=\; \frac{\Delta R}{Y_{\mathrm{base}} (1 + g_Y)} - \bigl(\frac{R}{Y}\bigr)^{\mathrm{CBO}}_{\mathrm{base}} \cdot \frac{g_Y}{1 + g_Y}.
 $$
 
 The second term is the **dilution drag**: even with no revenue
 change, GDP growth alone would push revenue / GDP down by
-$(R/Y)^{\mathrm{CBO}}_{\mathrm{base}} \cdot g_y / (1 + g_y)$.
+$(R/Y)^{\mathrm{CBO}}_{\mathrm{base}} \cdot g_Y / (1 + g_Y)$.
 Anchoring to CBO applies that drag to a realistic revenue base, so
 the published response number is meaningful relative to the
 forecast level. The maintained assumption is that revenue streams
@@ -549,7 +562,7 @@ for federal debt. For each scenario in
 2. Solves for a constant per-year productivity bump (added to
    BLSMM's potential-output path $\mathtt{glqstar}$) such that the
    annualized 2025–baseline-year real GDP growth in BLSMM matches
-   the Karger variant's $r^{\mathrm{AI}}$ target.
+   the Karger variant's $r_{ai}$ target.
 3. Reads off BLSMM's 2030 federal debt and debt/GDP and writes the
    results to `blsmm_debt_to_gdp_<year>.csv` plus a sheet on both
    xlsx bundles and per-share-mode bar plots.
@@ -582,7 +595,7 @@ The model is built on several layers of upstream calibration; we
 check each before relying on a result. The internal identities hold
 by construction and are asserted in the test suite:
 
-- The post-shock labor aggregate $L_1$ equals $L_0 (1 + \alpha g_k)$
+- The post-shock labor aggregate $Y_1^L$ equals $Y_0^L (1 + g_L)$
   exactly for every implemented labor scenario.
 - The per-unit capital flow $\sum_i w_i X_i$ equals
   $X_{\mathrm{to\_units}}$ exactly.
@@ -600,7 +613,7 @@ aggregates to external published series:
 
 - Microsim revenue totals are reconciled to CBO / Treasury IIT and
   CIT projections for the baseline year.
-- $\sum_i w_i \mathrm{YiL}_i$ and $\sum_i w_i \mathrm{YiK}_i$
+- $\sum_i w_i Y_{0,i}^L$ and $\sum_i w_i Y_{0,i}^K$
   reconcile to NIPA and SOI line items within the microsim's
   calibration tolerance.
 - Per-asset aggregates match Distributional Financial Accounts
@@ -615,10 +628,10 @@ imputed housing rent. This is why we apply the shock as a growth
 rate on the microsim baseline rather than as a level target — a
 level target on a non-NIPA base would over-correct.
 
-**Per-scenario sanity checks.** Aggregate $Y_1 = L_1 + K_1$ equals
-$Y_0 (1 + g_y)$ on the microsim baseline (a per-cell identity),
+**Per-scenario sanity checks.** Aggregate $Y_1 = Y_1^L + Y_1^K$ equals
+$Y_0 (1 + g_Y)$ on the microsim baseline (a per-cell identity),
 and the revenue change is bounded above in absolute terms by the
-mechanical swap $|L_0 - L_1| \cdot |\bar\tau^L - \bar\tau^K|$,
+mechanical swap $|Y_0^L - Y_1^L| \cdot |\bar\tau^L - \bar\tau^K|$,
 where $\bar\tau$ are average effective rates by factor.
 
 ## Limitations
@@ -640,7 +653,7 @@ read in context.
   aggregate delta, not the per-household totals.
 
 - **General equilibrium.** Prices and wages outside the shock, and
-  the asset stock $A_i$ itself, are held at baseline. We
+  the asset stock $A_{0,i}$ itself, are held at baseline. We
   distribute the *flow* $X$; we do not revalue the stock. A full
   GE pass would allow asset prices to re-equilibrate as AI capital
   returns rise, which would push the distributional results further
@@ -660,10 +673,10 @@ five directions where the model can be extended.
 ### Labor-side AI exposure
 
 A natural fourth labor-incidence rule scales each unit's labor
-income by an occupation's exposure to AI: $\mathrm{YiL}_{1,i} = (1 +
-\beta \cdot e_i) \cdot \mathrm{YiL}_i$, where $e_i$ is an
+income by an occupation's exposure to AI: $Y_{1,i}^L = (1 +
+\beta \cdot e_i) \cdot Y_{0,i}^L$, where $e_i$ is an
 occupation-level AI-exposure index, and $\beta$ is solved so the aggregate 
-matches $L_1$. The mechanic is straightforward; the missing piece is an
+matches $Y_1^L$. The mechanic is straightforward; the missing piece is an
 occupation-level exposure imputation onto the tax-unit file. Once
 that imputation exists, the AI-exposure scenario slots into the
 labor-scenario axis alongside the existing proportional /
@@ -672,7 +685,7 @@ compressive / expansive rules.
 ### Parameterizing the realization rate
 
 The current release treats AI capital gains as recognized
-immediately at accrual, because $K_0$ is built from the on-1040
+immediately at accrual, because $Y_0^K$ is built from the on-1040
 realized base and re-applying a realization discount would
 double-count. A natural extension is to begin with a definition of
 $X$ that includes unrealized capital gains and apply an explicit
@@ -712,8 +725,8 @@ interpretation if $X$ is sized at the wealth level, before
 realization decisions, rather than off the on-1040 realized base.
 Migrating to a wealth-frame definition would require:
 
-- Replacing the $K_0$ baseline with a wealth aggregate (e.g. SCF
-  net worth or DFA household wealth), and re-deriving $X = g_k
+- Replacing the $Y_0^K$ baseline with a wealth aggregate (e.g. SCF
+  net worth or DFA household wealth), and re-deriving $X = g_K
   \cdot W_0$.
 - Calibrating the realization rate $r$ as discussed above.
 - For retirement income specifically, modeling not just $r$ but the
@@ -741,7 +754,7 @@ gains tax exposure.
 
 ### General equilibrium
 
-The current model holds prices, wages, and the asset stock $A_i$
+The current model holds prices, wages, and the asset stock $A_{0,i}$
 at baseline and distributes the flow $X$ without revaluing the
 stock. A full GE pass would let asset prices re-equilibrate as AI
 capital returns rise, pushing the distributional results further

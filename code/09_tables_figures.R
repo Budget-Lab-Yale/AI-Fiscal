@@ -149,14 +149,14 @@ source("code/08_aggregate.R")
   # Convert raw-dollar macro columns to $ billions so the join with the
   # microsim deltas (which 08 emits in $B, mirroring Tax-Simulator's
   # receipts.csv units) lines up. Only the columns 09 actually consumes
-  # are converted; K0_dollar / Y0_dollar in the source CSV remain in raw
+  # are converted; y0_k_dollar / y0_dollar in the source CSV remain in raw
   # $ for the parameters sheet of 08's bundle.
-  macro[, c("X", "X_to_units", "delta_R_CIT", "L0_dollar") :=
+  macro[, c("X", "X_to_units", "delta_R_CIT", "y0_l_dollar") :=
           lapply(.SD, function(x) x / 1e9),
-        .SDcols = c("X", "X_to_units", "delta_R_CIT", "L0_dollar")]
+        .SDcols = c("X", "X_to_units", "delta_R_CIT", "y0_l_dollar")]
   # Gross labor expansion implied by the (variant, share_mode) pair
-  # (mirrors shock_labor()'s L1d = L0d * (1 + alpha * gk)).
-  macro[, delta_L_dollar := L0_dollar * alpha * gk]
+  # (mirrors shock_labor()'s y1_l = y0_l * (1 + g_l)).
+  macro[, delta_L_dollar := y0_l_dollar * g_l]
   rs    <- fread(runscript_path)
   axes  <- .parse_scenario_axes(rs$ID)
   axes  <- axes[!is.na(variant)]
@@ -169,7 +169,7 @@ source("code/08_aggregate.R")
                           share_mode_chr = share_mode,
                           X, X_to_units, delta_R_CIT, eta_corp,
                           kappa_corp, cit_statutory,
-                          L0_dollar, delta_L_dollar)]
+                          y0_l_dollar, delta_L_dollar)]
   out <- merge(axes, macro_keep,
                by = c("variant_chr", "share_mode_chr"),
                all.x = TRUE)
@@ -437,16 +437,16 @@ build_revenue_to_gdp <- function(rev_long, cell_params,
 #                         variant            (factor, S < M < R)
 #                         r_ai_annual        Karger Table 19 input (or NA
 #                                            when shock_params is NULL)
-#                         theta_1_K          post-shock capital share (s_1
-#                                            in 02_params.R)
+#                         theta_1_K          post-shock capital share
+#                                            (theta1_k in 02_params.R)
 #                         theta_1_L          post-shock labor share
-#                                            (1 - s_1)
+#                                            (1 - theta1_k)
 #                         g_y                AI bump on GDP, cumulative
 #                                            over the Karger horizon and
 #                                            above the CBO no-AI baseline
 #                         g_k                implied capital growth bump
-#                         labor_growth       L1_B / L0_B - 1
-#                         S0, S2, S3         sigma per labor scenario
+#                         labor_growth       y1_l_B / y0_l_B - 1
+#                         S0, S2, S3         lambda per labor scenario
 #   $meta  list: scalars surfaced as footer notes
 #                         baseline_labor_share, k_inequality
 #
@@ -471,21 +471,21 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
     theta_1_L    = theta_1_L[1],
     g_y          = g_y[1],
     g_k          = g_k[1],
-    labor_growth = L1_B[1] / L0_B[1] - 1
+    labor_growth = y1_l_B[1] / y0_l_B[1] - 1
   ), by = variant]
 
-  sigma <- dcast(
+  lambda <- dcast(
     cp[labor_scenario %in% c("S0", "S2", "S3"),
-       .(variant, labor_scenario, sigma)],
+       .(variant, labor_scenario, lambda)],
     variant ~ labor_scenario,
-    value.var = "sigma"
+    value.var = "lambda"
   )
   for (col in c("S0", "S2", "S3")) {
-    if (!col %in% names(sigma)) sigma[, (col) := NA_real_]
+    if (!col %in% names(lambda)) lambda[, (col) := NA_real_]
   }
-  sigma[is.na(S0), S0 := 1]
+  lambda[is.na(S0), S0 := 1]
 
-  out <- merge(macro, sigma, by = "variant", sort = FALSE)
+  out <- merge(macro, lambda, by = "variant", sort = FALSE)
 
   # Karger input: r_ai_annual. Pulled from the yaml slice the caller
   # passes in; we never invert the (g_y, horizon, CBO-baseline-path)
@@ -504,7 +504,7 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
 
   # Metadata for the footer / subtitle rows.
   baseline_labor_share <- out$theta_0_L[1]
-  # k = (1 - sigma_S2) / g_y, recovered from any variant where g_y != 0.
+  # k = (1 - lambda_S2) / g_y, recovered from any variant where g_y != 0.
   # Falls back to NA when the only available cells have g_y == 0 (e.g. a
   # degenerate single-variant smoke run with the S variant pre-rounded
   # to zero), in which case the writer omits the k annotation.
@@ -530,7 +530,7 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
 # mixes label and numeric cells on the same row, carries a merged
 # header band over the variant columns, and uses percent formatting on
 # the growth-rate / share blocks plus a 3-decimal numeric format on the
-# sigma block — none of which the generic .add_xlsx_sheet wrapper
+# lambda block — none of which the generic .add_xlsx_sheet wrapper
 # handles — so this writer goes through openxlsx directly.
 #
 # Takes the list returned by build_key_parameters_table (`$tbl` data
@@ -559,10 +559,10 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
     sprintf("Karger AI-adoption inputs (%d-year horizon, %d-%d)",
             by_yr - hsy_yr, hsy_yr, by_yr)
   } else "Karger AI-adoption inputs (over the Karger horizon)"
-  cap_share_lbl  <- if (have_yrs) sprintf("%d capital share (s_1)", by_yr)
-                    else "Horizon capital share (s_1)"
-  lab_share_lbl  <- if (have_yrs) sprintf("%d labor share (1 - s_1)", by_yr)
-                    else "Horizon labor share (1 - s_1)"
+  cap_share_lbl  <- if (have_yrs) sprintf("%d capital share (theta_1_K)", by_yr)
+                    else "Horizon capital share (theta_1_K)"
+  lab_share_lbl  <- if (have_yrs) sprintf("%d labor share (theta_1_L)", by_yr)
+                    else "Horizon labor share (theta_1_L)"
   base_share_yr  <- if (have_yrs) sprintf(" (%d)", hsy_yr) else ""
 
   openxlsx::addWorksheet(wb, sheet_name)
@@ -694,13 +694,13 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
                kp$labor_growth, pct2_style)
   put_blank()
 
-  # Sigma section (improvement D: explicit formula + k value).
-  put_section("Labor-income inequality parameter (sigma)")
+  # Lambda section (improvement D: explicit formula + k value).
+  put_section("Labor-income inequality parameter (lambda)")
   k_text <- if (is.finite(meta$k_inequality)) {
-    sprintf("sigma = 1 \U00B1 k · g_y on log(YiL);   k = %.3f",
+    sprintf("lambda = 1 \U00B1 k · g_y on log(y_l);   k = %.3f",
             meta$k_inequality)
   } else {
-    "sigma = 1 \U00B1 k · g_y on log(YiL)"
+    "lambda = 1 \U00B1 k · g_y on log(y_l)"
   }
   put_caption(k_text)
   put_data_row("Compressive",  kp$S2, num_style)
@@ -718,7 +718,7 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
   share_mode_text <- if (identical(meta$share_mode, "R")) {
     "Share mode shown: Reallocate (R). The Karger labor-share decline is imposed; fixed-share (F) twins are reported separately."
   } else if (identical(meta$share_mode, "F")) {
-    "Share mode shown: Fixed (F). The labor-capital split is held at baseline (g_k = g_y, alpha = 1); reallocate (R) twins are reported separately."
+    "Share mode shown: Fixed (F). The labor-capital split is held at baseline (g_k = g_l = g_y); reallocate (R) twins are reported separately."
   } else {
     sprintf("Share mode shown: %s.", meta$share_mode)
   }
@@ -731,7 +731,7 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
   put_note(paste0(
     "Negative labor growth occurs when the labor share falls fast enough ",
     "to outweigh productivity gains over the horizon. Aggregate labor ",
-    "income levels remain positive - see L0_B / L1_B in cell_params."))
+    "income levels remain positive - see y0_l_B / y1_l_B in cell_params."))
 
   # Column widths: a roomy label column, then uniform variant columns.
   openxlsx::setColWidths(wb, sheet_name, cols = 1, widths = 46)
@@ -760,7 +760,7 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
       "Scenario identifier in the form ai_<variant>_<share_mode>_<labor>_<realization> (for example, ai_M_R_S0_V1 is the Moderate shock with the labor-capital share reallocating per Karger; ai_M_F_S0_V1 is the paired twin with the labor-capital share held at baseline). Realization is V1 (mechanical) for every cell in the release grid. See the scenario_guide sheet for the meaning of each code.",
       "Shock variant code (S = Slow, M = Moderate, R = Rapid). Controls the size of the 5-year productivity and capital-share targets.",
       "Human-readable label for the shock variant, used on plot axes and tables: Slow, Moderate, or Rapid.",
-      "Factor-share mode. R = reallocate (Karger labor-share decline). F = fixed (labor-capital split preserved; same gy as R, no share reallocation).",
+      "Factor-share mode. R = reallocate (Karger labor-share decline). F = fixed (labor-capital split preserved; same g_y as R, no share reallocation).",
       "Human-readable label for the share mode: Reallocate or Fixed share.",
       "Labor distribution scenario code. S0 scales all wages proportionally; S2 compresses the wage distribution toward the mean; S3 stretches it away from the mean.",
       "Human-readable label for the labor scenario: Proportional, Compressive, or Expansive.",
@@ -803,13 +803,13 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
     column = c("(column headers)",
                "Karger AI-adoption inputs",
                "Derived growth bumps",
-               "Labor-income inequality parameter (sigma)",
+               "Labor-income inequality parameter (lambda)",
                "Notes block"),
     description = c(
       "One column per Karger shock variant - Slow (S), Moderate (M), Rapid (R). The variant code (S/M/R) is shown in parentheses under each label to cross-reference cell_params and the rest of the bundle.",
-      "Karger Table 19 and Table 39 inputs that drive the scenario. r_ai_annual is the AI-conditional annual GDP growth rate from Table 19 (Total / median). 2030 capital share (s_1) and 2030 labor share (1 - s_1) come from Table 39. All three are sourced inputs, not derived. Pulled from config/scenario_params.yaml (shock slice).",
-      "Cumulative growth bumps over the Karger 5-year horizon, expressed above the CBO no-AI baseline path (so a value of 0% means the AI shock contributes nothing on top of CBO at the horizon, not that the level is flat). g_y = AI bump on GDP; g_k = implied capital growth bump; labor row = L1_B / L0_B - 1. Negative labor values arise when the labor-share decline outweighs the productivity gain; aggregate labor income levels remain positive (see L0_B / L1_B in cell_params). All three rows are pulled from cell_params (share_mode = R).",
-      "Ratio of post- to pre-shock standard deviation of log(YiL) on the positive subset. Compressive = sigma_S2 = 1 - k * g_y; Proportional = sigma_S0 = 1 (no dispersion shift); Expansive = sigma_S3 = 1 + k * g_y. Row labels match the labor_label column elsewhere in the bundle (Compressive = S2, Proportional = S0, Expansive = S3 in cell_params and scenario_id). k is the labor_inequality.k multiplier from config/scenario_params.yaml (default 1.0) and is reported in the sigma section caption.",
+      "Karger Table 19 and Table 39 inputs that drive the scenario. r_ai_annual is the AI-conditional annual GDP growth rate from Table 19 (Total / median). 2030 capital share (theta1_k) and 2030 labor share (1 - theta1_k) come from Table 39. All three are sourced inputs, not derived. Pulled from config/scenario_params.yaml (shock slice).",
+      "Cumulative growth bumps over the Karger 5-year horizon, expressed above the CBO no-AI baseline path (so a value of 0% means the AI shock contributes nothing on top of CBO at the horizon, not that the level is flat). g_y = AI bump on GDP; g_k = implied capital growth bump; labor row = y1_l_B / y0_l_B - 1. Negative labor values arise when the labor-share decline outweighs the productivity gain; aggregate labor income levels remain positive (see y0_l_B / y1_l_B in cell_params). All three rows are pulled from cell_params (share_mode = R).",
+      "Ratio of post- to pre-shock standard deviation of log(y_l) on the positive subset. Compressive = lambda_S2 = 1 - k * g_y; Proportional = lambda_S0 = 1 (no dispersion shift); Expansive = lambda_S3 = 1 + k * g_y. Row labels match the labor_label column elsewhere in the bundle (Compressive = S2, Proportional = S0, Expansive = S3 in cell_params and scenario_id). k is the labor_inequality.k multiplier from config/scenario_params.yaml (default 1.0) and is reported in the lambda section caption.",
       "Three free-text rows explaining the baseline labor share (the Karger Table 39 anchor value, shown as a percentage), the share mode the sheet filters to (Reallocate vs. Fixed - see share_mode_comparison for the paired twin comparison), and the sign convention on the Labor row of the derived bumps section."
     )
   )
@@ -818,32 +818,32 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
     sheet = rep("cell_params", 21),
     column = c("variant", "share_mode", "labor_scenario",
                "theta_0_L", "theta_0_K", "theta_1_L", "theta_1_K",
-               "g_y", "g_k", "alpha", "sigma",
-               "L0_B", "L1_B", "K0_B", "K1_B",
+               "g_y", "g_k", "g_l", "lambda",
+               "y0_l_B", "y1_l_B", "y0_k_B", "y1_k_B",
                "X_B", "X_to_units_B", "kappa_corp", "cit_statutory",
                "eta_corp", "delta_R_CIT_B"),
     description = c(
       "Shock variant code (S = Slow, M = Moderate, R = Rapid).",
-      "Factor-share mode. R = reallocate (Karger labor-share decline); F = fixed (s1 := 1 - L0, no factor-share shift).",
+      "Factor-share mode. R = reallocate (Karger labor-share decline); F = fixed (theta1_k := theta0_k, no factor-share shift).",
       "Labor distribution scenario: S0 (proportional), S2 (compressive), S3 (expansive).",
       "Baseline labor share of factor income, NIPA-based (= raw$shock$baseline_labor_share, default 0.555).",
       "Baseline capital share, 1 - theta_0_L (default 0.445).",
       "Post-shock labor share, 1 - theta_1_K. Equals theta_0_L under share_mode = F.",
       "Post-shock capital share. Equals the Karger Table 39 target under share_mode = R; theta_0_K under share_mode = F.",
       "AI productivity bump on top of the no-AI CBO baseline at the policy horizon. See §3.1 of the model doc.",
-      "Implied normalized growth rate of capital (microsim dollars). See §3.2.",
-      "Implied normalized growth rate of labor as a multiple of g_k. alpha = 1 under share_mode = F (no reallocation); alpha < 1 under share_mode = R.",
-      "Ratio of post- to pre-shock standard deviation of log(YiL) on the positive subset. NA for S0; 1 - k * g_y for S2; 1 + k * g_y for S3. k from labor_inequality.k (default 1).",
-      "Baseline aggregate labor income in microsim dollars ($ billions). Sum of weight × YiL across tax units.",
-      "Post-shock aggregate labor income in $ billions. L0_B * (1 + alpha * g_k).",
-      "Baseline aggregate capital income in microsim dollars ($ billions). Sum of weight × YiK.",
-      "Post-shock aggregate capital income in $ billions. K0_B * (1 + g_k).",
-      "Aggregate AI capital flow in $ billions, before the off-microsim CIT wedge. X = K1_B - K0_B.",
+      "Implied cumulative growth rate of capital income over the horizon (microsim dollars). See §3.2.",
+      "Implied cumulative growth rate of labor income over the horizon. Equals g_k under share_mode = F (no reallocation); below g_k under share_mode = R.",
+      "Ratio of post- to pre-shock standard deviation of log(y_l) on the positive subset. NA for S0; 1 - k * g_y for S2; 1 + k * g_y for S3. k from labor_inequality.k (default 1).",
+      "Baseline aggregate labor income in microsim dollars ($ billions). Sum of weight × y_l across tax units.",
+      "Post-shock aggregate labor income in $ billions. y0_l_B * (1 + g_l).",
+      "Baseline aggregate capital income in microsim dollars ($ billions). Sum of weight × y_k.",
+      "Post-shock aggregate capital income in $ billions. y0_k_B * (1 + g_k).",
+      "Aggregate AI capital flow in $ billions, before the off-microsim CIT wedge. X = y1_k_B - y0_k_B.",
       "Aggregate capital flow that reaches tax units, in $ billions. CIT acts upstream of household realizations, so X reaches households in full: X_to_units = X.",
       "C-corp share of the capital base used in the CIT wedge (corporate.kappa_corp, narrow definition with S-corps stripped; see config/calibration/kappa_corp_calculation.csv).",
       "Statutory corporate income tax rate (corporate.cit_statutory, TCJA IRC §11). Cancels algebraically against eta_corp in delta_R_CIT; carried for transparency.",
-      "Calibrated corporate-base scale factor. eta = cit_statutory * (K0$ * kappa_corp) / CBO_CIT_baseline$ so that the baseline-year CIT level matches CBO. Absorbs both the household-realized-vs-pre-realization wedge and the statutory-vs-effective gap. Constant within a (variant, share_mode) cell.",
-      "Off-microsim CIT revenue change in $ billions. cit_statutory * kappa_corp * X / eta_corp ≡ X * CBO_CIT_baseline / K0$."
+      "Calibrated corporate-base scale factor. eta = cit_statutory * (Y0^K$ * kappa_corp) / CBO_CIT_baseline$ so that the baseline-year CIT level matches CBO. Absorbs both the household-realized-vs-pre-realization wedge and the statutory-vs-effective gap. Constant within a (variant, share_mode) cell.",
+      "Off-microsim CIT revenue change in $ billions. cit_statutory * kappa_corp * X / eta_corp ≡ X * CBO_CIT_baseline / Y0^K$."
     )
   )
   base <- rbind(base, key_params_rows, cell_params_rows)

@@ -2,14 +2,15 @@
 # income types, after the macro corporate-income-tax wedge.
 #
 # Pipeline:
-#   1. Baseline aggregates from data: L0$, K0$, Y0$.
-#   2. Apply normalized growth rates derived in 02_params.R to the data
-#      baseline: K1$ = K0$ * (1 + gk),  X = K1$ - K0$ = K0$ * gk.
+#   1. Baseline aggregates from data: Y0^L$, Y0^K$, Y0$.
+#   2. Apply the per-factor cumulative growth rates derived in 02_params.R
+#      to the data baseline: Y1^K$ = Y0^K$ * (1 + g_k),
+#      X = Y1^K$ - Y0^K$ = Y0^K$ * g_k.
 #   3. Macro CIT wedge (acts upstream of household realizations):
 #        cbo_cit_baseline$ = cit_to_gdp_baseline_year * gdp_baseline_year_B$
-#        eta_corp          = cit_statutory * K0$ * kappa_corp / cbo_cit_baseline$
+#        eta_corp          = cit_statutory * Y0^K$ * kappa_corp / cbo_cit_baseline$
 #        delta_R_CIT       = cit_statutory * kappa_corp * X / eta_corp
-#                          ≡ X * cbo_cit_baseline$ / K0$            (algebraic)
+#                          ≡ X * cbo_cit_baseline$ / Y0^K$           (algebraic)
 #        X_to_units        = X                                       (no reduction)
 #      eta absorbs both the household-realized-vs-pre-realization wedge
 #      and the statutory-vs-effective gap.
@@ -36,7 +37,7 @@ suppressPackageStartupMessages({
 source("code/00_utils.R")
 
 # Taxable retirement-distribution columns used by the R1 cascade. R1's
-# receiving set is conditioned on positive YiK retirement income.
+# receiving set is conditioned on positive y_k retirement income.
 .RETIREMENT_TXBL_DIST_COLS <- c("txbl_ira_dist", "txbl_pens_dist")
 
 allocate_capital <- function(dt, params,
@@ -56,19 +57,19 @@ allocate_capital <- function(dt, params,
   out
 }
 
-# 1-3. Compute baseline aggregates ($), apply (gk, alpha) growth rates, and
-# split off the macro corporate-tax wedge.
+# 1-3. Compute baseline aggregates ($), apply the (g_k, g_l) cumulative
+# growth rates, and split off the macro corporate-tax wedge.
 compute_macro_targets <- function(dt, params) {
   corp <- params$raw$corporate
   cbo  <- params$raw$cbo_baseline
 
-  L0_dollar <- sum(dt$weight * dt$YiL)
-  K0_dollar <- sum(dt$weight * dt$YiK)
-  Y0_dollar <- L0_dollar + K0_dollar
-  K1_dollar <- K0_dollar * (1 + params$gk)
-  L1_dollar <- L0_dollar * (1 + params$alpha * params$gk)
-  Y1_dollar <- K1_dollar + L1_dollar
-  X         <- K1_dollar - K0_dollar
+  y0_l_dollar <- sum(dt$weight * dt$y_l)
+  y0_k_dollar <- sum(dt$weight * dt$y_k)
+  y0_dollar <- y0_l_dollar + y0_k_dollar
+  y1_k_dollar <- y0_k_dollar * (1 + params$g_k)
+  y1_l_dollar <- y0_l_dollar * (1 + params$g_l)
+  y1_dollar <- y1_k_dollar + y1_l_dollar
+  X         <- y1_k_dollar - y0_k_dollar
 
   cbo_cit_baseline_dollar <- cbo$cit_to_gdp_baseline_year *
     cbo$gdp_baseline_year_B * 1e9
@@ -79,14 +80,14 @@ compute_macro_targets <- function(dt, params) {
       i = "Check {.field cbo_baseline.cit_to_gdp_baseline_year} and {.field cbo_baseline.gdp_baseline_year_B} in {.path config/scenario_params.yaml}."
     ))
   }
-  eta_corp <- corp$cit_statutory * K0_dollar * corp$kappa_corp /
+  eta_corp <- corp$cit_statutory * y0_k_dollar * corp$kappa_corp /
     cbo_cit_baseline_dollar
   delta_R_CIT <- corp$cit_statutory * corp$kappa_corp * X / eta_corp
   X_to_units  <- X
 
   list(
-    L0_dollar = L0_dollar, K0_dollar = K0_dollar, Y0_dollar = Y0_dollar,
-    K1_dollar = K1_dollar, L1_dollar = L1_dollar, Y1_dollar = Y1_dollar,
+    y0_l_dollar = y0_l_dollar, y0_k_dollar = y0_k_dollar, y0_dollar = y0_dollar,
+    y1_k_dollar = y1_k_dollar, y1_l_dollar = y1_l_dollar, y1_dollar = y1_dollar,
     X = X,
     cbo_cit_baseline_dollar = cbo_cit_baseline_dollar,
     eta_corp                = eta_corp,
@@ -200,12 +201,12 @@ map_to_income_types <- function(dt, asset_map_path, params) {
 }
 
 # R1 = income-flow cascade. X_retirement_dc_ira is itself the increment
-# to realized taxable retirement income (no r_R conversion — X = gk · K0
-# is already built from a YiK base that includes realized, taxable
+# to realized taxable retirement income (no r_R conversion — X = g_k · Y0^K
+# is already built from a y_k base that includes realized, taxable
 # distributions, so the baseline realization rate is already encoded).
 # Pool the retirement slice and route to units with positive baseline
 # taxable pension or IRA distributions, weighted by SCF retirement
-# wealth. Split into the two YiK retirement components using the
+# wealth. Split into the two y_k retirement components using the
 # baseline taxable composition.
 apply_retirement_cascade_R1 <- function(dt, params) {
   cal <- params$retirement_cal
@@ -223,7 +224,7 @@ apply_retirement_cascade_R1 <- function(dt, params) {
   # taxable distributions on the receiving set.
   F_total <- sum(dt$weight * dt$X_retirement_dc_ira)
 
-  # Receiving set: positive YiK retirement income.
+  # Receiving set: positive y_k retirement income.
   txbl_dist  <- dt[, rowSums(.SD), .SDcols = .RETIREMENT_TXBL_DIST_COLS]
   has_dist   <- txbl_dist > 0
   ret_wealth <- dt$retirement

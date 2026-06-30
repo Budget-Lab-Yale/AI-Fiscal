@@ -58,8 +58,8 @@ column aborts at load with an explicit message rather than failing later.
 | `wages` | W-2 wages; also sets the SYZ `W*` threshold. |
 | `scorp_active`, `scorp_active_loss`, `scorp_passive`, `scorp_passive_loss` | S-corp profit/loss, active & passive (SYZ split). |
 | `part_active`, `part_active_loss`, `part_passive`, `part_passive_loss` | Partnership profit/loss, active & passive (SYZ split). |
-| `sole_prop`, `farm` | Schedule C / F — counted as labor income (`YiL`). |
-| `txbl_int`, `exempt_int`, `div_ord`, `div_pref` | Interest and dividends — capital income (`YiK`). |
+| `sole_prop`, `farm` | Schedule C / F — counted as labor income (`y_l`). |
+| `txbl_int`, `exempt_int`, `div_ord`, `div_pref` | Interest and dividends — capital income (`y_k`). |
 | `kg_st`, `kg_lt`, `other_gains` | Capital gains (short/long/other) — capital income. |
 | `rent`, `rent_loss`, `estate`, `estate_loss` | Rental and estate/trust income, net of loss — capital income. |
 | `txbl_ira_dist`, `txbl_pens_dist` | Taxable retirement distributions — capital income. |

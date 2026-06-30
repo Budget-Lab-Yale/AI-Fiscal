@@ -18,8 +18,8 @@ authors:
   - family-names: Nunn
     given-names: Ryan
     affiliation: "The Budget Lab at Yale"
-version: 0.1.0
-# date-released: set this to the v0.1.0 tag date when the release is cut.
+version: 1.0.0
+# date-released: set this to the v1.0 tag date when the release is cut.
 # Omitted until then — a citation file should not assert a release that
 # hasn't happened.
 repository-code: "https://github.com/Budget-Lab-Yale/AI-Fiscal"

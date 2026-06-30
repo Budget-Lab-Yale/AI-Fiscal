@@ -1,7 +1,7 @@
 # Realization and wealth-frame extensions
 
 > **⚠️ PLANNING / FUTURE-WORK DOCUMENT — NOT A DESCRIPTION OF THE
-> v0.1.0 RELEASE.** None of the machinery below ships in this repo.
+> v1.0 RELEASE.** None of the machinery below ships in this repo.
 > The released model is **V1 realization only** (mechanical; see
 > `code/05_realization.R`, 20 lines) under the **income frame**. The
 > **wealth frame, the V2 / V3 realization variants, the step-up
@@ -12,7 +12,7 @@
 > config key in the present tense, it is describing the **archived
 > internal development tree** from which this doc was ported — *not*
 > the public release you are reading. Read it as a design sketch for
-> v0.2.0+, nothing more.
+> a future release, nothing more.
 
 > Ported 2026-06-11 from the archived internal development tree as
 > part of the repo consolidation. Variant labels follow that tree's
@@ -23,12 +23,12 @@
 **Status:** Planning. Drafted 2026-05-22 by merging the prior
 `realization_rate_memo.Rmd` and `wealth_frame_migration.md`.
 **Last reviewed:** 2026-05-22.
-**Phase:** 0 — v0.1.0 ships under constant realization (V1, income
+**Phase:** 0 — v1.0 ships under constant realization (V1, income
 frame); no extension work begun yet.
 **Companion:** `docs/ai_fiscal_methodology.md` (live methodology doc).
 
 This document is the detailed implementation plan for two extensions
-that the v0.1.0 methodology deliberately defers. They are presented
+that the v1.0 methodology deliberately defers. They are presented
 together because they are inseparable: under the current V1 income
 frame the realization rate is mechanically 1, so any meaningful
 parameterization of $r$ requires first redefining $X$ to include
@@ -40,12 +40,12 @@ redefinition.
 The published model defines
 
 $$
-X \;=\; g_k \cdot K_0, \qquad K_0 = \sum_i w_i \cdot \mathrm{YiK}_i,
+X \;=\; g_K \cdot Y_0^K, \qquad Y_0^K = \sum_i w_i \cdot Y_{0,i}^K,
 $$
 
-where $\mathrm{YiK}_i$ is realized, taxable capital income on the
+where $Y_{0,i}^K$ is realized, taxable capital income on the
 PUF. Under that construction the baseline realization rate is
-already inside $K_0$, and the model holds it constant as $g_k$ is
+already inside $Y_0^K$, and the model holds it constant as $g_K$ is
 applied. The choice is internally consistent — it is the V1 default
 documented in the realization-timing section of the methodology —
 but it forecloses two kinds of analysis that the model will
@@ -76,8 +76,8 @@ assumption papers over but does not resolve. Three observations:
 
 1. **$X$ is calibrated as an income flow.**
    `compute_macro_targets()` computes
-   $K_0 = \sum_i w_i \cdot \mathrm{YiK}_i$ and $X = K_0 \cdot g_k$.
-   $\mathrm{YiK}$ is realized, taxable capital income (it includes
+   $Y_0^K = \sum_i w_i \cdot Y_{0,i}^K$ and $X = Y_0^K \cdot g_K$.
+   $Y_{0,i}^K$ is realized, taxable capital income (it includes
    `txbl_pens_dist + txbl_ira_dist`, the *taxable* portion of
    retirement distributions, and the realized LTCG flows already on
    the PUF). So $X$ is denominated in dollars of realized, taxable
@@ -145,15 +145,15 @@ driven by a wealth-frame allocator.
 
 ### 2.3 What is calibrated where today, and where it needs to come from
 
-The "Income frame (v0.1.0)" column describes what the **released**
+The "Income frame (v1.0)" column describes what the **released**
 model does; the V2/V3 / step-up entries are the archived internal
 development tree's machinery and are shown only to motivate the
 wealth-frame target.
 
-| Quantity            | Income frame (v0.1.0)              | Wealth-frame source (proposed)                                                                     |
+| Quantity            | Income frame (v1.0)              | Wealth-frame source (proposed)                                                                     |
 |---------------------|------------------------------------|----------------------------------------------------------------------------------------------------|
-| `gk`                | NIPA capital-income share shift    | Replace with `gW` calibrated against DFA wealth aggregates or a documented `gW = f(gk)` mapping     |
-| `K0`                | $\sum w \cdot \mathrm{YiK}$ (income)| `K0_wealth = $\sum w \cdot A^{\mathrm{base}}$` (wealth)                                            |
+| `g_k`                | NIPA capital-income share shift    | Replace with `gW` calibrated against DFA wealth aggregates or a documented `gW = f(g_k)` mapping     |
+| `Y0^K`                | $\sum w \cdot Y_{0,i}^K$ (income)| `Y0^K_wealth = $\sum w \cdot A^{\mathrm{base}}$` (wealth)                                            |
 | Equity realization  | V1 only (gross = realized); div/LTCG split fixed in `asset_to_income_map.csv`. (V2/V3 rate $r$ and step-up $\varphi$ are archived-repo machinery, not in this release.) | Decompose into `r_div`, `r_lt` with explicit sources (NIPA personal dividends / NIPA realized LTCG over DFA equity stock) |
 | Bond realization    | 100% implicit                       | `r_int = 1.0` explicit; exempt share already per-unit                                              |
 | Pass-through        | 100% implicit                       | `r_pt = 1.0` explicit                                                                              |
@@ -163,12 +163,12 @@ wealth-frame target.
 Two non-trivial calibration questions, both deserving their own
 investigation tickets:
 
-1. **`gW` vs `gk`.** These are not the same number. NIPA capital
+1. **`gW` vs `g_k`.** These are not the same number. NIPA capital
    income / NIPA wealth ≈ aggregate return on wealth ≈ 5–7%. If the
-   AI shock changes capital income by `gk · K0` and the implied
-   wealth change is `gk · K0 / r̄`, then
-   `gW = gk · K0 / (r̄ · W₀) = gk · (K0 / W₀) / r̄`. Whether this
-   collapses to `gW = gk` depends on how AI-induced returns split
+   AI shock changes capital income by `g_k · Y0^K` and the implied
+   wealth change is `g_k · Y0^K / r̄`, then
+   `gW = g_k · Y0^K / (r̄ · W₀) = g_k · (Y0^K / W₀) / r̄`. Whether this
+   collapses to `gW = g_k` depends on how AI-induced returns split
    between higher current-year cash flow and higher asset
    valuations. **TODO:** literature/data review on AI capital-share
    projections to ground this.
@@ -188,7 +188,7 @@ flows to the PUF `kg_lt` column according to a realization rule:
 
 - **V1** (mechanical): $X^{\mathrm{LTCG}}_{V1} = X^{\mathrm{LTCG}}_{\mathrm{gross}}$.
   Defensible only when $X$ is constructed off the already-realized
-  base. **This is the only variant in the v0.1.0 release**; V2 and V3
+  base. **This is the only variant in the v1.0 release**; V2 and V3
   below are proposed extensions, not shipped code.
 - **V2** (realization-adjusted):
   $X^{\mathrm{LTCG}}_{V2} = r \cdot X^{\mathrm{LTCG}}_{\mathrm{gross}}$.
@@ -461,7 +461,7 @@ tax-data work, not an in-scope extension.
 |---|-----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1 | `config/scenario_params.yaml`                       | New top-level `frame: wealth` (`income` for back-compat); when `wealth`, expect new `gW` and per-class realization keys.                                                                                                                                                  |
 | 2 | `config/wealth_frame_calibration.yaml` *(new)*      | Source-cited values for `gW`, `r_div`, `r_lt`, `r_int`, `r_pt`. Same `_status` / `_source` metadata convention as the existing yamls.                                                                                                                                     |
-| 3 | `code/02_params.R`                                  | Load wealth-frame calibration when `frame = wealth`; keep `gk` path live for `frame = income`.                                                                                                                                                                            |
+| 3 | `code/02_params.R`                                  | Load wealth-frame calibration when `frame = wealth`; keep `g_k` path live for `frame = income`.                                                                                                                                                                            |
 | 4 | `code/04_allocate_capital.R::compute_macro_targets()` | Branch on frame: under `wealth`, compute `K0_wealth = Σ w · A_base` and `ΔW = K0_wealth · gW`. CIT wedge still in dollars (same form).                                                                                                                                  |
 | 5 | `code/04_allocate_capital.R::map_to_income_types()` | Per-class realization. Equity: split `ΔW^{eq}` into `r_div · ΔW^{eq}` (`div_pref` column) and `r_lt · ΔW^{eq}` (LTCG, fed into the existing `05_realization.R` step-up haircut). Bonds: 100% to taxable/exempt per the existing exempt-share split. Pass-throughs: 100% to ordinary. Retirement: apply $r_R \cdot s_P \cdot \tau_P$ etc. per §4.2. |
 | 6 | `code/05_realization.R`                             | Strictly a step-up function under wealth frame (LTCG quantity now comes pre-realized from step 5); behavior under income frame unchanged.                                                                                                                                  |
@@ -471,7 +471,7 @@ tax-data work, not an in-scope extension.
 
 ## 6. Phasing
 
-1. **Phase 0 — current state (2026-05-22).** v0.1.0 ships under
+1. **Phase 0 — current state (2026-05-22).** v1.0 ships under
    constant realization (V1, income frame). The retirement procedure
    inherits the baseline realization rate by construction. Both
    extensions described here are deferred.
@@ -502,11 +502,11 @@ tax-data work, not an in-scope extension.
 
 ## 7. Open questions
 
-- **How does the labor side respond?** $L_1 = L_0 \cdot (1 + \alpha \cdot g_k)$
+- **How does the labor side respond?** $Y_1^L = Y_0^L \cdot (1 + g_L)$
   is in income units. Under the wealth frame, do we still
-  parameterize via $g_k$, or do we need a separate labor-shock
+  parameterize via $g_K$, or do we need a separate labor-shock
   parameter? Probably the former (labor compensation is naturally
-  a flow), but the bookkeeping needs to be explicit when $g_k$ is
+  a flow), but the bookkeeping needs to be explicit when $g_K$ is
   no longer the headline capital knob.
 - **Should the CIT wedge be on $\Delta W$ or on the realized
   portion?** Statutory CIT applies to corporate profits (a flow),

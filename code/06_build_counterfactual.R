@@ -23,7 +23,7 @@ suppressPackageStartupMessages({
 
 source("code/00_utils.R")
 
-# Columns that scale uniformly with rho_i = YiL1 / YiL
+# Columns that scale uniformly with rho_i = y_l1 / y_l
 .labor_scale_cols <- c(
   "wages", "wages1", "wages2",
   "ot", "ot1", "ot2",
@@ -94,7 +94,7 @@ source("code/00_utils.R")
 # before the cell loop and passes it into build_counterfactual via
 # `baseline_cache`. Tests / diagnostics pass NULL and we recompute
 # inline. `params` supplies passthrough.passive_capital_share — the
-# same parameter 01_load_data.R uses to build YiL/YiK, so the two
+# same parameter 01_load_data.R uses to build y_l/y_k, so the two
 # stay in sync with the yaml.
 compute_baseline_cache <- function(dt_baseline, params) {
   psh <- params$raw$passthrough$passive_capital_share
@@ -163,7 +163,7 @@ build_counterfactual <- function(dt_baseline, step_a_dt, step_b,
       i = "Both tables must carry exactly one row per baseline tax unit."
     ))
   }
-  dt[step_a_dt, on = "id", YiL1 := i.YiL1]
+  dt[step_a_dt, on = "id", y_l1 := i.y_l1]
   flow_cols <- setdiff(names(flows), "id")
   dt[flows, on = "id",
      (flow_cols) := mget(paste0("i.", flow_cols))]
@@ -174,7 +174,7 @@ build_counterfactual <- function(dt_baseline, step_a_dt, step_b,
   }
   # Ids missing from step_a/step_b would otherwise leave NAs that
   # propagate silently into the written tax-units CSV.
-  na_cols <- c("YiL1", flow_cols)
+  na_cols <- c("y_l1", flow_cols)
   na_hit  <- na_cols[vapply(dt[, ..na_cols], anyNA, logical(1))]
   if (length(na_hit)) {
     cli::cli_abort(c(
@@ -184,7 +184,7 @@ build_counterfactual <- function(dt_baseline, step_a_dt, step_b,
     ))
   }
 
-  dt[, rho_i := fifelse(YiL != 0, YiL1 / YiL, 1)]
+  dt[, rho_i := fifelse(y_l != 0, y_l1 / y_l, 1)]
 
   # 1. Scale uniform-labor columns by rho_i (skip under capital_only).
   if (apply_labor) {
@@ -265,7 +265,7 @@ build_counterfactual <- function(dt_baseline, step_a_dt, step_b,
   }
 
   # Drop our analytic columns; restore baseline schema.
-  drop_cols <- c("YiL", "YiK", "YiL1", "rho_i",
+  drop_cols <- c("y_l", "y_k", "y_l1", "rho_i",
                  "scorp_active_net", "part_active_net",
                  "scorp_active_cap_share", "part_active_cap_share",
                  "rent_net", "estate_net",
@@ -370,7 +370,7 @@ write_counterfactual_scenario <- function(dt_cf, year, scenario_id,
 #
 # Columns:
 #   id              join key (matches Tax-Simulator detail/<year>.csv)
-#   dL_unit         YiL1 - YiL on the labor side; zero under capital_only
+#   dL_unit         y_l1 - y_l on the labor side; zero under capital_only
 #   X_gross_unit    gross capital-flow allocation, $; zero under
 #                   labor_only. Scaled from step_b$X_i by
 #                   macro$X / macro$X_to_units — identically 1 today
@@ -395,15 +395,15 @@ write_factor_channels <- function(dt_baseline, step_a_dt, step_b,
     macro$X / macro$X_to_units
   } else 0
 
-  channels <- data.table(id = dt_baseline$id, YiL_base = dt_baseline$YiL)
-  channels <- merge(channels, step_a_dt[, .(id, YiL1)],
+  channels <- data.table(id = dt_baseline$id, y_l_base = dt_baseline$y_l)
+  channels <- merge(channels, step_a_dt[, .(id, y_l1)],
                     by = "id", all.x = TRUE)
   channels <- merge(channels, step_b[, .(id, X_i)],
                     by = "id", all.x = TRUE)
-  channels[is.na(YiL1), YiL1 := YiL_base]
+  channels[is.na(y_l1), y_l1 := y_l_base]
   channels[is.na(X_i),  X_i  := 0]
 
-  channels[, dL_unit      := if (apply_labor)   YiL1 - YiL_base else 0]
+  channels[, dL_unit      := if (apply_labor)   y_l1 - y_l_base else 0]
   channels[, X_gross_unit := if (apply_capital) X_i * scale_gross else 0]
   channels[, dY_factor_unit := dL_unit + X_gross_unit]
 

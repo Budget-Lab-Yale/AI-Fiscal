@@ -15,9 +15,37 @@ the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   generation (CBO baseline module, separable labor/capital modules,
   upstream capital sizing).
 
+### Changed
+
+- **Notation migration to align the codebase with the methodology
+  document.** Unified per-unit income notation `Y_{j,i}^X` throughout
+  code, tests, and docs. Symbol renames: the labor-inequality parameter
+  `sigma` → `lambda` (`λ`); the normalized-labor-growth scalar `alpha`
+  is removed in favor of the direct cumulative labor-growth rate `g_l`
+  (`g_l = (θ1_l·(1+g_Y) − θ0_l)/θ0_l`); growth bumps `gy/gk` → `g_y/g_k`;
+  per-unit columns `YiL/YiK` → `y_l/y_k`; aggregate-dollar fields
+  `L0_dollar/K0_dollar/Y0_dollar` → `y0_l_dollar/y0_k_dollar/y0_dollar`;
+  share variables `L0/K0/s1` → `theta0_l/theta0_k/theta1_k`. These
+  propagate to **reader-facing workbook columns** (`parameters`,
+  `cell_params`, `labor_inequality` sheets): `sigma_S2/S3` →
+  `lambda_S2/S3`, `alpha` → `g_l`, `L0_B/L1_B/K0_B/K1_B` →
+  `y0_l_B/y1_l_B/y0_k_B/y1_k_B`.
+- **Config key rename:** `shock.variants.{S,M,R}.s1` →
+  `shock.variants.{S,M,R}.theta1_k` in `config/scenario_params.yaml`
+  (post-shock capital share).
+- Corporate-tax wedge `eta` documented consistently with the code's
+  definition `η = τ_C·κ·Y0^K / R^{CIT}_CBO`, so that
+  `ΔR^CIT = X · R^{CIT}_CBO / Y0^K` (no behavioral change; the methodology
+  doc previously stated `η` reciprocally).
+
+### Removed
+
+- `docs/ai_fiscal_methodology.docx` (superseded by the markdown
+  methodology doc and the standalone review docx).
+
 ### Fixed
 
-Review waves 1–2 (numbers-identical to v0.1.0 except new guards):
+Review waves 1–2 (numbers-identical to v1.0 except new guards):
 
 - Counterfactual builder: order-preserving update joins replace the
   re-sorting `merge()` calls, closing a latent row-misalignment hazard
@@ -71,7 +99,7 @@ Review waves 3–5 (guards, registry, test hardening):
   identity tolerances converted to relative form; helper announces
   real-vintage vs synthetic substrate. 132 PASS (was 95).
 
-## [0.1.0] — 2026-06-22
+## [1.0.0] — 2026-06-22
 
 Initial public release. Income-frame microsimulation of an AI-driven
 labor-to-capital income shift, built on the Budget Lab Tax-Simulator.
@@ -106,7 +134,7 @@ labor-to-capital income shift, built on the Budget Lab Tax-Simulator.
   4.4.2, matching the cluster module); `requirements.txt` companion
   mirrors the Tax-Simulator convention.
 
-### Out of scope for v0.1.0 (planned for later releases)
+### Out of scope for v1.0 (planned for later releases)
 
 - Wealth-frame definition of $X$ (current model sizes $X$ off the
   on-1040 realized base; see Future work §"Wealth-frame redefinition
@@ -118,5 +146,5 @@ labor-to-capital income shift, built on the Budget Lab Tax-Simulator.
   elasticity).
 - General-equilibrium re-pricing of the asset stock.
 
-[unreleased]: https://github.com/Budget-Lab-Yale/AI-Fiscal/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/Budget-Lab-Yale/AI-Fiscal/releases/tag/v0.1.0
+[unreleased]: https://github.com/Budget-Lab-Yale/AI-Fiscal/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Budget-Lab-Yale/AI-Fiscal/releases/tag/v1.0.0

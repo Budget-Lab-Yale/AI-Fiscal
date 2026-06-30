@@ -1,4 +1,4 @@
-# Orchestrator: build the 18-cell counterfactual grid for the v0.1.0
+# Orchestrator: build the 18-cell counterfactual grid for the v1.0
 # release, run Tax-Simulator, and assemble the publishable deliverables.
 #
 # Usage:
@@ -106,16 +106,16 @@ default_runscript_path <- function() {
     do.call(data.table, c(list(
       variant        = pv$params$active_variant,
       share_mode     = pv$params$share_mode,
-      s1             = pv$params$s1,
-      gy             = pv$params$gy,
-      gk             = pv$params$gk,
-      alpha          = pv$params$alpha,
+      theta1_k       = pv$params$theta1_k,
+      g_y            = pv$params$g_y,
+      g_k            = pv$params$g_k,
+      g_l            = pv$params$g_l,
       k_inequality   = pv$params$k_inequality,
-      sigma_S2       = 1 - pv$params$k_inequality * pv$params$gy,
-      sigma_S3       = 1 + pv$params$k_inequality * pv$params$gy,
-      L0_dollar      = m$L0_dollar,
-      K0_dollar      = m$K0_dollar,
-      Y0_dollar      = m$Y0_dollar,
+      lambda_S2      = 1 - pv$params$k_inequality * pv$params$g_y,
+      lambda_S3      = 1 + pv$params$k_inequality * pv$params$g_y,
+      y0_l_dollar    = m$y0_l_dollar,
+      y0_k_dollar    = m$y0_k_dollar,
+      y0_dollar      = m$y0_dollar,
       X              = m$X,
       X_to_units     = m$X_to_units,
       kappa_corp     = m$kappa_corp,
@@ -197,7 +197,7 @@ build_ai_fiscal_runs <- function(specs,
   baseline_cache <- compute_baseline_cache(dt_split, params0)
 
   # 2. Cache (params, step_b) per unique (variant, share_mode). share_mode
-  # changes s1 → (gk, alpha, X, CIT wedge), so step_b must be recomputed.
+  # changes theta1_k → (g_k, g_l, X, CIT wedge), so step_b must be recomputed.
   unique_keys <- unique(vapply(specs, function(s) {
     paste(s$variant, s$share_mode, sep = "|")
   }, character(1)))

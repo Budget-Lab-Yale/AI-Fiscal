@@ -4,15 +4,15 @@
 nothing here is implemented. Companion docs:
 `realization_and_wealth_extensions.md` (the earlier wealth-frame /
 realization plan, which §6 below subsumes) and
-`ai_fiscal_methodology.md` (the shipped v0.1.0 model).
+`ai_fiscal_methodology.md` (the shipped v1.0 model).
 **Version label:** "v2" names the second *model generation*
 (re-architecture), not necessarily the git tag it ships under —
 release numbering TBD (could land as the 0.2.x series).
 
 ## 1. The idea in one paragraph
 
-v0.1.0 sizes the AI shock directly in realized-1040 units
-(`X = g_k · K_0` with `K_0 = Σ w · YiK`) and pushes it onto PUF income
+v1.0 sizes the AI shock directly in realized-1040 units
+(`X = g_k · Y0^K` with `Y0^K = Σ w · y_k`) and pushes it onto PUF income
 lines in one step, with corporate tax bolted on as an output-stage
 macro wedge. v2 inverts this: a **baseline module** ports the CBO
 macro baseline (GDP path, factor shares, revenue levels); a **shock
@@ -39,16 +39,16 @@ modeled stages instead of by-construction assumptions.
     target: L1 = L0·(1+g_L)           target: ΔΠ = g_K · K0_upstream
     forms: S0/S2/S3 (now),            stage 1: entity split
       CPS×AI-exposure cells (next)      (C-corp / pass-through /
-    contract: per-unit YiL1,             household-direct / retirement)
-      Σw·YiL1 = L1                    stage 2: entity tax (CIT here,
+    contract: per-unit y_l1,             household-direct / retirement)
+      Σw·y_l1 = L1                    stage 2: entity tax (CIT here,
         │                                not at output stage)
         │                             stage 3: retention vs payout
         │                             stage 4: across/within-unit
-        │                                allocation (v0.1.0 machinery)
+        │                                allocation (v1.0 machinery)
         │                             stage 5: realization module
         │                                (rates per class; was Step C)
         └──────────┬──────────────────────┘
-[4. Counterfactual PUF writer]  (v0.1.0 step 06, survives)
+[4. Counterfactual PUF writer]  (v1.0 step 06, survives)
         │
 [5. Tax-Simulator]  →  [6. Aggregation / deliverables / BLSMM]
 ```
@@ -62,10 +62,10 @@ than hand-transcribed scalars.
   baseline by source (IIT, CIT, payroll), and factor shares (CBO
   doesn't publish a labor share directly — derive from NIPA/BLS with
   the CBO GDP path; calibration receipt required).
-- **Why:** the v0.1.0 review found the CBO inputs scattered and
+- **Why:** the v1.0 review found the CBO inputs scattered and
   fragile — `g_2026`/`g_2027plus` keys consumed positionally in
   `02_params.R:136-139` (rolling the baseline forward silently
-  corrupts `gy`), CBO yaml fragments re-read inline mid-output in
+  corrupts `g_y`), CBO yaml fragments re-read inline mid-output in
   `09_tables_figures.R`, and GDP scaling hardcoded as one year of
   growth. All of that becomes `load_cbo_baseline()` → a single typed
   object consumed by 02, 04, 09, and 15.
@@ -78,11 +78,11 @@ than hand-transcribed scalars.
 ## 3. Labor module
 
 **Contract** (unchanged in spirit from Step A, formalized): consume
-`(id, weight, YiL)` plus a target `L1`; emit per-unit `YiL1` with
-`Σ w·YiL1 = L1` and documented treatment of non-positive baseline
-units. The v0.1.0 review confirmed Step A is already fully separable
+`(id, weight, y_l)` plus a target `L1`; emit per-unit `y_l1` with
+`Σ w·y_l1 = L1` and documented treatment of non-positive baseline
+units. The v1.0 review confirmed Step A is already fully separable
 — its only capital-side tie is deriving `L1` internally from
-`(alpha, gk)`; v2 passes `L1` (or `g_L`) in explicitly from the shock
+`(g_l, g_k)`; v2 passes `L1` (or `g_L`) in explicitly from the shock
 spec, severing that tie.
 
 **Forms:**
@@ -103,7 +103,7 @@ spec, severing that tie.
      age-band × sex × wage-decile (× filing status), with cell
      exposure `e_c` = CPS earnings-weighted mean exposure.
   3. Assign `e_c` to PUF units by cell; apply a cell-conditional
-     transform `YiL1_i = (1 + β·e_c(i)) · YiL_i` (sign of β per
+     transform `y_l1_i = (1 + β·e_c(i)) · y_l_i` (sign of β per
      scenario: displacement vs augmentation), solving β by the same
      uniroot-to-aggregate + rescale pattern S2/S3 use.
   4. Module-specific validation: cell-level wage bill CPS-vs-PUF
@@ -121,8 +121,8 @@ Give v2 forms descriptive codes; see §7 on the scenario-ID problem.
 
 ## 4. Capital module
 
-The center of the re-architecture. v0.1.0's single step
-`X = g_k·K_0 → wealth-proportional allocation → PUF lines` becomes a
+The center of the re-architecture. v1.0's single step
+`X = g_k·Y0^K → wealth-proportional allocation → PUF lines` becomes a
 staged cascade. Per stage:
 
 1. **Upstream sizing.** `ΔΠ = g_K · K0_upstream` where `K0_upstream`
@@ -138,7 +138,7 @@ staged cascade. Per stage:
    AI-specific tilt (software/IP capital concentrated in C-corps) is
    a sensitivity axis the calibration README already anticipates.
 3. **Entity tax.** CIT applies here — statutory rate × effective
-   wedge on the C-corp slice — *replacing* the v0.1.0 output-stage
+   wedge on the C-corp slice — *replacing* the v1.0 output-stage
    `eta_corp` layering in 09. **Double-count tripwire** (from the
    review): 09 adds `delta_R_CIT` unconditionally on the assumption
    that the microsim never touches `revenues_corp_tax`; the moment v2
@@ -150,13 +150,13 @@ staged cascade. Per stage:
    dividends — buybacks raise a classification question: economically
    payout, taxed as realization) and retention (wealth accrual on
    equity holders, queued for the realization module). This stage has
-   *no home* in v0.1.0 — `X_to_units = X` at `04_allocate_capital.R:85`
+   *no home* in v1.0 — `X_to_units = X` at `04_allocate_capital.R:85`
    is a hard-coded 100%-distributed assumption. The natural insertion
    point (per the review) is between `compute_macro_targets` and
    `allocate_across_units`. The dormant `scale_gross` machinery in
    06's factor-channels sidecar (X_macro ≠ X_distributed) is the
    vestigial hook for exactly this distinction.
-5. **Household allocation.** The v0.1.0 across-unit (wealth-
+5. **Household allocation.** The v1.0 across-unit (wealth-
    proportional) and within-unit (asset-class share) allocators
    survive — the review confirms both are frame-agnostic given an
    arbitrary scalar/per-class flow. What changes: allocation happens
@@ -184,13 +184,13 @@ identity — ΔΠ = entity tax + payout + retention + pass-through +
 direct, and the sum of per-unit PUF deltas equals the
 distributed-flow total. These become module conformance tests (§8).
 
-## 5. What survives from v0.1.0 (review-verified)
+## 5. What survives from v1.0 (review-verified)
 
 | Component | Verdict |
 |---|---|
 | `03_shock_labor.R` S0/S2/S3 machinery | survives; take `L1` as input |
 | `04` across-unit + within-unit allocators, R1 cascade | survive as capital-module stages 5–6 |
-| `04::compute_macro_targets` (X = gk·K0, eta_corp wedge) | replaced wholesale by stages 1–4 |
+| `04::compute_macro_targets` (X = g_k·Y0^K, eta_corp wedge) | replaced wholesale by stages 1–4 |
 | `05_realization.R` | grows from placeholder into the stage-6 module |
 | `06` PUF writer, kg_lt augmentation, runscript plumbing | survives (after the alignment fix; its `X_<type>` column interface is exactly the contract the capital module should emit) |
 | `07_run_tax_sim.R` | survives untouched (axis-agnostic) |
@@ -206,7 +206,7 @@ The v2 capital module **subsumes** that plan: upstream entity-level
 sizing + retention/payout + explicit realization delivers everything
 the wealth frame was for (realization-rate policy levers, accrual vs
 cash-flow distinction) while staying denominated in income flows at
-the national-accounts level — which sidesteps the `gW = f(gk, r̄)`
+the national-accounts level — which sidesteps the `gW = f(g_k, r̄)`
 conversion problem the extensions doc flagged as its hardest open
 question (§2.3). The extensions doc remains the authoritative source
 for the realization-rate calibration (§3) and the retirement

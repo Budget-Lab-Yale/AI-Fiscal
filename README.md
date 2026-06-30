@@ -1,9 +1,9 @@
-# AI-Fiscal — v0.1.0 release build
+# AI-Fiscal — v1.0 release build
 
 ## Introduction
 
 This repo models the fiscal impact of AI-driven macroeconomic shocks
-using the Budget Lab tax microsimulation model. Version v0.1.0 is used
+using the Budget Lab tax microsimulation model. Version v1.0 is used
 to produce the results in "How potential AI futures would play out in
 the current tax system". <TODO ADD LINK>
 
@@ -15,7 +15,7 @@ Methodology lives in `docs/ai_fiscal_methodology.md`.
 
 The run is fully parameterized by a single file,
 `config/scenario_params.yaml` (see [Parameters](#parameters)). In
-v0.1.0 the shock parameters are calibrated to the AI-adoption scenarios
+v1.0 the shock parameters are calibrated to the AI-adoption scenarios
 in Karger et al. 2026 (NBER w35046,
 <https://www.nber.org/papers/w35046>).
 
@@ -39,7 +39,7 @@ Every run produces:
 2. The publishable workbook + figure suite + decomposition table.
 3. A timestamped log file at `logs/release_<timestamp>.log`.
 
-This is the v0.1.0 income-frame release. Future work will examine alternative
+This is the v1.0 income-frame release. Future work will examine alternative
 assumptions regarding the realization of capital income, the treatment of
 tax-preferred retirement income, and labor-side AI exposure metrics (left as S1),
 among other potential improvements. The full development history includes early efforts
@@ -186,7 +186,7 @@ tests/      # testthat suite (Rscript tests/testthat.R)
 | `00_ai_fiscal_sim.R` | Orchestrator. Loops the 18-cell grid, invokes Tax-Simulator, runs 08+09+10, then 15 (skipped if BLSMM unavailable). |
 | `00_utils.R` | Shared helpers (weighted quantile / top share / Gini, asset-column registry). |
 | `01_load_data.R` | Load merged PUF + SCF tax-units; Smith-Yagan-Zidar passthrough split. |
-| `02_params.R` | Read `scenario_params.yaml`; derive `(gk, alpha)` from `(s1, gy, L0)` per variant + share mode. |
+| `02_params.R` | Read `scenario_params.yaml`; derive `(g_k, g_l)` from `(theta1_k, g_y, theta0_l)` per variant + share mode. |
 | `03_shock_labor.R` | **Step A** — labor-income redistribution (S0 / S2 / S3). |
 | `04_allocate_capital.R` | **Step B** — CIT wedge + across-units allocation (all_assets) + within-unit map + R1 retirement cascade. |
 | `05_realization.R` | **Step C** — V1 mechanical realization. |
@@ -274,7 +274,7 @@ present and aborts with a list of any gaps.
 |---|---|---|
 | `baseline_year` | scalar | Microsim year aged to match Karger's 5-yr horizon (default 2030). |
 | `cbo_baseline` | growth rates, GDP, rev/GDP, CIT/GDP | CBO 2025 baseline (publication 62105). |
-| `shock` | `baseline_labor_share`, `variants.{S,M,R}.{s1, r_ai_annual}` | Karger 2026 NBER w35046 (Tables 19/39). |
+| `shock` | `baseline_labor_share`, `variants.{S,M,R}.{theta1_k, r_ai_annual}` | Karger 2026 NBER w35046 (Tables 19/39). |
 | `labor_inequality` | `k` | Multiplier on g_y that sets the S2/S3 dispersion shift. |
 | `passthrough` | wage-threshold + capital shares | Smith-Yagan-Zidar 2019, applied at the tax-unit level. |
 | `corporate` | `kappa_corp`, `cit_statutory` | Macro CIT wedge calibrated against the CBO baseline-year CIT level. |

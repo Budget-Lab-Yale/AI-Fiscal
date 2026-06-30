@@ -12,19 +12,19 @@ test_that("counterfactual retains all required PUF columns", {
 })
 
 test_that("CF wages obey wages_cf == wages_base * rho_i per unit", {
-  # build_counterfactual scales wages by rho_i = YiL1 / YiL on every
-  # unit (rho_i = 1 where YiL = 0). The aggregate ratio
+  # build_counterfactual scales wages by rho_i = y_l1 / y_l on every
+  # unit (rho_i = 1 where y_l = 0). The aggregate ratio
   # sum(wages_cf) / sum(wages_base) equals attr(step_a)$rho only when
-  # the wage composition lines up exactly with the YiL composition,
+  # the wage composition lines up exactly with the y_l composition,
   # which it doesn't in general (some units have positive wages but
-  # YiL ≤ 0 due to passthrough losses). Test the identity at the unit
+  # y_l ≤ 0 due to passthrough losses). Test the identity at the unit
   # level instead.
-  step_a_dt <- as.data.table(dt_step_a)[, .(id, YiL, YiL1)]
+  step_a_dt <- as.data.table(dt_step_a)[, .(id, y_l, y_l1)]
   setkey(step_a_dt, id)
   base <- as.data.table(dt_baseline)[, .(id, wages_base = wages)]
   cf   <- as.data.table(dt_cf)[, .(id, wages_cf = wages)]
   m    <- merge(merge(step_a_dt, base, by = "id"), cf, by = "id")
-  m[, rho_i := fifelse(YiL != 0, YiL1 / YiL, 1)]
+  m[, rho_i := fifelse(y_l != 0, y_l1 / y_l, 1)]
   m[, pred  := wages_base * rho_i]
   expect_lt(max(abs(m$wages_cf - m$pred)), 1e-3)
 })

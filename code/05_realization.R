@@ -1,7 +1,7 @@
 # Step C: realization timing for the gross LTCG flows from Step B.
 #
 # Release version uses V1 (mechanical) exclusively: all gross LTCG gains
-# are treated as realized in-year. Justified because K0 is built from
+# are treated as realized in-year. Justified because Y0^K is built from
 # the on-1040 realized base, so the baseline realization rate is
 # already implicit in X — applying r again would double-count the
 # discount (parallel to the R1 retirement argument). See the
