@@ -6,8 +6,8 @@ abstract: >
   of an AI-driven shift in factor income shares (labor to capital), built
   on the Budget Lab Tax-Simulator microsimulation. Inputs are calibrated
   against Karger et al. 2026 (NBER w35046) AI-adoption trajectories; the
-  pipeline routes the implied capital flow across tax units (Smith-Yagan-
-  Zidar pass-through split) and across income types, then runs Tax-
+  pipeline routes the implied capital flow across tax units (Saez and
+  Zucman (2020) pass-through split) and across income types, then runs Tax-
   Simulator to produce per-cell revenue and distributional deltas.
 type: software
 authors:

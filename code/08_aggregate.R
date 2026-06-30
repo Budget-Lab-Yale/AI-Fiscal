@@ -782,8 +782,8 @@ build_atr_decile <- function(output_root, runscript_path, year,
       "Bottom-line revenue change for a scenario. Equals the Tax-Simulator total (income tax + payroll - refundable credit outlays) plus the macro CIT delta for the matching variant."
     ) else c(
       "TCJA federal C-corp rate (IRC §11).",
-      "Narrow definition. S-corp + partnership profits are routed separately to households via the Smith-Yagan-Zidar 2019 split in 01_load_data.R, so they're already in the IIT side. Inclusive definition (S-corp counted) gives 0.62. Sensitivity range [0.45, 0.65].",
-      "CBO 2025 Budget and Economic Outlook (publication 62105), Table 1, 2030 federal CIT / GDP, applied to 2030 nominal GDP.",
+      "Narrow definition. S-corp + partnership profits are routed separately to households via the Saez and Zucman (2020) split in 01_load_data.R, so they're already in the IIT side. Inclusive definition (S-corp counted) gives 0.62. Sensitivity range [0.45, 0.65].",
+      "CBO February 2026 Budget and Economic Outlook: 2026 to 2036 (publication 62105), Table 1, 2030 federal CIT / GDP, applied to 2030 nominal GDP.",
       "Calibrated at runtime by compute_macro_targets() so that tau_stat * (Y0^K$ * kappa_corp) / eta matches CBO_CIT$ at baseline. eta absorbs household-realized-vs-pre-realization wedge plus statutory-vs-effective gap.",
       "Aggregate dollar flow from baseline to counterfactual capital income — the 'extra' capital income created by the shock.",
       "CIT acts upstream of household realizations: the full AI capital flow X reaches tax units, and the corporate-tax response enters the bottom line via delta_R_CIT (computed off-microsim) rather than via a reduction in the household-side base.",

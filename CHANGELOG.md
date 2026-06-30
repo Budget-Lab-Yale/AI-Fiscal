@@ -57,7 +57,7 @@ Review waves 1–2 (numbers-identical to v1.0 except new guards):
   holdings is now surfaced with a `cli_warn` carrying the weighted
   dollar mass (M2) — it fires on the synthetic fixture, so expect it
   on real runs too.
-- SYZ passive capital share is read from
+- SZ passive capital share is read from
   `passthrough.passive_capital_share` in the yaml everywhere
   (`compute_baseline_cache()` gained a `params` arg); previously
   hard-coded as 0.75 in four places in 06 (M3).
@@ -76,7 +76,7 @@ Review waves 3–5 (guards, registry, test hardening):
 
 - `--years` validated for shape and a >= 2-year span;
   `weighted_quantile` hardened (empty/NA/zero-weight aborts,
-  float-proof tail); SYZ W* sample and percentile validated; YiL/YiK
+  float-proof tail); SZ W* sample and percentile validated; YiL/YiK
   NA tripwire after the split; `load_params` asserts
   `horizon_start_year == 2025` (positional CBO growth keys) and
   validates `r_ai_annual`, `L0`, `s1` ranges.

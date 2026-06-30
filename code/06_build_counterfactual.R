@@ -34,7 +34,7 @@ source("code/00_utils.R")
 )
 
 # Reconstruct one passthrough sub-bucket (kind ∈ {scorp, part},
-# status ∈ {active, passive}) given the SYZ-implied labor/capital split,
+# status ∈ {active, passive}) given the SZ-implied labor/capital split,
 # the unit's labor scaling rho, and a capital flow share.
 .update_passthrough <- function(pos, loss, cap_share, rho, flow) {
   net       <- pos - loss
@@ -89,8 +89,8 @@ source("code/00_utils.R")
 #   - yh_default, basis_ratio: gain-weighted means used by .augment_kg_lt
 #     to populate kg_lt_years_held / kg_lt_basis on units newly receiving
 #     LTCG flow.
-# All depend only on dt_baseline (= the post-SYZ-split table) and the
-# SYZ passive capital share, so the orchestrator computes this once
+# All depend only on dt_baseline (= the post-SZ-split table) and the
+# SZ passive capital share, so the orchestrator computes this once
 # before the cell loop and passes it into build_counterfactual via
 # `baseline_cache`. Tests / diagnostics pass NULL and we recompute
 # inline. `params` supplies passthrough.passive_capital_share — the
@@ -226,7 +226,7 @@ build_counterfactual <- function(dt_baseline, step_a_dt, step_b,
     }
   }
 
-  # 3. Reconstruct passthrough columns. `psh` is the SYZ passive capital
+  # 3. Reconstruct passthrough columns. `psh` is the SZ passive capital
   # share from the yaml — must match what compute_baseline_cache and
   # 01_load_data.R use.
   psh    <- params$raw$passthrough$passive_capital_share

@@ -1,5 +1,5 @@
 # Sourced once by testthat before any test-*.R file. Loads the active-variant
-# baseline + runs SYZ split, Step A (S0), Step B, and Step C, exposing the
+# baseline + runs SZ split, Step A (S0), Step B, and Step C, exposing the
 # results as objects that the test files read. The pipeline is deterministic
 # (no RNG), so caching at the suite level keeps test runtime to ~load + ~1s.
 

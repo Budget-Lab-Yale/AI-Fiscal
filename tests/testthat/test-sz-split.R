@@ -1,14 +1,14 @@
-# SYZ pass-through split (01_load_data.R::apply_passthrough_split).
+# SZ pass-through split (01_load_data.R::apply_passthrough_split).
 #
 # The fixture-level invariant tests elsewhere only check that y_l and y_k
 # come out positive, so a sign error that swapped the labor and capital
 # shares of pass-through profit (or routed wages into y_k) would pass
 # them. These tests pin the *direction* of the split on a tiny
-# hand-built unit set with known answers, recomputing the documented SYZ
+# hand-built unit set with known answers, recomputing the documented SZ
 # formula independently and asserting the loader matches it exactly.
 
 # Minimal params: apply_passthrough_split() only reads $raw$passthrough.
-.syz_params <- list(raw = list(passthrough = list(
+.sz_params <- list(raw = list(passthrough = list(
   wage_threshold_percentile   = 99.99,
   wage_threshold_conditioning = "positive_wages",
   active_below_capital_share  = 0.25,
@@ -19,7 +19,7 @@
 # All required columns default to zero; override per unit below. Exactly
 # one unit carries positive wages (100), so the weighted P99.99 wage
 # threshold W* is a known 100 and active profit can be made to straddle it.
-.syz_fixture <- function() {
+.sz_fixture <- function() {
   zero <- function(...) rep(0, 6)
   data.table::data.table(
     id                 = 1:6,
@@ -56,10 +56,10 @@
   )
 }
 
-# Independent reimplementation of the documented SYZ rule. Deliberately
+# Independent reimplementation of the documented SZ rule. Deliberately
 # NOT copied from 01_load_data.R — if the loader flips a share, this and
 # the loader disagree.
-.syz_expected <- function(dt, pt, W_star) {
+.sz_expected <- function(dt, pt, W_star) {
   cap_b <- pt$active_below_capital_share
   cap_a <- pt$active_above_capital_share
   psh   <- pt$passive_capital_share
@@ -88,22 +88,22 @@
 }
 
 test_that("W* is the weighted P99.99 of positive wages (here, 100)", {
-  dt  <- .syz_fixture()
-  out <- apply_passthrough_split(data.table::copy(dt), .syz_params)
-  expect_equal(attr(out, "syz_W_star"), 100, tolerance = 1e-9)
+  dt  <- .sz_fixture()
+  out <- apply_passthrough_split(data.table::copy(dt), .sz_params)
+  expect_equal(attr(out, "sz_W_star"), 100, tolerance = 1e-9)
 })
 
-test_that("y_l / y_k match an independent SYZ recomputation (sign-locked)", {
-  dt  <- .syz_fixture()
-  out <- apply_passthrough_split(data.table::copy(dt), .syz_params)
-  exp <- .syz_expected(dt, .syz_params$raw$passthrough, W_star = 100)
+test_that("y_l / y_k match an independent SZ recomputation (sign-locked)", {
+  dt  <- .sz_fixture()
+  out <- apply_passthrough_split(data.table::copy(dt), .sz_params)
+  exp <- .sz_expected(dt, .sz_params$raw$passthrough, W_star = 100)
   expect_equal(out$y_l, exp$y_l, tolerance = 1e-9)
   expect_equal(out$y_k, exp$y_k, tolerance = 1e-9)
 })
 
 test_that("wages flow only to y_l; pure capital flows only to y_k", {
-  dt  <- .syz_fixture()
-  out <- apply_passthrough_split(data.table::copy(dt), .syz_params)
+  dt  <- .sz_fixture()
+  out <- apply_passthrough_split(data.table::copy(dt), .sz_params)
   # Unit A: wages = 100, nothing else.
   expect_equal(out$y_l[1], 100, tolerance = 1e-9)
   expect_equal(out$y_k[1], 0,   tolerance = 1e-9)
@@ -113,8 +113,8 @@ test_that("wages flow only to y_l; pure capital flows only to y_k", {
 })
 
 test_that("below-W* active profit splits 25% capital / 75% labor (not flipped)", {
-  dt  <- .syz_fixture()
-  out <- apply_passthrough_split(data.table::copy(dt), .syz_params)
+  dt  <- .sz_fixture()
+  out <- apply_passthrough_split(data.table::copy(dt), .sz_params)
   # Unit C: scorp_active net 80, entirely below W* = 100. Capital share
   # is active_below_capital_share = 0.25, so y_k gets 20 and y_l gets 60.
   # A labor<->capital flip would give y_k = 60, y_l = 20.
@@ -123,8 +123,8 @@ test_that("below-W* active profit splits 25% capital / 75% labor (not flipped)",
 })
 
 test_that("the split conserves mass: y_l + y_k == sum of source components", {
-  dt  <- .syz_fixture()
-  out <- apply_passthrough_split(data.table::copy(dt), .syz_params)
+  dt  <- .sz_fixture()
+  out <- apply_passthrough_split(data.table::copy(dt), .sz_params)
   components <- with(dt,
     wages + sole_prop + farm +
       (scorp_active - scorp_active_loss) + (scorp_passive - scorp_passive_loss) +

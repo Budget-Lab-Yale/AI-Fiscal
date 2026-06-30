@@ -189,7 +189,7 @@ build_ai_fiscal_runs <- function(specs,
     ))
   }
 
-  # 1. Load + SYZ split once (variant-independent).
+  # 1. Load + SZ split once (variant-independent).
   dt_split <- apply_passthrough_split(
     load_tax_units(year, data_dir = data_dir),
     params0

@@ -92,7 +92,7 @@ are documented per benchmark in the CSV's `notes` column.
   IRS SOI; refine to a per-year value once SOI 2023 corporate complete
   report is available.
 - The `proprietors_capital_share = 0.50` assumption inherits the
-  Smith-Yagan-Zidar 2019 passthrough split; revisit if `passthrough.*`
+  Saez and Zucman (2020) passthrough split; revisit if `passthrough.*`
   parameters move.
 - For AI-specific kappa_corp, software/IP capital is more concentrated
   in C-corps than the population average; the high-end sensitivity

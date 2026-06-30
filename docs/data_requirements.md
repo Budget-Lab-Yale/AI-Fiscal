@@ -47,7 +47,7 @@ AI-Fiscal layer requires (on top of whatever Tax-Simulator's own tax
 calculation needs — AI-Fiscal only adds and reshapes columns, so the
 full upstream tax-unit schema must also be present).
 
-### PUF income / deduction columns (for the SYZ labor/capital split)
+### PUF income / deduction columns (for the SZ labor/capital split)
 
 Enforced by `.REQUIRED_TAX_UNIT_COLS` in `01_load_data.R`; a missing
 column aborts at load with an explicit message rather than failing later.
@@ -55,9 +55,9 @@ column aborts at load with an explicit message rather than failing later.
 | Column | Role |
 |---|---|
 | `weight` | Tax-unit sampling weight. |
-| `wages` | W-2 wages; also sets the SYZ `W*` threshold. |
-| `scorp_active`, `scorp_active_loss`, `scorp_passive`, `scorp_passive_loss` | S-corp profit/loss, active & passive (SYZ split). |
-| `part_active`, `part_active_loss`, `part_passive`, `part_passive_loss` | Partnership profit/loss, active & passive (SYZ split). |
+| `wages` | W-2 wages; also sets the SZ `W*` threshold. |
+| `scorp_active`, `scorp_active_loss`, `scorp_passive`, `scorp_passive_loss` | S-corp profit/loss, active & passive (SZ split). |
+| `part_active`, `part_active_loss`, `part_passive`, `part_passive_loss` | Partnership profit/loss, active & passive (SZ split). |
 | `sole_prop`, `farm` | Schedule C / F — counted as labor income (`y_l`). |
 | `txbl_int`, `exempt_int`, `div_ord`, `div_pref` | Interest and dividends — capital income (`y_k`). |
 | `kg_st`, `kg_lt`, `other_gains` | Capital gains (short/long/other) — capital income. |

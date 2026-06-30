@@ -3,7 +3,7 @@ step,quantity,value_billions_usd,formula_or_source,notes
 1_inputs,proprietors_income_iva_ccadj_2024,2035.3,NIPA Z.1 F.3,Sole proprietors and partnerships; mix of labor and capital
 1_inputs,rental_income_persons_ccadj_2024,1072.3,NIPA Z.1 F.3,Non-corporate by definition
 1_inputs,net_interest_misc_2024,197.1,NIPA Z.1 F.3,Mostly flows to households or non-corp entities
-2_assumption,proprietors_capital_share,0.50,Smith-Yagan-Zidar 2019 (passthrough split),Symmetric SYZ rule averages to ~50% capital across the population
+2_assumption,proprietors_capital_share,0.50,Saez and Zucman (2020) (passthrough split),Symmetric SZ rule averages to ~50% capital across the population
 2_assumption,scorp_share_of_BEA_corporate_profits,0.20,IRS SOI corporate statistics (~$700-800B S-corp / $3.76T total CP),S-corps are passthroughs at the tax level (no CIT) but BEA puts them in the corporate profits line
 3_derived,proprietors_income_capital_portion,1017.65,= 2035.3 * 0.50,
 3_derived,scorp_profits_estimate,751.84,= 3759.2 * 0.20,Subtracted from numerator because S-corps don't pay CIT

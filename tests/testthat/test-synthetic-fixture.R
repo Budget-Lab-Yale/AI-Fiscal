@@ -15,7 +15,7 @@ test_that("synthetic fixture loads and matches PUF schema", {
   expect_true("id" %in% names(dt))
   expect_equal(uniqueN(dt$id), nrow(dt))
   expect_true(all(dt$weight > 0))
-  # SYZ split runs and produces non-trivial y_l + y_k
+  # SZ split runs and produces non-trivial y_l + y_k
   dt2 <- apply_passthrough_split(dt, params)
   expect_true(all(c("y_l", "y_k") %in% names(dt2)))
   expect_gt(sum(dt2$weight * dt2$y_l), 0)

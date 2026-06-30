@@ -1,4 +1,4 @@
-# Per-section timing of the smoke pipeline (load -> SYZ split -> step B+C ->
+# Per-section timing of the smoke pipeline (load -> SZ split -> step B+C ->
 # Step A -> build_counterfactual). Intended use: run before/after a
 # perf-sensitive change to spot regressions and verify wins. Writes a
 # machine-readable CSV at tests/perf/last_run.csv (gitignored).

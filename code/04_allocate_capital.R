@@ -50,7 +50,7 @@ allocate_capital <- function(dt, params,
   setattr(out, "macro", c(macro, list(
     total_base       = attr(dt, "total_base"),
     retirement_F     = attr(out, "retirement_F"),
-    syz_W_star       = attr(dt, "syz_W_star"),
+    sz_W_star       = attr(dt, "sz_W_star"),
     kappa_corp       = params$raw$corporate$kappa_corp,
     cit_statutory    = params$raw$corporate$cit_statutory
   )))

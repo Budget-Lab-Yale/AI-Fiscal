@@ -1,8 +1,8 @@
-# Load the merged PUF + SCF tax-unit file and apply the Smith-Yagan-Zidar
+# Load the merged PUF + SCF tax-unit file and apply the Saez and Zucman (2020)
 # 2019 passthrough labor / capital split. Output: data.table with original
 # columns plus y_l, y_k, and per-unit active-profit capital shares.
 #
-# SYZ 2019 rule (applied at the tax-unit level — no owner-manager
+# SZ 2019 rule (applied at the tax-unit level — no owner-manager
 # n-bar bridging; the firm-level threshold is treated as a tax-unit
 # threshold directly):
 #   W* = weighted P99.99 of wages, conditional on positive wages (the
@@ -61,12 +61,12 @@ load_tax_units <- function(year, data_dir = "data/tax_data") {
   dt
 }
 
-# Columns the SYZ split + y_l / y_k calculations need on the input
+# Columns the SZ split + y_l / y_k calculations need on the input
 # tax-units table. Listed centrally so a vintage mismatch fails fast
 # with a clear message instead of data.table's raw "object 'X' not found".
 .REQUIRED_TAX_UNIT_COLS <- c(
   "weight", "wages",
-  # SYZ active / passive profit columns:
+  # SZ active / passive profit columns:
   "scorp_active", "scorp_active_loss", "scorp_passive", "scorp_passive_loss",
   "part_active",  "part_active_loss",  "part_passive",  "part_passive_loss",
   # y_l composition:
@@ -92,7 +92,7 @@ load_tax_units <- function(year, data_dir = "data/tax_data") {
 apply_passthrough_split <- function(dt, params) {
   pt <- params$raw$passthrough
   .require_columns(dt, .REQUIRED_TAX_UNIT_COLS, "apply_passthrough_split")
-  # SYZ 2019 W* applied directly at the tax-unit level; no
+  # SZ 2019 W* applied directly at the tax-unit level; no
   # owner-manager (n_bar) bridging.
   W_star <- compute_wage_threshold(dt, pt)
 
@@ -105,21 +105,21 @@ apply_passthrough_split <- function(dt, params) {
   # y_l/y_k and would only surface much later as weird aggregates.
   if (anyNA(dt$y_l) || anyNA(dt$y_k)) {
     cli::cli_abort(c(
-      "NA values after the SYZ split.",
+      "NA values after the SZ split.",
       x = "y_l: {sum(is.na(dt$y_l))} NA{?s}; y_k: {sum(is.na(dt$y_k))} NA{?s}.",
       i = "An NA in any component income column propagates; inspect the vintage."
     ))
   }
 
-  setattr(dt, "syz_W_star", W_star)
+  setattr(dt, "sz_W_star", W_star)
   dt
 }
 
-# Wage threshold W* used by the SYZ active-profit split.
+# Wage threshold W* used by the SZ active-profit split.
 #
 # `wage_threshold_conditioning` controls the sample over which the percentile
 # is evaluated:
-#   "positive_wages": only tax units with wages > 0. Matches the SYZ paper
+#   "positive_wages": only tax units with wages > 0. Matches the SZ paper
 #     methodology (W-2 universe, conditional on positive wages). Default.
 #   "all": every tax unit, including zero-wage filers. Pushes W* substantially
 #     higher and shrinks the share of profit above W*; provided as a
@@ -138,7 +138,7 @@ compute_wage_threshold <- function(dt, pt) {
     keep <- !is.na(dt$wages) & dt$wages > 0
     if (!any(keep)) {
       cli::cli_abort(c(
-        "No tax units with positive wages; cannot compute the SYZ W* threshold.",
+        "No tax units with positive wages; cannot compute the SZ W* threshold.",
         i = "Check the {.field wages} column of the vintage (all zero/negative/NA)."
       ))
     }
@@ -154,7 +154,7 @@ compute_wage_threshold <- function(dt, pt) {
 }
 
 # For S-corp and partnership active profit, derive the per-unit capital share
-# under SYZ: profit at or below W* is `cap_below` capital, profit above W* is
+# under SZ: profit at or below W* is `cap_below` capital, profit above W* is
 # `cap_above` capital. Active losses inherit the below-W* default. Adds two
 # columns per kind: `<kind>_active_net` and `<kind>_active_cap_share`.
 compute_active_capital_shares <- function(dt, W_star, pt) {

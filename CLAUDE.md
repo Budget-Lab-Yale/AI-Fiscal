@@ -64,7 +64,7 @@ entry point. It runs end-to-end:
 orchestrator (00_ai_fiscal_sim.R)
   ├── load merged baseline (01_load_data.R)
   │     - load_tax_units(year, data_dir)
-  │     - apply_passthrough_split(dt, params)   <- Smith-Yagan-Zidar
+  │     - apply_passthrough_split(dt, params)   <- Saez and Zucman (2020)
   │
   ├── resolve (g_k, g_l) per (variant, share_mode) (02_params.R)
   │     - load_params(yaml_path, variant, share_mode)
@@ -124,7 +124,7 @@ orchestrator (00_ai_fiscal_sim.R)
 |---|---|
 | `code/00_ai_fiscal_sim.R` | Orchestrator. Loops the 18-cell grid; CLI parser; log tee. |
 | `code/00_utils.R` | Shared helpers + asset-column registry. **Source first** in every other file. |
-| `code/01_load_data.R` | Load merged PUF + SCF; SYZ pass-through split. Handles vintage column rename (`value.*` → bare; `dc` → `retirement`). |
+| `code/01_load_data.R` | Load merged PUF + SCF; SZ pass-through split. Handles vintage column rename (`value.*` → bare; `dc` → `retirement`). |
 | `code/02_params.R` | Resolve `(g_k, g_l)` from `(theta1_k, g_y, theta0_l)`. Validates yaml keys present. |
 | `code/03_shock_labor.R` | **Step A** — labor redistribution (S0 / S2 / S3). |
 | `code/04_allocate_capital.R` | **Step B** — macro CIT, across-unit allocation, within-unit allocation, R1 cascade. |

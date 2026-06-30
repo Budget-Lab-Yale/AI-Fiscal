@@ -526,7 +526,13 @@ base — the model's internal revenue / GDP ratio understates the
 published level by roughly 1.3 percentage points at 2030. For the
 publishable revenue-to-GDP comparison we therefore anchor the
 baseline to CBO's published 2030 ratio (17.7%; CBO publication
-62105) and add the model's $\Delta R$ on top:
+62105) and add the model's $\Delta R$ on top, where $\Delta R$ is
+the model's total bottom-line revenue change — the Tax-Simulator
+change in income and payroll tax (net of refundable credits) plus
+the corporate-tax response (the macro CIT wedge on the AI capital
+flow, `delta_R_CIT` in code) computed outside the microsim. The
+microsim's baseline corporate tax is zero by construction, so this
+second piece carries the entire corporate response:
 
 $$
 R^{\mathrm{cbo}}_{\mathrm{scen}} \;=\; \bigl(\frac{R}{Y}\bigr)^{\mathrm{CBO}}_{\mathrm{base}} \cdot Y_{\mathrm{base}} + \Delta R.
@@ -543,7 +549,12 @@ change, GDP growth alone would push revenue / GDP down by
 $(R/Y)^{\mathrm{CBO}}_{\mathrm{base}} \cdot g_Y / (1 + g_Y)$.
 Anchoring to CBO applies that drag to a realistic revenue base, so
 the published response number is meaningful relative to the
-forecast level. The maintained assumption is that revenue streams
+forecast level. The AI growth bump $g_Y$ — the excess GDP over
+CBO's no-AI baseline, specific to each Karger variant — enters only
+through the scenario denominator $Y_{\mathrm{base}}(1 + g_Y)$, so the
+change in GDP from the AI shock passes directly into the published
+ratio; with $g_Y = 0$ the dilution drag vanishes. The maintained
+assumption is that revenue streams
 the model omits (notably the baseline CIT level and any pieces of
 "other" revenue not captured by Tax-Simulator) are unchanged in
 the scenario except through channels already in $\Delta R$.
@@ -558,7 +569,9 @@ for federal debt. For each scenario in
 
 1. Applies the CBO-anchored revenue/GDP delta as a linear ramp on
    BLSMM's federal-revenue path ($\mathtt{rgfr\_star}$) from
-   2026 through the baseline year, held at full level thereafter.
+   2025 through the baseline year (zero in 2025, 0.2 of the target
+   in 2026, reaching full level in the baseline year), held at full
+   level thereafter.
 2. Solves for a constant per-year productivity bump (added to
    BLSMM's potential-output path $\mathtt{glqstar}$) such that the
    annualized 2025–baseline-year real GDP growth in BLSMM matches
@@ -573,8 +586,9 @@ rises. Under an AI shock policymakers may instead raise outlays
 for displaced-worker support; the BLSMM number therefore reads
 as a baseline-feedback estimate of debt/GDP rather than an
 all-things-considered projection. The step requires a local clone
-of the BLSMM repo (env var `BLSMM_DIR`); if absent, the rest of
-the pipeline finishes normally without the BLSMM outputs.
+of the BLSMM repo, located via the `BLSMM_DIR` env var or a sibling
+`../Budget-Lab-Small-Macro-Model` directory; if neither is found,
+the rest of the pipeline finishes normally without the BLSMM outputs.
 
 ## The scenario grid
 
@@ -764,9 +778,6 @@ toward the top.
 
 - Karger, E., Bredemeier, C., et al. (2026). *AI and the Macroeconomy:
   Productivity, Income, and Distribution.* NBER working paper w35046.
-- Smith, M., Yagan, D., Zidar, O., and Zwick, E. (2019). "Capitalists
-  in the Twenty-First Century." *Quarterly Journal of Economics*
-  134(4).
 - Saez, E., and Zucman, G. (2020). "The Rise of Income and Wealth
   Inequality in America: Evidence from Distributional Macroeconomic
   Accounts." *Journal of Economic Perspectives* 34(4).
@@ -782,8 +793,8 @@ toward the top.
   like ChatGPT Affect Occupations and Industries?"
 - Chodorow-Reich, G., et al. (2024). "The Effects of the 2017 Tax
   Cuts and Jobs Act on US Corporations."
-- Congressional Budget Office (2025). *Budget and Economic Outlook*
-  (publication 62105).
+- Congressional Budget Office (2026). *The Budget and Economic Outlook:
+  2026 to 2036* (publication 62105).
 - Federal Reserve Board. *Distributional Financial Accounts.*
 - The Budget Lab at Yale. *Tax Microsimulation at The Budget Lab.*
 - The Budget Lab at Yale. *Estimating the Distributional Impact of

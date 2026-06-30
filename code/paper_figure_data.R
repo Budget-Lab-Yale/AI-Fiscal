@@ -302,7 +302,7 @@ cli_or_message <- function(msg) {
       title    = "AI scenario GDP growth vs. historical GDP growth",
       subtitle = "Real GDP growth, 5-yr annualized (log); CBO baseline projection 2026 onward.",
       x = NULL, y = NULL,
-      caption  = sprintf("Source: BEA/BLS via FRED (GDPC1), CBO 2025 baseline, NBER recessions; The Budget Lab at Yale. FY %d.", year)
+      caption  = sprintf("Source: BEA/BLS via FRED (GDPC1), CBO February 2026 baseline, NBER recessions; The Budget Lab at Yale. FY %d.", year)
     ) +
     ggplot2::coord_cartesian(xlim = c(xmin, xmax)) +
     .fig_theme()
@@ -360,7 +360,7 @@ cli_or_message <- function(msg) {
        desc = "Key model parameters by AI-adoption scenario",
        units = NA_character_, kind = "tbl", source = "key_parameters", builder = NULL,
        cite = NA_character_,
-       note = "Slow / Moderate / Rapid AI-adoption variants; Karger et al. 2026, CBO 2025, TBL calculations."),
+       note = "Slow / Moderate / Rapid AI-adoption variants; Karger et al. 2026, CBO February 2026, TBL calculations."),
   list(tab = "F1", caption = "Figure 1. Tax revenue is higher when AI adoption is faster and when inequality rises",
        desc = "Headline federal revenue change by scenario",
        units = "Change in federal revenue, including corporate tax wedge, FY 2030, Billions USD",
@@ -412,7 +412,7 @@ cli_or_message <- function(msg) {
        units = "GDP growth (5-yr annualized, log). CBO projection 2026 onward.",
        kind = "fred", source = NA_character_, builder = .build_fred_gdp_growth,
        render = .render_gdp_growth,
-       cite = "BEA/BLS via FRED (GDPC1), CBO 2025 baseline, NBER recessions; The Budget Lab at Yale.",
+       cite = "BEA/BLS via FRED (GDPC1), CBO February 2026 baseline, NBER recessions; The Budget Lab at Yale.",
        note = "Real GDP from FRED GDPC1 (Bil. Chn. 2017$). 5-yr annualized log growth; projection extends GDP with the CBO baseline path. Reference lines = AI scenario GDP CAGRs."),
   list(tab = "FA2", caption = "Figure A2. How AI Scenario Labor Share Assumptions Compare to the Historical Labor Share",
        desc = "AI scenario vs. historical labor share",

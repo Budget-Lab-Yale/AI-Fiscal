@@ -38,23 +38,23 @@ cbo_baseline:
 
   g_2026: 0.022
   g_2026_status: sourced
-  g_2026_source: "CBO 2025 Budget and Economic Outlook (publication 62105), Table 1, real GDP growth for 2026."
+  g_2026_source: "CBO February 2026 Budget and Economic Outlook: 2026 to 2036 (publication 62105), Table 1, real GDP growth for 2026."
 
   g_2027plus: 0.018
   g_2027plus_status: sourced
-  g_2027plus_source: "CBO 2025 Budget and Economic Outlook (publication 62105), Table 1, real GDP growth for 2027 and onward (held flat at 1.8%/yr)."
+  g_2027plus_source: "CBO February 2026 Budget and Economic Outlook: 2026 to 2036 (publication 62105), Table 1, real GDP growth for 2027 and onward (held flat at 1.8%/yr)."
 
   gdp_baseline_year_B: 37391
   gdp_baseline_year_B_status: sourced
-  gdp_baseline_year_B_source: "CBO 2025 Budget and Economic Outlook (publication 62105), 2030 nominal GDP."
+  gdp_baseline_year_B_source: "CBO February 2026 Budget and Economic Outlook: 2026 to 2036 (publication 62105), 2030 nominal GDP."
 
   rev_to_gdp_baseline_year: 0.177
   rev_to_gdp_baseline_year_status: sourced
-  rev_to_gdp_baseline_year_source: "CBO 2025 Budget and Economic Outlook (publication 62105), Table 1, 2030 total federal revenue as a share of GDP."
+  rev_to_gdp_baseline_year_source: "CBO February 2026 Budget and Economic Outlook: 2026 to 2036 (publication 62105), Table 1, 2030 total federal revenue as a share of GDP."
 
   cit_to_gdp_baseline_year: 0.013
   cit_to_gdp_baseline_year_status: sourced
-  cit_to_gdp_baseline_year_source: "CBO 2025 Budget and Economic Outlook (publication 62105), Table 1, 2030 federal corporate-tax revenue as a share of GDP."
+  cit_to_gdp_baseline_year_source: "CBO February 2026 Budget and Economic Outlook: 2026 to 2036 (publication 62105), Table 1, 2030 federal corporate-tax revenue as a share of GDP."
 
 # ---------------------------------------------------------------------
 # Shock targets — Karger et al. 2026 (NBER w35046), 5-yr horizon to
@@ -108,32 +108,32 @@ labor_inequality:
   k_source: "Literal proportional-to-g_y mapping; see docs/k_calibration_memo.md. Sensitivity range [0.5, 2]."
 
 # ---------------------------------------------------------------------
-# Passthrough labor / capital split (Smith-Yagan-Zidar 2019). At each
+# Passthrough labor / capital split (Saez and Zucman (2020)). At each
 # tax unit, partition active S-corp / partnership profit at the wage
 # threshold W*; treat passive profit separately. Labor share absorbed
-# into the per-unit labor income y_l; capital share into y_k. SYZ apply W* directly at the
+# into the per-unit labor income y_l; capital share into y_k. SZ apply W* directly at the
 # tax-unit level, so no owner-manager n-bar adjustment is applied.
 # ---------------------------------------------------------------------
 passthrough:
   wage_threshold_percentile: 99.99
   wage_threshold_percentile_status: preliminary
-  wage_threshold_percentile_source: "Smith-Yagan-Zidar 2019 active-profit split, tax-unit-level threshold."
+  wage_threshold_percentile_source: "Saez and Zucman (2020) active-profit split, tax-unit-level threshold."
 
   wage_threshold_conditioning: positive_wages
   wage_threshold_conditioning_status: choice
-  wage_threshold_conditioning_source: "'positive_wages' matches the W-2 universe per SYZ."
+  wage_threshold_conditioning_source: "'positive_wages' matches the W-2 universe per SZ."
 
   active_below_capital_share: 0.25
   active_below_capital_share_status: preliminary
-  active_below_capital_share_source: "Smith-Yagan-Zidar 2019: 25% of below-W* active profit -> capital."
+  active_below_capital_share_source: "Saez and Zucman (2020): 25% of below-W* active profit -> capital."
 
   active_above_capital_share: 0.75
   active_above_capital_share_status: preliminary
-  active_above_capital_share_source: "Smith-Yagan-Zidar 2019: 75% of above-W* active profit -> capital."
+  active_above_capital_share_source: "Saez and Zucman (2020): 75% of above-W* active profit -> capital."
 
   passive_capital_share: 0.75
   passive_capital_share_status: preliminary
-  passive_capital_share_source: "Smith-Yagan-Zidar 2019: 75% of passive profit -> capital."
+  passive_capital_share_source: "Saez and Zucman (2020): 75% of passive profit -> capital."
 
 # ---------------------------------------------------------------------
 # Corporate leakage (Step D, macro bolt-on).
