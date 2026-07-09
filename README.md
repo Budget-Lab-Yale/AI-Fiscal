@@ -224,10 +224,21 @@ terminal *and* to `logs/release_<timestamp>.log`.
 | `--vintage YYYYMMDDHHMM` | Override the Tax-Simulator output vintage stamp. |
 | `--multicore none\|scenario\|year` | Tax-Simulator parallelization. |
 | `--overwrite` | Overwrite existing counterfactual scenario folders. |
+| `--publish` | Write the Tax-Simulator output tree to the **shared** (`production`) root for a final publication run. Default (flag absent): a testing/experimentation run, written to the **scratch** (`local`) root. |
 | `--log PATH` | Override the default log path. |
 
 There are no flags for the scenario axes (variant / labor /
 realization / retirement / asset base) — the 18-cell grid is fixed.
+
+**Output destination.** By default a run is treated as
+testing/experimentation and Tax-Simulator's `model_data/Tax-Simulator/`
+output tree is written under the `local` (scratch) root of the
+Tax-Simulator `config/interfaces/output_roots.yaml`. Pass `--publish`
+for a final publication run to write under the `production` (shared)
+root instead. The pre-flight banner names the exact destination the run
+will populate. Only the Tax-Simulator output tree moves — the AI-Fiscal
+deliverables under `results/` are written to the repo either way.
+`run_release.sbatch` passes `--publish`.
 
 ### Outputs
 

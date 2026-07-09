@@ -8,7 +8,16 @@
 #                                   [--vintage YYYYMMDDHHMM]
 #                                   [--multicore none|scenario|year]
 #                                   [--overwrite]
+#                                   [--publish]
 #                                   [--log PATH]
+#
+# `--publish` selects the output destination. By default (flag absent) the
+# run is treated as testing/experimentation and Tax-Simulator writes under
+# the `local` (scratch) root of the Tax-Simulator output_roots.yaml. Pass
+# `--publish` for a final publication run: output lands under the
+# `production` (shared) root instead. This only steers Tax-Simulator's
+# model_data output tree; the AI-Fiscal deliverables under results/ are
+# unaffected.
 #
 # Behavior is fixed (no spec flags):
 #   * Loop  : 3 shock variants (S, M, R) × 2 share modes (R, F) × 3 labor
@@ -280,7 +289,7 @@ build_ai_fiscal_runs <- function(specs,
 .parse_cli_args <- function(argv) {
   known_value <- c("data-dir", "years", "runscript-path",
                    "vintage", "multicore", "log")
-  known_bool  <- c("overwrite")
+  known_bool  <- c("overwrite", "publish")
   out <- list()
   i <- 1L
   while (i <= length(argv)) {
@@ -336,7 +345,7 @@ build_ai_fiscal_runs <- function(specs,
 # lookup is non-fatal: an unresolved value prints a marker and the run
 # proceeds to abort at the natural point with the proper error message.
 # `.git_short_rev` is provided by 00_utils.R (sourced first).
-.print_preflight <- function(data_dir, runscript_label) {
+.print_preflight <- function(data_dir, runscript_label, publish = FALSE) {
   safe <- function(expr) tryCatch(expr, error = function(e) "(unresolved)")
 
   ai_rev  <- safe(.git_short_rev(getwd()))
@@ -349,6 +358,17 @@ build_ai_fiscal_runs <- function(specs,
              else "(unset — BLSMM debt/GDP step will skip)"
   mc      <- Sys.getenv("MC_CORES", unset = "(unset — Tax-Simulator default)")
 
+  # Resolve the base output root for whichever destination --publish selects,
+  # reading the same output_roots.yaml Tax-Simulator will write into, so the
+  # banner names the exact directory tree the run will populate.
+  dest_key  <- if (isTRUE(publish)) "production" else "local"
+  dest_kind <- if (isTRUE(publish)) "publication (shared)" else "testing (scratch)"
+  dest_base <- safe(yaml::read_yaml(
+    file.path(tax_sim_root(), "config", "interfaces", "output_roots.yaml")
+  )[[dest_key]])
+  dest_s <- if (identical(dest_base, "(unresolved)")) dest_kind
+            else sprintf("%s — %s", dest_kind, dest_base)
+
   cli::cli_inform(c(
     "AI-Fiscal pre-flight",
     "*" = "R:                 {R.version.string}",
@@ -359,6 +379,7 @@ build_ai_fiscal_runs <- function(specs,
     "*" = "Tax-Data vintage:  {vintage}",
     "*" = "BLSMM dir:         {blsmm_s}",
     "*" = "MC_CORES:          {mc}",
+    "*" = "Output dest:       {dest_s}",
     "*" = "Runscript:         {runscript_label}"
   ))
 }
@@ -403,11 +424,13 @@ build_ai_fiscal_runs <- function(specs,
   specs          <- release_specs()
   data_dir       <- flags[["data-dir"]] %||% "data/tax_data"
   runscript_flag <- flags[["runscript-path"]]
+  publish        <- isTRUE(flags$publish)
 
   # Banner first: shows whether TAX_SIMULATOR_DIR / data_dir resolve
   # before runscript-path resolution (which aborts if Tax-Simulator
   # is unreachable) or any counterfactual building begins.
-  .print_preflight(data_dir, runscript_flag %||% "(Tax-Simulator default)")
+  .print_preflight(data_dir, runscript_flag %||% "(Tax-Simulator default)",
+                   publish = publish)
 
   runscript_path <- runscript_flag %||% default_runscript_path()
 
@@ -423,6 +446,10 @@ build_ai_fiscal_runs <- function(specs,
   multicore  <- flags$multicore %||% "none"
   # Decomp is always on; LO/CO/both are parallel scenarios, not stacked.
   stacked    <- FALSE
+  # Output destination (resolved above from --publish): default is a testing
+  # run writing to the Tax-Simulator `local` (scratch) root; --publish steers
+  # a final publication run to the `production` (shared) root. run_tax_sim()'s
+  # `local` arg is TRUE for scratch, FALSE for production.
 
   ts_root     <- tax_sim_root()
   rs_name     <- runscript_name_from_path(runscript_path, ts_root = ts_root)
@@ -430,6 +457,7 @@ build_ai_fiscal_runs <- function(specs,
     runscript_name = rs_name,
     vintage        = vintage,
     pct_sample     = 1,
+    local          = !publish,
     multicore      = multicore,
     stacked        = stacked,
     ts_root        = ts_root,
