@@ -297,6 +297,20 @@ fig_instrument_breakdown <- function(long, year) {
                         "revenues_vat", "revenues_other",
                         "macro_cit_delta")
   d <- long[instrument %in% keep_instruments]
+  # Refundable tax credits are scored as OUTLAYS, so a positive delta means
+  # the government pays out more and net revenue FALLS. The revenue identity
+  # (.receipts_total in 08_aggregate.R) subtracts outlays, which is why the
+  # headline total (F1) and the labor/capital decomposition (F2) already net
+  # them out. The raw per-instrument grid carries the outlay as a positive
+  # level change, so stacking/summing it as-is overshoots ΔR by 2x the outlay
+  # delta and the bars don't reconcile with F1/F2. Flip the outlay row's sign
+  # here so it enters as a revenue *reduction*; sign the level columns too so
+  # each row stays internally consistent (counterfactual - baseline == delta)
+  # and every column remains summable to the net total.
+  d[instrument == "outlays_tax_credits",
+    `:=`(delta          = -delta,
+         baseline       = -baseline,
+         counterfactual = -counterfactual)]
   # Drop instruments with no movement across any cell (e.g. VAT/Estate/Other
   # when the policy leaves them untouched). 1e-6 catches FP noise; anything
   # above that round-trips back into the bar.
