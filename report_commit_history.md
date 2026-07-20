@@ -10,4 +10,6 @@ producing commit.
 
 ## 2026
 
-- *AI-Fiscal v0.1.0 release write-up* — [report tbd], [version tbd at tag time]
+- *How potential AI futures would play out in the current tax system*
+  — [report](https://budgetlab.yale.edu/research/how-potential-ai-futures-would-play-out-current-tax-system),
+  produced with AI-Fiscal [v1.0.0](https://github.com/Budget-Lab-Yale/AI-Fiscal/tree/v1.0.0).

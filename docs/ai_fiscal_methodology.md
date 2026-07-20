@@ -156,8 +156,7 @@ Budget Office's (CBO) no-AI growth path (2026 = 2.2%, 2027+ = 1.8%).
 | Proportional ($\lambda_{S0}$)                              |      1.000   |        1.000     |       1.000   |
 | Expansive ($\lambda_{S3} = 1 + k \cdot g_Y$)               |      1.006   |        1.036     |       1.072   |
 
-*Sources.* Karger, Buehler, Cox, Saint-Jacques, and Bjorkegren (2026);
-CBO (2025); Budget Lab calculations.
+*Sources.* Karger et al. (2026); CBO (2026); Budget Lab calculations.
 
 *Notes.* The Slow / Moderate / Rapid columns correspond to Karger's
 AI-adoption variants, which differ in two paired targets: the
@@ -776,26 +775,44 @@ toward the top.
 
 ## References
 
-- Karger, E., Bredemeier, C., et al. (2026). *AI and the Macroeconomy:
-  Productivity, Income, and Distribution.* NBER working paper w35046.
+- Chodorow-Reich, G., Zidar, O., and Zwick, E. (2024). "Tax Policy and
+  Investment in a Global Economy." Working paper, Harvard University.
+  <https://chodorowreich.scholars.harvard.edu/publication/tax-policy-and-investment-global-economy>.
+- Congressional Budget Office (2026). *The Budget and Economic Outlook:
+  2026 to 2036.* Publication 62105. Washington, DC.
+  <https://www.cbo.gov/publication/62105>.
+- Eloundou, T., Manning, S., Mishkin, P., and Rock, D. (2023). "GPTs
+  are GPTs: An Early Look at the Labor Market Impact Potential of Large
+  Language Models." arXiv:2303.10130. <https://arxiv.org/abs/2303.10130>.
+- Federal Reserve Board. *Distributional Financial Accounts.* Board of
+  Governors of the Federal Reserve System.
+  <https://www.federalreserve.gov/releases/efa/efa-distributional-financial-accounts.htm>.
+- Felten, E., Raj, M., and Seamans, R. (2023). "How Will Language
+  Modelers like ChatGPT Affect Occupations and Industries?" SSRN
+  working paper 4375268.
+  <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4375268>.
+- Karger, E., Kuusela, O., Abaluck, J., Bryan, K. A., Halperin, B.,
+  Jones, T. R., Murphy, C., Trammell, P., Reynolds, M., Mayland, D.,
+  Viswanathan, R., Mittal, A., Ceppas de Castro, R., Rosenberg, J., and
+  Tetlock, P. (2026). *Forecasting the Economic Effects of AI.* NBER
+  Working Paper 35046. <https://doi.org/10.3386/w35046>.
+- Piketty, T., Saez, E., and Zucman, G. (2018). "Distributional
+  National Accounts: Methods and Estimates for the United States."
+  *Quarterly Journal of Economics* 133(2): 553–609.
+  <https://doi.org/10.1093/qje/qjx043>.
+- Saez, E., Slemrod, J., and Giertz, S. H. (2012). "The Elasticity of
+  Taxable Income with Respect to Marginal Tax Rates: A Critical
+  Review." *Journal of Economic Literature* 50(1): 3–50.
+  <https://doi.org/10.1257/jel.50.1.3>.
 - Saez, E., and Zucman, G. (2020). "The Rise of Income and Wealth
   Inequality in America: Evidence from Distributional Macroeconomic
-  Accounts." *Journal of Economic Perspectives* 34(4).
-- Saez, E., Slemrod, J., and Giertz, S. (2012). "The Elasticity of
-  Taxable Income with Respect to Marginal Tax Rates." *Journal of
-  Economic Literature.*
-- Piketty, T., Saez, E., and Zucman, G. (2018). "Distributional
-  National Accounts."
-- Eloundou, T., Manning, S., Mishkin, P., and Rock, D. (2023). "GPTs
-  are GPTs: An Early Look at the Labor Market Impact Potential of
-  Large Language Models."
-- Felten, E., Raj, M., and Seamans, R. "How will Language Modelers
-  like ChatGPT Affect Occupations and Industries?"
-- Chodorow-Reich, G., et al. (2024). "The Effects of the 2017 Tax
-  Cuts and Jobs Act on US Corporations."
-- Congressional Budget Office (2026). *The Budget and Economic Outlook:
-  2026 to 2036* (publication 62105).
-- Federal Reserve Board. *Distributional Financial Accounts.*
-- The Budget Lab at Yale. *Tax Microsimulation at The Budget Lab.*
+  Accounts." *Journal of Economic Perspectives* 34(4): 3–26.
+  <https://doi.org/10.1257/jep.34.4.3>.
+- Smith, M., Yagan, D., Zidar, O., and Zwick, E. (2019). "Capitalists
+  in the Twenty-First Century." *Quarterly Journal of Economics*
+  134(4): 1675–1745. <https://doi.org/10.1093/qje/qjz020>.
 - The Budget Lab at Yale. *Estimating the Distributional Impact of
   Policy Reforms.*
+  <https://budgetlab.yale.edu/research/estimating-distributional-impact-policy-reforms>.
+- The Budget Lab at Yale. *Tax Microsimulation at The Budget Lab.*
+  <https://budgetlab.yale.edu/research/tax-microsimulation-budget-lab>.

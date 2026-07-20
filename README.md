@@ -4,8 +4,8 @@
 
 This repo models the fiscal impact of AI-driven macroeconomic shocks
 using the Budget Lab tax microsimulation model. Version v1.0 is used
-to produce the results in "How potential AI futures would play out in
-the current tax system". <TODO ADD LINK>
+to produce the results in ["How potential AI futures would play out in
+the current tax system"](https://budgetlab.yale.edu/research/how-potential-ai-futures-would-play-out-current-tax-system).
 
 The model takes as inputs a shock to GDP, a shock to the labor-share of factor income,
 a number of economic assumptions, and merged income and wealth data. It produces an
