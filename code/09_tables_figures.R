@@ -355,17 +355,19 @@ build_decile_deliverable <- function(shares_long, macro_per_scn) {
 #   *_model — uses Tax-Simulator microsim total (baseline) and microsim
 #     total + macro CIT wedge (counterfactual) over the yaml-anchored
 #     baseline-year GDP and baseline_gdp * (1 + g_y). The microsim
-#     baseline has corporate-tax revenue = 0 by construction, so this
-#     pair understates the level by ~1.3 pp (the missing baseline CIT)
-#     but the within-model delta is internally consistent.
+#     baseline total includes Tax-Simulator's own baseline corporate-tax
+#     level — only the corp-tax *delta* is zero by construction — but
+#     the level still sits ~1.5 pp below CBO's published rev/GDP
+#     (coverage differences vs CBO's total-receipts concept); the
+#     within-model delta is internally consistent.
 #
 #   *_cbo   — anchors the baseline to CBO's published rev/GDP
 #     (cbo_baseline.rev_to_gdp_baseline_year). Treats the model's
 #     bottom-line ΔR (microsim cf + macro CIT − microsim baseline) as an
 #     additive change on top of the CBO level. Defensible under the
-#     assumption that revenue streams the model omits (notably the
-#     baseline CIT level) don't respond to the AI shock except through
-#     channels already in ΔR (macro_cit_delta).
+#     assumption that revenue streams outside the microsim's receipts
+#     coverage don't respond to the AI shock except through channels
+#     already in ΔR (macro_cit_delta).
 #
 # Denominator scales by (1 + g_y) on the counterfactual side per Step
 # B's macro accounting: AI productivity bump routes through GDP. g_y is
@@ -390,7 +392,8 @@ build_revenue_to_gdp <- function(rev_long, cell_params,
   rev_total[, baseline_gdp_B      := gdp_baseline_year_B]
   rev_total[, scenario_gdp_B      := gdp_baseline_year_B * (1 + g_y)]
 
-  # Model-internal ratios (microsim baseline; CIT = 0 by construction).
+  # Model-internal ratios (microsim baseline; corp-tax delta = 0 by
+  # construction, the baseline level is included).
   rev_total[, baseline_rev_to_gdp := baseline_revenue_B / baseline_gdp_B]
   rev_total[, scenario_rev_to_gdp := scenario_revenue_B / scenario_gdp_B]
   rev_total[, delta_rev_to_gdp    := scenario_rev_to_gdp - baseline_rev_to_gdp]
@@ -766,7 +769,7 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
       "Human-readable label for the labor scenario: Proportional, Compressive, or Expansive.",
       "Long-term capital gains realization treatment. The release grid uses V1 (mechanical: all new gains are realized in-year) exclusively.",
       "Human-readable label for the realization treatment: Mechanical.",
-      "One column per Tax-Simulator revenue or outlay instrument (income tax, payroll tax, refundable credit outlays, corporate tax, estate tax, VAT, and other receipts), plus a 'total' column that nets refundable credits out of revenues. All values are in $ billions. The corporate-tax column is zero by construction here because the corporate-tax response is computed outside Tax-Simulator and lives in the macro_cit_delta column.",
+      "One column per Tax-Simulator revenue or outlay instrument (income tax, payroll tax, refundable credit outlays, corporate tax, estate tax, VAT, and other receipts), plus a 'total' column that nets refundable credits out of revenues. All values are revenue deltas (counterfactual minus baseline) in $ billions; levels are in revenue_grid_long. The corporate-tax delta is zero by construction because the corporate-tax response is computed outside Tax-Simulator and lives in the macro_cit_delta column.",
       "Additional federal corporate-tax revenue collected on the new capital flow, in $ billions. Same value for every cell sharing a (variant, share_mode) pair. See the corporate_tax sheet for the derivation.",
       "BOTTOM-LINE revenue delta in $ billions: the Tax-Simulator total plus the macro CIT delta. This is the publishable revenue figure for the scenario.",
 
@@ -862,15 +865,15 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
     description = c(
       "Same axis columns as revenue_grid_wide.",
       "AI productivity bump over the Karger horizon; variant-specific.",
-      "Tax-Simulator microsim total under the baseline scenario ($ billions). Sum across instruments from the 'total' row of revenue_grid_long. Has corporate-tax revenue = 0 by construction (CIT is modeled outside Tax-Simulator and only the AI-driven delta enters via macro_cit_delta).",
+      "Tax-Simulator microsim total under the baseline scenario ($ billions). Sum across instruments from the 'total' row of revenue_grid_long. Includes Tax-Simulator's own baseline corporate-tax level; only the corporate-tax delta is zero by construction (the AI-driven CIT response enters via macro_cit_delta).",
       "Microsim counterfactual total plus the off-microsim macro CIT wedge ($ billions). Equals baseline_revenue_B + 'total' row delta + 'macro_cit_delta' row delta from revenue_grid_long.",
       "Baseline nominal GDP at baseline_year ($ billions). Sourced from cbo_baseline.gdp_baseline_year_B in scenario_params.yaml.",
       "Counterfactual nominal GDP at baseline_year ($ billions). Equals baseline_gdp_B * (1 + g_y) — Step B's macro accounting routes the AI productivity bump through GDP.",
-      "Model-internal baseline revenue / GDP, as a fraction (multiply by 100 for pp). Understates the published level by ~1.3 pp at the default baseline_year (2030) because the microsim baseline has CIT = 0; use baseline_rev_to_gdp_cbo for level comparisons.",
+      "Model-internal baseline revenue / GDP, as a fraction (multiply by 100 for pp). Sits ~1.5 pp below CBO's published rev/GDP at the default baseline_year (2030) due to coverage differences between the microsim receipts total and CBO's total-receipts concept; use baseline_rev_to_gdp_cbo for level comparisons.",
       "Model-internal counterfactual revenue / counterfactual GDP, as a fraction.",
       "scenario_rev_to_gdp - baseline_rev_to_gdp, in fractional points. Internally consistent but applies the GDP-growth dilution drag to the model's smaller baseline; use delta_rev_to_gdp_cbo for the publishable response.",
       "CBO-anchored baseline revenue level in $ billions. Equals cbo_baseline.rev_to_gdp_baseline_year * baseline_gdp_B — the level implied by CBO's published rev/GDP at baseline_year. Constant across cells.",
-      "CBO-anchored counterfactual revenue level in $ billions. Equals baseline_revenue_B_cbo + (scenario_revenue_B - baseline_revenue_B). Adds the model's bottom-line ΔR (microsim cf + macro CIT − microsim baseline) on top of the CBO baseline, under the assumption that streams the model omits (notably the baseline CIT level) don't respond to the AI shock except through channels already captured in ΔR.",
+      "CBO-anchored counterfactual revenue level in $ billions. Equals baseline_revenue_B_cbo + (scenario_revenue_B - baseline_revenue_B). Adds the model's bottom-line ΔR (microsim cf + macro CIT − microsim baseline) on top of the CBO baseline, under the assumption that revenue streams outside the microsim's receipts coverage don't respond to the AI shock except through channels already captured in ΔR.",
       "CBO-anchored baseline revenue / GDP, as a fraction. Equals cbo_baseline.rev_to_gdp_baseline_year and is constant across cells.",
       "CBO-anchored counterfactual revenue / counterfactual GDP, as a fraction.",
       "scenario_rev_to_gdp_cbo - baseline_rev_to_gdp_cbo, in fractional points. Publishable response: anchors the baseline to CBO's level so the GDP-growth dilution drag is applied to a realistic revenue base. Algebraically equals ΔR / (GDP * (1 + g_y)) − cbo_baseline.rev_to_gdp_baseline_year * g_y / (1 + g_y), where ΔR = scenario_revenue_B - baseline_revenue_B."
