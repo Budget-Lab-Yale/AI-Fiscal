@@ -67,6 +67,10 @@ todo.md
 docs/CODE_REVIEW_*.md
 docs/repo_consolidation.md
 
+# Retired local artifacts kept for provenance (closed code reviews,
+# marked-up review copies of the methodology). Never part of a release.
+docs/archived/
+
 # Word copy of the methodology — the canonical source is the tracked
 # docs/ai_fiscal_methodology.md; avoid shipping a second copy that drifts.
 *.docx
