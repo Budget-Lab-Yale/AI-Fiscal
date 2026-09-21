@@ -151,9 +151,11 @@ source("code/08_aggregate.R")
   # receipts.csv units) lines up. Only the columns 09 actually consumes
   # are converted; y0_k_dollar / y0_dollar in the source CSV remain in raw
   # $ for the parameters sheet of 08's bundle.
-  macro[, c("X", "X_to_units", "delta_R_CIT", "y0_l_dollar") :=
+  macro[, c("X", "X_to_units", "delta_R_CIT", "y0_l_dollar",
+            "cbo_cit_baseline_dollar") :=
           lapply(.SD, function(x) x / 1e9),
-        .SDcols = c("X", "X_to_units", "delta_R_CIT", "y0_l_dollar")]
+        .SDcols = c("X", "X_to_units", "delta_R_CIT", "y0_l_dollar",
+                    "cbo_cit_baseline_dollar")]
   # Gross labor expansion implied by the (variant, share_mode) pair
   # (mirrors shock_labor()'s y1_l = y0_l * (1 + g_l)).
   macro[, delta_L_dollar := y0_l_dollar * g_l]
@@ -169,6 +171,7 @@ source("code/08_aggregate.R")
                           share_mode_chr = share_mode,
                           X, X_to_units, delta_R_CIT, eta_corp,
                           kappa_corp, cit_statutory,
+                          cbo_cit_baseline_dollar,
                           y0_l_dollar, delta_L_dollar)]
   out <- merge(axes, macro_keep,
                by = c("variant_chr", "share_mode_chr"),
@@ -203,11 +206,17 @@ build_revenue_deliverable <- function(rev_long, macro_per_scn, decomp = NULL) {
                macro_per_scn[, c(axis_keys, "delta_R_CIT"), with = FALSE],
                by = "scenario_id", all.x = TRUE)
 
+  # Levels for the macro CIT row are anchored on the CBO baseline-year
+  # CIT revenue (cbo_cit_baseline_dollar, the level the wedge was
+  # calibrated against in 04_allocate_capital.R) — NOT the microsim's
+  # own baseline revenues_corp_tax level, which is ~9% higher. The two
+  # are different accounting concepts; don't add this baseline to the
+  # microsim total (its revenues_corp_tax level is already in there).
   cit_rows <- unique(macro_per_scn[, .(
     scenario_id, variant, share_mode, labor, realization,
     instrument     = "macro_cit_delta",
-    baseline       = NA_real_,
-    counterfactual = NA_real_,
+    baseline       = cbo_cit_baseline_dollar,
+    counterfactual = cbo_cit_baseline_dollar + delta_R_CIT,
     delta          = delta_R_CIT,
     delta_R_CIT
   )])
@@ -235,11 +244,18 @@ build_revenue_deliverable <- function(rev_long, macro_per_scn, decomp = NULL) {
   }
 
   microsim_total <- rev[instrument == "total",
-                        .(scenario_id, microsim_total = delta)]
+                        .(scenario_id,
+                          microsim_baseline = baseline,
+                          microsim_cf       = counterfactual,
+                          microsim_total    = delta)]
   total_with_cit <- merge(microsim_total,
                           macro_per_scn[, .(scenario_id, delta_R_CIT)],
                           by = "scenario_id")
-  total_with_cit[, delta := microsim_total + delta_R_CIT]
+  # Same arithmetic as build_revenue_to_gdp(): the wedge shifts only the
+  # counterfactual level, the baseline is the microsim total as-is.
+  total_with_cit[, `:=`(baseline       = microsim_baseline,
+                        counterfactual = microsim_cf + delta_R_CIT,
+                        delta          = microsim_total + delta_R_CIT)]
   total_with_cit <- merge(
     total_with_cit,
     macro_per_scn[, .(scenario_id, variant, share_mode, labor, realization)],
@@ -250,8 +266,8 @@ build_revenue_deliverable <- function(rev_long, macro_per_scn, decomp = NULL) {
     long,
     total_with_cit[, .(scenario_id, variant, share_mode, labor, realization,
                        instrument     = "total_with_macro_cit",
-                       baseline       = NA_real_,
-                       counterfactual = NA_real_,
+                       baseline       = baseline,
+                       counterfactual = counterfactual,
                        delta          = delta,
                        delta_R_CIT    = delta_R_CIT)]
   )
@@ -264,16 +280,22 @@ build_revenue_deliverable <- function(rev_long, macro_per_scn, decomp = NULL) {
                         delta_R_CIT)],
       by = "scenario_id"
     )
-    pieces <- c(total_labor = "delta_labor",
-                total_capital = "delta_capital",
-                total_interaction = "interaction")
+    # total_labor / total_capital are real runs (LO / CO), so they carry
+    # the shared baseline and their own counterfactual level. The
+    # interaction is a residual with no run of its own — levels stay NA.
+    pieces <- list(
+      total_labor       = list(delta = "delta_labor",   cf = "counterfactual_labor"),
+      total_capital     = list(delta = "delta_capital", cf = "counterfactual_capital"),
+      total_interaction = list(delta = "interaction",   cf = NA_character_)
+    )
     for (out_name in names(pieces)) {
+      p <- pieces[[out_name]]
       long <- rbind(long, decomp_total[, .(
         scenario_id, variant, share_mode, labor, realization,
         instrument     = out_name,
-        baseline       = NA_real_,
-        counterfactual = NA_real_,
-        delta          = get(pieces[[out_name]]),
+        baseline       = if (is.na(p$cf)) NA_real_ else baseline,
+        counterfactual = if (is.na(p$cf)) NA_real_ else get(p$cf),
+        delta          = get(p$delta),
         delta_R_CIT
       )])
     }
@@ -774,9 +796,9 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
       "BOTTOM-LINE revenue delta in $ billions: the Tax-Simulator total plus the macro CIT delta. This is the publishable revenue figure for the scenario.",
 
       "Scenario identifier plus the same eight axis columns (variant, variant_label, share_mode, share_mode_label, labor, labor_label, realization, realization_label) as the wide grid.",
-      "Tax-Simulator instrument name, plus the synthetic rows 'total' (microsim sum), 'macro_cit_delta' (corporate tax computed outside Tax-Simulator), and 'total_with_macro_cit' (the publishable bottom line).",
-      "Baseline and counterfactual dollar levels for the instrument, in $ billions. These are blank for the macro_cit_delta and total_with_macro_cit rows, which only carry a delta.",
-      "Counterfactual minus baseline in $ billions. For the macro_cit_delta and total_with_macro_cit synthetic rows, this is the level itself.",
+      "Tax-Simulator instrument name, plus the synthetic rows 'total' (microsim sum), 'macro_cit_delta' (corporate tax computed outside Tax-Simulator), and 'total_with_macro_cit' (the publishable bottom line). Decomposition runs add 'total_labor', 'total_capital', and 'total_interaction' rows (see the revenue_decomp sheet).",
+      "Baseline and counterfactual dollar levels for the instrument, in $ billions, with delta = counterfactual - baseline on every row that carries them. For macro_cit_delta the levels are anchored on the CBO baseline-year CIT revenue the wedge was calibrated against (cit_to_gdp_baseline_year x GDP) - a different accounting concept from the microsim's own revenues_corp_tax row, so do not add it to the microsim total. For total_with_macro_cit, baseline = the microsim total baseline and counterfactual = microsim total counterfactual + macro_cit_delta. For total_labor / total_capital, baseline is the shared baseline-run total and counterfactual is the labor-only / capital-only run total. Blank only for total_interaction, a residual with no run of its own.",
+      "Counterfactual minus baseline in $ billions. For the total_interaction row (which carries no levels) it is the residual delta_both - delta_labor - delta_capital.",
       "The cell's macro CIT delta in $ billions, repeated on every row for convenience. The value is constant within a scenario.",
 
       "Scenario identifier plus the same eight axis columns (variant, variant_label, share_mode, share_mode_label, labor, labor_label, realization, realization_label) as the wide grid.",
@@ -884,9 +906,11 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
   if (!include_decomp) return(base)
 
   rbind(base, data.table(
-    sheet = c(rep("revenue_grid_wide", 3), rep("revenue_decomp", 6)),
+    sheet = c(rep("revenue_grid_wide", 3), rep("revenue_decomp", 10)),
     column = c("total_labor", "total_capital", "total_interaction",
                "scenario_id", "instrument",
+               "baseline", "counterfactual_labor", "counterfactual_capital",
+               "counterfactual_both",
                "delta_labor", "delta_capital", "delta_both", "interaction"),
     description = c(
       "Portion of the bottom-line revenue change attributable to the labor side of the shock, in $ billions. Computed as the revenue change from running a labor-only counterfactual against baseline. Payroll tax mechanically counts as labor.",
@@ -895,10 +919,14 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
 
       "Base scenario identifier (no _LO/_CO suffix). One row per (scenario x instrument).",
       "Tax-Simulator instrument name plus the synthetic 'total' row.",
+      "Baseline receipts level in $ billions, from the shared baseline run. Same across scenarios; equals the matching baseline in revenue_grid_long.",
+      "Receipts level under the labor-only counterfactual run, in $ billions. baseline + delta_labor.",
+      "Receipts level under the capital-only counterfactual run, in $ billions. baseline + delta_capital.",
+      "Receipts level under the joint counterfactual run, in $ billions. baseline + delta_both; equals the matching counterfactual in revenue_grid_long.",
       "Revenue change from a labor-only counterfactual versus baseline, in $ billions. Payroll tax mechanically counts as labor.",
       "Revenue change from a capital-only counterfactual versus baseline, in $ billions. The payroll component is essentially zero by construction.",
       "Revenue change from the joint counterfactual versus baseline, in $ billions. Equals the matching row in the long revenue grid.",
-      "Non-linear interaction in $ billions: the joint delta minus the labor-only and capital-only deltas. Cannot be attributed cleanly to either side."
+      "Non-linear interaction in $ billions: the joint delta minus the labor-only and capital-only deltas. Cannot be attributed cleanly to either side, and has no level of its own — it is a residual of the three runs against the common baseline."
     )
   ))
 }

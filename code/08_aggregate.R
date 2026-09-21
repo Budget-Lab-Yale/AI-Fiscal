@@ -185,6 +185,13 @@ build_revenue_delta_table <- function(output_root, runscript_path, year,
 # delta_both        = T(both) − T(baseline)
 # interaction       = delta_both − delta_labor − delta_capital
 #
+# The underlying revenue levels are carried alongside the deltas:
+# `baseline` (shared baseline run) and `counterfactual_labor` /
+# `counterfactual_capital` / `counterfactual_both` (the LO / CO / both
+# runs), so delta_* = counterfactual_* − baseline by construction. The
+# interaction term has no level of its own — it is a residual of the
+# three runs against the common baseline.
+#
 # The interaction term captures non-linear effects of the joint shock
 # (bracket creep, AMT, phase-outs); attributing it would require an
 # economic assumption we don't make.
@@ -245,8 +252,12 @@ build_revenue_decomp_table <- function(output_root, runscript_path, year,
     delta_capital <- v_CO   - bl_vals
     delta_both    <- v_both - bl_vals
     data.table(
-      scenario_id   = base,
-      instrument    = c(instruments, "total"),
+      scenario_id            = base,
+      instrument             = c(instruments, "total"),
+      baseline               = bl_vals,
+      counterfactual_labor   = v_LO,
+      counterfactual_capital = v_CO,
+      counterfactual_both    = v_both,
       delta_labor   = delta_labor,
       delta_capital = delta_capital,
       delta_both    = delta_both,
@@ -1067,16 +1078,22 @@ build_atr_decile <- function(output_root, runscript_path, year,
   if (!include_decomp) return(base)
 
   decomp <- data.table(
-    sheet = rep("revenue_decomp", 6),
+    sheet = rep("revenue_decomp", 10),
     column = c("scenario_id", "instrument",
+               "baseline", "counterfactual_labor", "counterfactual_capital",
+               "counterfactual_both",
                "delta_labor", "delta_capital", "delta_both", "interaction"),
     description = c(
       "Base scenario ID (no _LO/_CO suffix). Each row reports the labor/capital decomposition of one instrument's delta for this cell.",
       "As in revenue_deltas, plus the synthetic 'total' row.",
+      "Baseline FY <year> receipts level in $B, from the shared baseline run. Same across scenarios; equals the matching baseline in revenue_deltas.",
+      "T(labor_only) in $B: receipts level under the labor-only counterfactual run. baseline + delta_labor.",
+      "T(capital_only) in $B: receipts level under the capital-only counterfactual run. baseline + delta_capital.",
+      "T(both) in $B: receipts level under the full counterfactual run. baseline + delta_both; equals the matching counterfactual in revenue_deltas.",
       "T(labor_only) - T(baseline) in $B. The labor-side contribution: includes payroll (mechanically a function of wages) and the labor portion of the IIT response.",
       "T(capital_only) - T(baseline) in $B. The capital-side contribution: dividends, interest, LTCG, passthrough capital flows. Payroll component is ~0 by construction.",
       "T(both) - T(baseline) in $B. The full microsim delta — equals the matching row in revenue_deltas.",
-      "delta_both - delta_labor - delta_capital in $B. Non-linear interaction (bracket effects, AMT, phase-outs); cannot be attributed to either side without an additional assumption."
+      "delta_both - delta_labor - delta_capital in $B. Non-linear interaction (bracket effects, AMT, phase-outs); cannot be attributed to either side without an additional assumption. Has no level of its own — it is a residual of the three runs, so it carries no baseline/counterfactual columns."
     )
   )
   stopifnot(length(decomp$sheet) == length(decomp$column),

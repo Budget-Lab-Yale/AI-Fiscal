@@ -154,6 +154,26 @@ test_that("build_revenue_decomp_table: identity delta_both = labor + capital + i
                decomp$delta_labor + decomp$delta_capital + decomp$interaction,
                tolerance = 1e-12)
 
+  # Level columns: each counterfactual level is baseline + its delta,
+  # straight from the mocked receipts.
+  expect_equal(decomp$counterfactual_labor,
+               decomp$baseline + decomp$delta_labor, tolerance = 1e-12)
+  expect_equal(decomp$counterfactual_capital,
+               decomp$baseline + decomp$delta_capital, tolerance = 1e-12)
+  expect_equal(decomp$counterfactual_both,
+               decomp$baseline + decomp$delta_both, tolerance = 1e-12)
+  expect_equal(decomp[instrument == "revenues_payroll_tax"]$baseline, 1000)
+  expect_equal(decomp[instrument == "revenues_payroll_tax"]$counterfactual_labor, 1050)
+
+  # The decomp baseline column is the same baseline run revenue_deltas
+  # reads: levels must agree per instrument.
+  rev_tab <- build_revenue_delta_table(vintage, rs_path, year = 2030)
+  merged  <- merge(decomp[, .(scenario_id, instrument, baseline)],
+                   rev_tab[, .(scenario_id, instrument,
+                               baseline_deltas = baseline)],
+                   by = c("scenario_id", "instrument"))
+  expect_equal(merged$baseline, merged$baseline_deltas)
+
   # Sanity: payroll under capital_only is identical to baseline (capital
   # shock leaves wages untouched), so delta_capital for payroll is 0.
   expect_equal(decomp[instrument == "revenues_payroll_tax"]$delta_capital, 0)
