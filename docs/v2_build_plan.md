@@ -173,7 +173,7 @@ tie-ins.
 
 | Step | Build | Test |
 |---|---|---|
-| L0 | Gate: between/within-cell variance decomposition of SOC exposure on CPS ASEC; confirm cell columns on a real vintage | decision entry D9: build `EXPocc` or not |
+| L0 | Gate: between/within-cell variance decomposition of SOC exposure on CPS ASEC; confirm cell columns on a real vintage | decision entry (D-number assigned when the extension opens; see `v2_decisions.md` D8): build `EXPocc` or not |
 | L1 | Extensive machinery with uniform exposure and permanent job loss: weight-splitting, fix the `y_l == 0` inert class, the positive-subset guard, the `uniroot` bracket; introduce `check_labor_contract()` | post-split weights sum to pre-split; `Σ w·y_l1 = L1` under D8's rule; displaced rows have zero labor lines and zero FICA including `trad_contr_er1` |
 | L2 | Exposure metric from the cell CSV; register `EXP*` × `INT/EXT/MIX` codes | monotonicity of cell incidence in exposure; contract test per form |
 | L3 | Duration mixture and UI: `ui` column mutation, UI kept out of the factor identity, own column in the sidecar | UI total equals weeks × amount; factor identity unchanged by UI |
