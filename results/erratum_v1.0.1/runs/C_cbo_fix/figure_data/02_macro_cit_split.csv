@@ -1,0 +1,23 @@
+Title:,Microsim.vs.macro.corporate-tax.contribution,X3,X4,X5,X6,X7,X8,X9
+Subtitle:,"Stacked ΔR per cell, FY 2030 ($B)",,,,,,,
+Notes:,"Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY 2030.",,,,,,,
+,,,,,,,,
+scenario_id,variant,variant_label,labor,labor_label,realization,realization_label,component,delta_B
+ai_S_R_S0_V1,S,Slow,S0,Proportional,V1,Mechanical,Microsim total,-0.200575090630082
+ai_S_R_S2_V1,S,Slow,S2,Compressive,V1,Mechanical,Microsim total,-3.6317935987372
+ai_S_R_S3_V1,S,Slow,S3,Expansive,V1,Mechanical,Microsim total,3.26612887733972
+ai_M_R_S0_V1,M,Moderate,S0,Proportional,V1,Mechanical,Microsim total,68.4950165879764
+ai_M_R_S2_V1,M,Moderate,S2,Compressive,V1,Mechanical,Microsim total,48.1888162844707
+ai_M_R_S3_V1,M,Moderate,S3,Expansive,V1,Mechanical,Microsim total,90.3357534841434
+ai_R_R_S0_V1,R,Rapid,S0,Proportional,V1,Mechanical,Microsim total,86.7450819452543
+ai_R_R_S2_V1,R,Rapid,S2,Compressive,V1,Mechanical,Microsim total,47.7027108760613
+ai_R_R_S3_V1,R,Rapid,S3,Expansive,V1,Mechanical,Microsim total,132.043488969963
+ai_S_R_S0_V1,S,Slow,S0,Proportional,V1,Mechanical,Macro CIT,8.21592200208995
+ai_S_R_S2_V1,S,Slow,S2,Compressive,V1,Mechanical,Macro CIT,8.21592200208995
+ai_S_R_S3_V1,S,Slow,S3,Expansive,V1,Mechanical,Macro CIT,8.21592200208995
+ai_M_R_S0_V1,M,Moderate,S0,Proportional,V1,Mechanical,Macro CIT,35.9997453057193
+ai_M_R_S2_V1,M,Moderate,S2,Compressive,V1,Mechanical,Macro CIT,35.9997453057193
+ai_M_R_S3_V1,M,Moderate,S3,Expansive,V1,Mechanical,Macro CIT,35.9997453057193
+ai_R_R_S0_V1,R,Rapid,S0,Proportional,V1,Mechanical,Macro CIT,82.4910885075308
+ai_R_R_S2_V1,R,Rapid,S2,Compressive,V1,Mechanical,Macro CIT,82.4910885075308
+ai_R_R_S3_V1,R,Rapid,S3,Expansive,V1,Mechanical,Macro CIT,82.4910885075308

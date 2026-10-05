@@ -1,0 +1,14 @@
+Title:,Revenue.change.attributable.to.labor-capital.reallocation,X3,X4,X5,X6,X7,X8,X9
+Subtitle:,"Reallocate minus Fixed share, FY 2030 ($B). Same g_y on both sides.",,,,,,,
+Notes:,"Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY 2030.",,,,,,,
+,,,,,,,,
+variant,variant_label,labor,labor_label,realization,realization_label,R,F,reallocation_delta
+S,Slow,S0,Proportional,V1,Mechanical,8.16574765183793,29.5237216465691,-21.3579739947312
+S,Slow,S2,Compressive,V1,Mechanical,4.73452914373081,26.0814025287624,-21.3468733850316
+S,Slow,S3,Expansive,V1,Mechanical,11.6324516198077,33.0034225533761,-21.3709709335684
+M,Moderate,S0,Proportional,V1,Mechanical,105.153773547655,179.691439362169,-74.537665814514
+M,Moderate,S2,Compressive,V1,Mechanical,84.8475732441497,159.088464667368,-74.2408914232183
+M,Moderate,S3,Expansive,V1,Mechanical,126.994510443822,201.834183496512,-74.83967305269
+R,Rapid,S0,Proportional,V1,Mechanical,170.746253043999,360.686330211178,-189.940077167179
+R,Rapid,S2,Compressive,V1,Mechanical,131.703881974806,319.91837948376,-188.214497508954
+R,Rapid,S3,Expansive,V1,Mechanical,216.044660068707,407.441758466034,-191.397098397327

@@ -443,7 +443,7 @@ build_revenue_to_gdp <- function(rev_long, cell_params,
 #                                            (1 - theta1_k)
 #                         g_y                AI bump on GDP, cumulative
 #                                            over the Karger horizon and
-#                                            above the CBO no-AI baseline
+#                                            above the CBO baseline
 #                         g_k                implied capital growth bump
 #                         labor_growth       y1_l_B / y0_l_B - 1
 #                         S0, S2, S3         lambda per labor scenario
@@ -687,7 +687,7 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
 
   # Derived bumps section (improvement A: cumulative, above-baseline).
   put_section("Derived growth bumps")
-  put_caption("Cumulative over the Karger 5-year horizon, above the CBO no-AI baseline path.")
+  put_caption("Cumulative over the Karger 5-year horizon, above the CBO baseline path (which already embeds a small AI effect: +0.1 pp/yr TFP).")
   put_data_row("GDP                  (g_y)", kp$g_y,          pct2_style)
   put_data_row("Capital              (g_k)", kp$g_k,          pct2_style)
   put_data_row("Labor                (L_1/L_0 - 1)",
@@ -808,7 +808,7 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
     description = c(
       "One column per Karger shock variant - Slow (S), Moderate (M), Rapid (R). The variant code (S/M/R) is shown in parentheses under each label to cross-reference cell_params and the rest of the bundle.",
       "Karger Table 19 and Table 39 inputs that drive the scenario. r_ai_annual is the AI-conditional annual GDP growth rate from Table 19 (Total / median). 2030 capital share (theta1_k) and 2030 labor share (1 - theta1_k) come from Table 39. All three are sourced inputs, not derived. Pulled from config/scenario_params.yaml (shock slice).",
-      "Cumulative growth bumps over the Karger 5-year horizon, expressed above the CBO no-AI baseline path (so a value of 0% means the AI shock contributes nothing on top of CBO at the horizon, not that the level is flat). g_y = AI bump on GDP; g_k = implied capital growth bump; labor row = y1_l_B / y0_l_B - 1. Negative labor values arise when the labor-share decline outweighs the productivity gain; aggregate labor income levels remain positive (see y0_l_B / y1_l_B in cell_params). All three rows are pulled from cell_params (share_mode = R).",
+      "Cumulative growth bumps over the Karger 5-year horizon, expressed above the CBO baseline path, which already embeds a small AI effect of +0.1 pp/yr TFP (so a value of 0% means the AI shock contributes nothing on top of CBO at the horizon, not that the level is flat). g_y = AI bump on GDP; g_k = implied capital growth bump; labor row = y1_l_B / y0_l_B - 1. Negative labor values arise when the labor-share decline outweighs the productivity gain; aggregate labor income levels remain positive (see y0_l_B / y1_l_B in cell_params). All three rows are pulled from cell_params (share_mode = R).",
       "Ratio of post- to pre-shock standard deviation of log(y_l) on the positive subset. Compressive = lambda_S2 = 1 - k * g_y; Proportional = lambda_S0 = 1 (no dispersion shift); Expansive = lambda_S3 = 1 + k * g_y. Row labels match the labor_label column elsewhere in the bundle (Compressive = S2, Proportional = S0, Expansive = S3 in cell_params and scenario_id). k is the labor_inequality.k multiplier from config/scenario_params.yaml (default 1.0) and is reported in the lambda section caption.",
       "Three free-text rows explaining the baseline labor share (the Karger Table 39 anchor value, shown as a percentage), the share mode the sheet filters to (Reallocate vs. Fixed - see share_mode_comparison for the paired twin comparison), and the sign convention on the Labor row of the derived bumps section."
     )
@@ -830,7 +830,7 @@ build_key_parameters_table <- function(cell_params, shock_params = NULL,
       "Baseline capital share, 1 - theta_0_L (default 0.445).",
       "Post-shock labor share, 1 - theta_1_K. Equals theta_0_L under share_mode = F.",
       "Post-shock capital share. Equals the Karger Table 39 target under share_mode = R; theta_0_K under share_mode = F.",
-      "AI productivity bump on top of the no-AI CBO baseline at the policy horizon. See §3.1 of the model doc.",
+      "AI productivity bump on top of the CBO baseline at the policy horizon. See §3.1 of the model doc.",
       "Implied cumulative growth rate of capital income over the horizon (microsim dollars). See §3.2.",
       "Implied cumulative growth rate of labor income over the horizon. Equals g_k under share_mode = F (no reallocation); below g_k under share_mode = R.",
       "Ratio of post- to pre-shock standard deviation of log(y_l) on the positive subset. NA for S0; 1 - k * g_y for S2; 1 + k * g_y for S3. k from labor_inequality.k (default 1).",
