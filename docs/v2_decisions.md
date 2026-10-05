@@ -185,6 +185,47 @@ the web landing page is pub 62105 — note both numbers in receipts).
 4. *CIT:* the incremental rate `τ^m` (D4) applies to investment beyond
    CBO's; AI capex already in the baseline must not be expensed twice.
 
+**2026-10-05, third round — John's Word comments on the methodology plan**
+(replies left in the .docx as threaded comments by "Claude"). Design
+commitments, all to be carried as D14 register entries:
+
+- **Parameterize, don't hard-code:** the wage/compensation ratio
+  (baseline default); a separate **φ_AI** for the AI increment (default
+  φ_AI = φ_0); a separate **κ_AI** (C-corp share of the AI increment) with
+  presets *baseline mix / frontier-concentrated / diffuse-solo*; a
+  **scenario realization multiplier** (faster/slower than baseline, scenario
+  ledger only); the **post-2030 path as a toggle** {hold 2030 gap;
+  interpolate toward Karger's 2050 values; continue 2025–30 growth}.
+- **Generic shock:** annual paths of excess GDP growth and the labor share,
+  with Karger as one preset; TFP via the macro adapter as another.
+- **φ robustness:** Smith–Yagan–Zidar–Zwick (2019) uniform 75/25
+  labor/capital; Saez–Zucman (2020) literal 80/20 sole prop / 50/50
+  partnership. (The v1 W* rule is a Budget Lab adaptation — reword
+  "follows SZ" to "based on SZ"; verify against SZ 2020.)
+- **Tax-Simulator's 0.8/0.2** is only the incidence-allocation base
+  (`distribution.R:140–141`, used at `:233–236`), not a φ; the same 0.2 is
+  hard-coded again at `economy.R:290`.
+- **Incidence sensitivity (D12):** Gale & Thorpe (2022) concentrated
+  allocation of labor's share (rents shared mostly with high earners), next
+  to the TBL reference rule.
+- **Payout source (D7):** BEA NIPA Table 1.14, line 14 / line 13 (domestic
+  corporate business, with IVA/CCAdj): 2015–24 mean 0.64, 0.68 excl. 2018,
+  2019–24 0.67 (BEA API pull 2026-10-05, data revised 2026-09-30).
+- **Validation:** first gate = zero-shock pipeline reproduces baseline
+  (Macro-Projections/CBO) levels by income type and revenue source within
+  stated tolerances.
+- **Karger columns (D1, OPEN):** Table 19 GDP used in v1 is the
+  **Economists** column (2.0/2.6/3.3; pooled = 2.0/2.7/3.5); Table 39 labor
+  share is **Total/pooled** (55.0/53.8/51.3; economists 55.0/54.0/52.0;
+  2025 baseline 55.48). Decide: switch GDP to pooled, or keep the mix and
+  state it. Karger also has 2045–50 growth (Table 20), 2050 labor shares
+  (Table 40), NFB labor productivity and TFP (Tables 21–24).
+- **Output-label bug:** v1 `key_parameters` sheet says "CBO no-AI baseline
+  path"; CBO's baseline includes AI (+0.1 pp TFP). Fix the label in v2.
+- **To add to `lit_macro_to_micro_structures.md`:** Treasury OTA
+  (retained earnings = accrued gains), Penn Wharton OLG, JCT OLG, CBO
+  distributional income definitions.
+
 ---
 
 ### D14 — Revenue-parameter register as a model output  *(new)*
