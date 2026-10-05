@@ -243,6 +243,18 @@ commitments, all to be carried as D14 register entries:
     interest.
   - **#57:** short "how other models handle these steps" box in the plan
     (CBO, OTA, DINA, PWBM, JCT).
+  - **SZZ hybrid as an alternative (John):** Smith–Zidar–Zwick (2023 QJE
+    138(1), p. 542; added in the published version — the 2021 WP w29374
+    used a flat 25%): firms with profits < $50M → 25% of profits to
+    capital (SYZZ 2019), > $50M → 100% (citing SYZZ 2022, AER: Insights).
+    Threshold is on **firm** profits, not the owner's share, and the PUF
+    can't see firm size → implement in aggregate:
+    φ^SZZ = 0.25·(1 − s) + 1.0·s, s = share of S-corp + partnership
+    profits in firms with profits > $50M (SOI tabulations or SZZ
+    replication data, Harvard Dataverse doi:10.7910/DVN/JKFYMJ); allocate
+    with the per-unit rule rescaled to match. Used as an alternative
+    baseline split **and** as a fourth φ_AI preset (AI income accrues to
+    large pass-throughs). **Data item to add:** estimate `s`.
 - **To add to `lit_macro_to_micro_structures.md`:** Treasury OTA
   (retained earnings = accrued gains), Penn Wharton OLG, JCT OLG, CBO
   distributional income definitions.
