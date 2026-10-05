@@ -88,17 +88,41 @@ on it.
 
 ## AI in the CBO baseline
 
-CBO's baseline already contains an assessment of AI's effect on growth,
-which in its 2026 projections was roughly 10 basis points per year on
-average. Our scenarios are therefore measured *relative to CBO's
-baseline*, not relative to a world without AI. That is the right
-comparison for a budget analysis, but it means part of any surveyed AI
-effect may already be in the baseline. If CBO publishes enough detail —
-for example, alternative scenarios with larger AI effects, or a
-separate AI contribution to productivity and income shares — we will
-back out CBO's AI component before layering ours on top, so that the
-two are not added together. How far we can go depends on what CBO
-discloses. **[Open: D6, data item 2.4]**
+CBO's baseline already includes an assessment of AI's effect on the
+economy. In its February 2026 projections, the diffusion of generative
+AI raises growth in total factor productivity by 0.1 percentage point
+per year from 2026 to 2036, which increases the level of output in the
+nonfarm business sector by 1 percent in 2036. CBO describes these
+effects as gradual and reports only that endpoint. Investment in
+AI—data centers, the computers in them, and software—also boosts
+business investment in 2026, although CBO does not separate that
+effect from the investment incentives in the 2025 reconciliation act.
+CBO does not assume that AI changes the shares of income going to labor
+and capital: its projected paths for wages and corporate profits as a
+share of GDP reflect recent data and long-run historical trends.
+
+Because of how we define the scenarios, no adjustment is needed to
+avoid counting CBO's AI effect twice. The Karger et al. (2026) growth
+rates are forecasts of total GDP growth, and we measure the AI shock as
+the difference between that growth and CBO's total projected growth,
+which already includes CBO's AI assumption. Our estimates therefore
+capture the effect of AI beyond what CBO assumes. They are measured
+*relative to CBO's baseline*, not relative to a world without AI, which
+is the right comparison for a budget analysis. For readers interested
+in AI's full effect, we will also report results against an alternative
+baseline that removes CBO's AI contribution—0.1 percentage point of
+productivity growth per year in the nonfarm business sector. Because
+CBO reports only the 2036 effect, the path of that adjustment in
+earlier years is our approximation. **[Proposed: D6]**
+
+Two features of CBO's baseline still require care. First, CBO's
+projected share of wages and salaries in GDP is itself falling, for
+reasons unrelated to AI, so we must decide whether the survey's change
+in the labor share applies relative to today's share or to CBO's
+projected path. **[Open: D1]** Second, CBO's baseline corporate tax
+receipts already reflect deductions for AI-related investment, so our
+corporate tax calculation applies only to investment beyond what CBO
+projects. **[Open: D4]**
 
 ## The tax microsimulation file
 
