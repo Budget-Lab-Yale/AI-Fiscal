@@ -53,7 +53,7 @@ resolve. The revised question above it is the controlling one.
 **Numbering.** This file is the single registry for D-numbers; no other
 doc reserves one. D1–D13 are the Phase 0 gate. Deferred questions in §2
 get the next free number when their phase opens. **Next free number:
-D14.** (The labor-lane table in `v2_build_plan.md` used to claim D9 for
+D15.** (The labor-lane table in `v2_build_plan.md` used to claim D9 for
 its exposure gate; that reservation is withdrawn — the gate gets a
 number if and when the labor extension opens.)
 
@@ -70,17 +70,18 @@ historical realization variant `V2`.
 |---|---|---|---|---|
 | D1 | Survey source, sector, and share bridge | **respondent group SET 2026-10-05** (pooled); bridge PROPOSED | 1 | reframed |
 | D2 | Shock coverage within complete accounts | PROPOSED | 2 | reframed |
-| D3 | Factor accounts and named non-factor components | PROPOSED — φ walk-through pending | 2 | reframed |
+| D3 | Factor accounts and named non-factor components | **φ rule SET 2026-10-05**; `Q` rules PROPOSED | 2 | reframed |
 | D4 | Corporate tax: baseline bridge vs marginal response | PROPOSED | 4 | reframed |
 | D5 | Reconciliation ordering | PROPOSED | 4 | proposal replaced |
 | D6 | Baseline, counterfactual, time and prices | **baseline source SET 2026-10-05** (Macro-Projections); rest PROPOSED | 1–2 | widened |
 | D7 | Payout ratio on a matched universe | OPEN | 6 | narrowed |
 | D8 | Labor displacement | PROPOSED: defer | 1 | reframed |
 | D9 | Ownership and wrapper boundary | PROPOSED; **granularity widened 2026-10-05** | 2 | **new** |
-| D10 | Capital-gains object, timing, basis at death | PROPOSED — valuation walk-through pending | 2 concept, 9 calibration | **new** (absorbs Q2.3) |
+| D10 | Capital-gains object, timing, basis at death | **valuation rule SET 2026-10-05** (Rule A default, Rule B built); realization calibration PROPOSED | 2 concept, 9 calibration | **new** (absorbs Q2.3) |
 | D11 | Retirement balances and withdrawals | PROPOSED | 2 concept, 6 calibration | **new** |
 | D12 | Distributional estimand and CIT incidence | **lead panel + incidence SET 2026-10-05** | 2 definition, 10 implementation | **new** (absorbs the CIT-burden node) |
 | D13 | Release horizon and required outputs | **horizon SET 2026-10-05** (10-year window); outputs PROPOSED | 1 | **new** |
+| D14 | Revenue-parameter register as a model output | **SET 2026-10-05** (concept); contents PROPOSED | 2 definition, 12–13 sensitivities | **new 2026-10-05** |
 
 **2026-10-05 — John's review of the methodology proposal** (PDF comments on
 `v2_methodology_proposal_2026-10-02_v1.pdf`). Each decision below is a
@@ -116,7 +117,75 @@ choice, not a number.
   assumptions.
 - **Walk-throughs requested** before deciding: D10 reference valuation
   rule; BLSMM as the source of v2's GDP path; the single mixed-income φ
-  (D3).
+  (D3). *Resolved in the second round below.*
+
+**2026-10-05, second round — John's answers to the walk-throughs.**
+
+- **D10 valuation: Rule A is the default.** Share values rise one-for-one
+  with retained earnings attributed to each owner (`A_t = RE_t`); no
+  announcement revaluation. **Rule B must also be built**: a
+  capitalization rule in which the change in after-tax profits is valued
+  at a user-specified discount rate `r`, with the growth rate `g` taken
+  from the model's own profit path (not a separate input). The code must
+  guard `r > g` and must not also accrue retained earnings under Rule B
+  (that would count the same profits twice).
+- **BLSMM: use our own GDP paths.** v2 builds the GDP path from Karger
+  growth rates over the Macro-Projections baseline, as v1.0 did. BLSMM
+  stays downstream (debt/GDP). Flag in the methodology that the two could
+  be integrated later — BLSMM's own Karger-based AI scenarios could
+  supply the GDP, price, and interest-rate paths — but it is not in v2.0.
+- **D3 φ: one aggregate φ, derived from the tax file.** Compute the
+  aggregate capital share of mixed income implied by the Saez–Zucman rule
+  on the tax file (sole-proprietor and farm income counted as labor, as
+  in v1.0) and use that value upstream in the production accounts, so the
+  macro and micro classifications agree by construction. Tax-Simulator's
+  80/20 split stays only inside the Budget Lab incidence overlay (D12),
+  documented as part of that convention.
+- **New D14: a revenue-parameter register is a required output** (see
+  entry below).
+
+---
+
+### D14 — Revenue-parameter register as a model output  *(new)*
+
+**Status: SET 2026-10-05 (concept); contents PROPOSED** · **Settle by:**
+definition week 2; sensitivities weeks 12–13
+
+**Decision.** Identifying and recording the parameters that determine
+how much future revenue AI generates is itself a product of v2, not
+just internal bookkeeping (John: "e.g. the retained earnings point").
+Every run writes a register with, for each parameter: symbol and plain
+description; module; value used; source or `_status`; admissible range;
+and the change in ten-year and 2030 revenue from moving it across that
+range, holding the others at reference values. The publishable bundle
+gets a ranked version (largest revenue effect first). This turns the
+`parameter_index` sheet v1.0 already writes into an analytical output
+and is the backbone of the review's "ranked sensitivity table" (D13).
+
+**Proposed initial contents** (add as modules land):
+
+| Parameter | Module | Why it moves revenue |
+|---|---|---|
+| Sector bridge / NFB share of the GDP shock | D1 | sets how much of ΔY is labor vs capital |
+| φ (mixed-income capital share) | D3 | moves ~$200B of base per 0.1 between labor and capital |
+| `Q` scenario rules | D3 | income that reaches no factor base |
+| Shock coverage (rent, interest) | D2 | size of the capital increment |
+| κ, legal-form split of ΔΠ | Q2.4 | CIT vs pass-through taxation |
+| Marginal CIT rate τ^m (normal return vs rent, expensing, losses) | D4 | CIT per dollar of profit |
+| Payout ratio p (**retained earnings**) | D7 | dividends taxed now vs gains taxed later or never |
+| Valuation rule (A/B), discount rate r | D10 | timing and size of accrued gains |
+| Realization hazard / lag | D10 | when gains reach tax returns |
+| Step-up at death (mortality by age) | D10 | gains that are never taxed |
+| Ownership shares ω (foreign, exempt, retirement, by income group) | D9 | share of income that reaches individual returns |
+| Retirement withdrawal rates, DB treatment | D11 | timing of tax on wrapper income |
+| Reconciliation residual by channel | D5 | measurement gap to the tax file |
+| Labor dispersion λ / k | Step A | progressivity and the payroll cap |
+| Post-2030 shock path | D13 | years 6–10 of the window |
+| CBO embedded-AI back-out | D6 | baseline vs scenario attribution |
+
+**Moves:** the output contract (new sheet/CSV), and the sensitivity
+design — perturbations are generated from the register's ranges rather
+than hand-listed.
 
 Dependency order: **D13 and D6 first** (they fix what is being
 estimated and over which years), then **D1 → D3 → D2** as one accounting

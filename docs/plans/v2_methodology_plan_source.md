@@ -59,6 +59,11 @@ rather than only how much it collects.
 - **Revenue remains the headline.** We model non-revenue destinations
   (foreign, exempt, deferred) only as far as they determine what reaches
   a tax base.
+- **The parameters that shape AI revenue are themselves an output.**
+  Every run reports the assumptions that determine how much revenue AI
+  generates — such as how much corporate profit is retained rather than
+  paid out — with their values, sources, plausible ranges, and the
+  revenue at stake across each range. **[Set: D14]**
 
 # Data and baseline construction
 
@@ -139,11 +144,22 @@ between labor and capital before the shock is applied. Three
 conventions are currently in use across our models: an even split of
 proprietors' income in the national-accounts calibration, the Saez and
 Zucman rule in this model's tax file, and an 80 percent labor share in
-the microsimulation model's distributional tables. Version 2 will use a
-single parameter $\varphi$ (the capital share of mixed income) on both
-the national-accounts and tax-file sides, so that income classified as
-capital upstream is the same income classified as capital downstream.
-**[Open: D3]**
+the microsimulation model's distributional tables. Version 2 uses a
+single parameter $\varphi$, the aggregate capital share of mixed income,
+on both sides. We compute it from the tax file: applying Version 1's
+Saez and Zucman rule to every tax unit (with sole-proprietor and farm
+income counted as labor, as before) and taking the weighted aggregate
+gives
+
+$$\varphi = \frac{\sum_i w_i \left(Y_{0,i}^{K,PT} + Y_{0,i}^{K,Pass}\right)}{\sum_i w_i \left(Y_{0,i}^{PT} + Y_{0,i}^{Pass} + Y_{0,i}^{SP}\right)},$$
+
+where $Y^{SP}$ is sole-proprietor and farm income. We then use this
+$\varphi$ to divide proprietors' and pass-through income in the national
+accounts. Income classified as capital upstream is therefore the same
+income classified as capital on the tax file. **[Set: D3]** The
+microsimulation model's 80 percent labor convention remains only inside
+its corporate-incidence calculation (see Distributional analysis),
+where it is part of The Budget Lab's standard assumption.
 
 # Macro shock parameterization
 
@@ -363,12 +379,39 @@ same rules run in the baseline and the scenario, and we report the
 difference. Because gains are not part of national income, they sit
 outside the accounting identity above.
 
-The key open question is how retained earnings and expected future
-profits translate into higher share prices (the accrual $A_t$). Two
-reference rules are under consideration: one in which share values rise
-only as retained earnings accumulate, and one in which markets value
-the expected stream of higher profits as soon as it is anticipated.
-**[Open: D10]**
+The accrual $A_t$ depends on how retained earnings and expected future
+profits translate into higher share prices. The model supports two
+rules. **[Set: D10]**
+
+*Rule A (default): accumulation.* Share values rise one-for-one with the
+retained earnings attributed to each owner group:
+
+$$A_{o,t} = RE_{o,t}.$$
+
+Gains build gradually as profits are retained, and there is no
+revaluation when AI's effects are first anticipated.
+
+*Rule B (option): capitalization.* Markets value the expected stream of
+additional after-tax profits as soon as it is anticipated. The value of
+owner group $o$'s claim on the AI-driven profits is
+
+$$V_{o,t} = \frac{\omega_{o}\,\Pi_{C,t+1}^{AT}}{r - g_{t}}, \qquad A_{o,t} = V_{o,t} - V_{o,t-1}, \qquad r > g_t,$$
+
+where the discount rate $r$ is specified by the user and the growth
+rate $g_t$ is the growth of incremental after-tax profits on the
+model's own path (after 2030, the baseline growth rate, since the AI
+gap is held constant). Under Rule B, value rises sharply in the year AI
+is first anticipated, and retained earnings are *not* accrued a second
+time — the capitalized value already includes them. Dividends are paid
+under both rules. The year of anticipation is a separate input, set to
+the first scenario year by default.
+
+Because realizations are drawn from the stock of unrealized gains,
+Rule B produces larger realized gains early in the window. We report
+Rule B as a sensitivity. One caution applies to it: current share
+prices, which underlie CBO's projections of capital gains, may already
+reflect expectations about AI, so part of any Rule B revaluation could
+already be in the baseline.
 
 ## Retirement accounts
 
@@ -461,10 +504,17 @@ be reported as an appendix table.
 
 As in Version 1, we use the Budget Lab Small Macro Model (BLSMM) to
 translate each scenario's revenue changes into changes in federal debt
-as a share of GDP, now over the full window. BLSMM also publishes its
-own AI scenarios built on the Karger et al. (2026) forecasts. Whether
-Version 2 should take its GDP path from those scenarios, so that both
-models describe the same economy, is under review. **[Open]**
+as a share of GDP, now over the full window. As in Version 1, we build
+the GDP path ourselves from the Karger et al. (2026) growth rates and
+pass BLSMM a productivity adjustment that reproduces it. **[Set]**
+
+BLSMM also publishes its own AI scenarios built on the Karger et al.
+(2026) forecasts. A later version could integrate the two models, taking
+the GDP, price, and interest-rate paths from BLSMM's scenarios so that
+both describe the same economy year by year. We do not do so in
+Version 2 because BLSMM's scenarios separate productivity and labor
+force effects in ways that do not map directly onto our Slow, Moderate,
+and Rapid variants.
 
 We correct one point of exposition from Version 1. With $Z = R/Y$ and
 $g_Y$ the GDP deviation, the change in the revenue-to-GDP ratio is
@@ -474,6 +524,44 @@ $$\Delta Z_{t} = \frac{\Delta R_{t}}{Y_{0,t}(1+g_{Y,t})} - Z_{0,t}\,\frac{g_{Y,t
 Higher GDP alone lowers the ratio, so the second term enters with a
 negative sign. Version 1's code used this formula; the sign was printed
 incorrectly in one equation of the published document.
+
+# Parameters that shape revenue from AI
+
+How much revenue AI generates depends on a set of parameters — several
+of them uncertain and some of them, like how much profit corporations
+retain, almost invisible in a model built on tax returns alone. Making
+them explicit is one of the main purposes of Version 2. **[Set: D14]**
+Every run therefore produces a parameter register: for each parameter,
+its value, source, plausible range, and the change in 2030 and ten-year
+revenue when it moves across that range with all others held at their
+reference values. The published results rank the parameters by the
+revenue at stake. Table 2 lists the initial set.
+
+| Parameter | Where it enters | Why it matters for revenue |
+|------------------------------|--------------------|------------------------------------------------|
+| Share of the GDP increase in the nonfarm business sector | Production accounts | How much of the new output is labor versus capital income |
+| Capital share of mixed income ($\varphi$) | Production accounts | Moves income between the more heavily and more lightly taxed bases |
+| Rules for non-factor income ($Q$) | Production accounts | Income that reaches no individual tax base |
+| Coverage of rental and interest income | Production accounts | Size of the capital income increase |
+| C-corporation share of new profits | Legal form | Corporate tax versus pass-through taxation |
+| Marginal corporate tax rate ($\tau^m$) | Corporate tax | Tax collected on each dollar of new profit |
+| Payout ratio ($p$) | Dividends and retained earnings | Dividends are taxed now; retained earnings are taxed later as gains, or never |
+| Valuation rule and discount rate ($r$) | Asset ledger | Size and timing of accrued gains |
+| Realization schedule | Asset ledger | When gains reach tax returns |
+| Step-up in basis at death | Asset ledger | Gains that are never taxed |
+| Ownership shares ($\omega$) | Ownership | Share of income held by foreign, tax-exempt, and retirement owners |
+| Retirement withdrawal rates | Retirement accounts | When income in tax-deferred accounts is taxed |
+| Final reconciliation adjustment | Reconciliation | Measurement gap between national accounts and tax data |
+| Labor income dispersion ($\lambda$) | Labor side | Progressivity of the income tax and the payroll tax cap |
+| Path after 2030 | Scenario inputs | Revenue in years six through ten |
+| CBO's embedded AI assumption | Baseline | How much of the AI effect is already in the baseline |
+
+: Table 2. Parameters recorded in the register (initial list).
+
+The register also organizes the sensitivity analysis: rather than
+choosing sensitivities by hand, we generate them from each parameter's
+documented range, and report a small number of coherent combined cases
+alongside.
 
 # Validation
 
@@ -513,6 +601,9 @@ Several extensions remain outside Version 2:
   profit shifting and the taxation of multinational income are not.
 - **Buybacks and portfolio choice.** Payout through share repurchases
   and changes in household portfolios are left for later work.
+- **Integration with BLSMM.** Taking GDP, price, and interest-rate paths
+  from BLSMM's AI scenarios, so that a single scenario definition drives
+  both models.
 
 # Open decisions
 
@@ -520,18 +611,19 @@ Several extensions remain outside Version 2:
 |----------|----------------|------------------------------------------------------|
 | D1 | Partly set | Respondent group set (pooled); sector-to-economy mapping open |
 | D2 | Open | Which components of capital income receive the shock |
-| D3 | Open | Single mixed-income split $\varphi$; rules for the non-factor components $Q$ |
+| D3 | Partly set | $\varphi$ derived from the tax file and used upstream; rules for $Q$ open |
 | D4 | Open | How an additional dollar of AI profit moves through the corporate tax base |
 | D5 | Open | Final measurement adjustment between national accounts and tax data |
 | D6 | Partly set | Baseline set (Macro-Projections); removal of CBO's AI component open |
 | D7 | Open | Payout ratio and the matched group of corporations |
 | D8 | Proposed | Defer job loss and occupation exposure to a later version |
 | D9 | Partly set | Ownership shares by entity and income group; calibration open |
-| D10 | Open | How retained earnings and expected profits raise share values |
+| D10 | Partly set | Rule A default, Rule B available; realization schedule open |
 | D11 | Open | Withdrawal rates and treatment of defined-benefit plans |
 | D12 | Set | Cash income leads; Budget Lab incidence assumptions |
 | D13 | Partly set | Ten-year window set; path after 2030 open |
-| — | Open | Whether BLSMM's AI scenarios supply the GDP path |
+| D14 | Set | Parameter register as an output; contents to grow with the model |
+| — | Set | Own GDP paths; BLSMM integration flagged for later |
 
 # References
 
