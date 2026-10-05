@@ -1,0 +1,26 @@
+Table 1. Key Parameters,,,
+,,,
+"Notes: Slow / Moderate / Rapid AI-adoption variants; Karger et al. 2026, CBO February 2026, TBL calculations.",,,
+"Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY 2030.",,,
+,,,
+X1,AI.Adoption.Scenarios.via.Karger.et.al..(2026),X3,X4
+,Slow,Moderate,Rapid
+,(S),(M),(R)
+"Karger AI-adoption inputs (5-year horizon, 2025-2030)",,,
+Annual GDP growth under AI (r_ai_annual),0.02,0.026,0.033
+2030 capital share (theta_1_K),0.45,0.462,0.487
+2030 labor share (theta_1_L),0.55,0.538,0.513
+Derived growth bumps,,,
+"Cumulative over the Karger 5-year horizon, above the CBO no-AI baseline path.",,,
+GDP                  (g_y),0.00590936399475561,0.0358450525211245,0.0716663637828425
+Capital              (g_k),0.0172117163991912,0.0754166612691227,0.172812402611785
+Labor                (L_1/L_0 - 1),-0.00315288252772006,0.00411646532678422,-0.00943271239531995
+Labor-income inequality parameter (lambda),,,
+lambda = 1 ± k · g_y on log(y_l);   k = 1.000,,,
+Compressive,0.994090636005244,0.964154947478876,0.928333636217157
+Proportional,1,1,1
+Expansive,1.00590936399476,1.03584505252112,1.07166636378284
+Notes,,,
+"Baseline labor share (2025): 55.5%. Source: Karger, Buehler, Cox, Saint-Jacques, and Bjorkegren (2026), CBO (2026), and TBL Calculations.",,,
+Share mode shown: Reallocate (R). The Karger labor-share decline is imposed; fixed-share (F) twins are reported separately.,,,
+Negative labor growth occurs when the labor share falls fast enough to outweigh productivity gains over the horizon. Aggregate labor income levels remain positive - see y0_l_B / y1_l_B in cell_params.,,,

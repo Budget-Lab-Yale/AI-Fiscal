@@ -1,0 +1,41 @@
+Title:,"Revenue.decomposition:.labor,.capital,.interaction,.macro.CIT",X3,X4,X5,X6,X7,X8,X9,X10
+Subtitle:,"ΔR contribution per side, FY 2030 ($B). Interaction = T(both) − T(labor) − T(capital).",,,,,,,,
+Notes:,"Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY 2030.",,,,,,,,
+,,,,,,,,,
+scenario_id,variant,variant_label,labor,labor_label,realization,realization_label,component,delta_B,component_label
+ai_M_R_S0_V1,M,Moderate,S0,Proportional,V1,Mechanical,labor,30.0077025141354,Labor
+ai_M_R_S2_V1,M,Moderate,S2,Compressive,V1,Mechanical,labor,9.71167065833561,Labor
+ai_M_R_S3_V1,M,Moderate,S3,Expansive,V1,Mechanical,labor,51.8252224882954,Labor
+ai_R_R_S0_V1,R,Rapid,S0,Proportional,V1,Mechanical,labor,15.6102845632649,Labor
+ai_R_R_S2_V1,R,Rapid,S2,Compressive,V1,Mechanical,labor,-23.385412749124,Labor
+ai_R_R_S3_V1,R,Rapid,S3,Expansive,V1,Mechanical,labor,60.9230398695281,Labor
+ai_S_R_S0_V1,S,Slow,S0,Proportional,V1,Mechanical,labor,-12.0475000680008,Labor
+ai_S_R_S2_V1,S,Slow,S2,Compressive,V1,Mechanical,labor,-15.4798500404941,Labor
+ai_S_R_S3_V1,S,Slow,S3,Expansive,V1,Mechanical,labor,-8.58025745691975,Labor
+ai_M_R_S0_V1,M,Moderate,S0,Proportional,V1,Mechanical,capital,49.4313684315475,Capital
+ai_M_R_S2_V1,M,Moderate,S2,Compressive,V1,Mechanical,capital,49.4313684315475,Capital
+ai_M_R_S3_V1,M,Moderate,S3,Expansive,V1,Mechanical,capital,49.4313684315475,Capital
+ai_R_R_S0_V1,R,Rapid,S0,Proportional,V1,Mechanical,capital,110.676210036276,Capital
+ai_R_R_S2_V1,R,Rapid,S2,Compressive,V1,Mechanical,capital,110.676210036276,Capital
+ai_R_R_S3_V1,R,Rapid,S3,Expansive,V1,Mechanical,capital,110.676210036276,Capital
+ai_S_R_S0_V1,S,Slow,S0,Proportional,V1,Mechanical,capital,11.8507249604036,Capital
+ai_S_R_S2_V1,S,Slow,S2,Compressive,V1,Mechanical,capital,11.8507249604036,Capital
+ai_S_R_S3_V1,S,Slow,S3,Expansive,V1,Mechanical,capital,11.8507249604036,Capital
+ai_M_R_S0_V1,M,Moderate,S0,Proportional,V1,Mechanical,interaction,0.0480621953411173,Interaction
+ai_M_R_S2_V1,M,Moderate,S2,Compressive,V1,Mechanical,interaction,0.0038104265659058,Interaction
+ai_M_R_S3_V1,M,Moderate,S3,Expansive,V1,Mechanical,interaction,0.113857235893192,Interaction
+ai_R_R_S0_V1,R,Rapid,S0,Proportional,V1,Mechanical,interaction,0.063487409624031,Interaction
+ai_R_R_S2_V1,R,Rapid,S2,Compressive,V1,Mechanical,interaction,-0.261336248324369,Interaction
+ai_R_R_S3_V1,R,Rapid,S3,Expansive,V1,Mechanical,interaction,0.288739502173485,Interaction
+ai_S_R_S0_V1,S,Slow,S0,Proportional,V1,Mechanical,interaction,-0.00379998303287721,Interaction
+ai_S_R_S2_V1,S,Slow,S2,Compressive,V1,Mechanical,interaction,-0.0026685186467148,Interaction
+ai_S_R_S3_V1,S,Slow,S3,Expansive,V1,Mechanical,interaction,-0.00433862614409009,Interaction
+ai_M_R_S0_V1,M,Moderate,S0,Proportional,V1,Mechanical,macro_cit,33.7774748788545,Macro CIT
+ai_M_R_S2_V1,M,Moderate,S2,Compressive,V1,Mechanical,macro_cit,33.7774748788545,Macro CIT
+ai_M_R_S3_V1,M,Moderate,S3,Expansive,V1,Mechanical,macro_cit,33.7774748788545,Macro CIT
+ai_R_R_S0_V1,R,Rapid,S0,Proportional,V1,Mechanical,macro_cit,74.4441671879153,Macro CIT
+ai_R_R_S2_V1,R,Rapid,S2,Compressive,V1,Mechanical,macro_cit,74.4441671879153,Macro CIT
+ai_R_R_S3_V1,R,Rapid,S3,Expansive,V1,Mechanical,macro_cit,74.4441671879153,Macro CIT
+ai_S_R_S0_V1,S,Slow,S0,Proportional,V1,Mechanical,macro_cit,8.21592200208995,Macro CIT
+ai_S_R_S2_V1,S,Slow,S2,Compressive,V1,Mechanical,macro_cit,8.21592200208995,Macro CIT
+ai_S_R_S3_V1,S,Slow,S3,Expansive,V1,Mechanical,macro_cit,8.21592200208995,Macro CIT

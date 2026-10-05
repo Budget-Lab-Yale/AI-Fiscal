@@ -1,0 +1,23 @@
+block,parameter,value,status,source
+(root),baseline_year,2030,choice,Match Karger 5-yr horizon; microsim aged to 2030.
+cbo_baseline,cbo_baseline.horizon_start_year,2025,choice,Karger 2026 (NBER w35046) 5-yr horizon base.
+cbo_baseline,cbo_baseline.g_2026,0.022,sourced,"CBO February 2026 Budget and Economic Outlook: 2026 to 2036 (publication 62105), Table 1, real GDP growth for 2026."
+cbo_baseline,cbo_baseline.g_2027plus,0.018,sourced,"CBO February 2026 Budget and Economic Outlook: 2026 to 2036 (publication 62105), Table 1, real GDP growth for 2027 and onward (held flat at 1.8%/yr)."
+cbo_baseline,cbo_baseline.gdp_baseline_year_B,37391,sourced,"CBO February 2026 Budget and Economic Outlook: 2026 to 2036 (publication 62105), 2030 nominal GDP."
+cbo_baseline,cbo_baseline.rev_to_gdp_baseline_year,0.176381,sourced,"CBO February 2026 Budget and Economic Outlook: 2026 to 2036 (publication 62105), Table 1-1 data supplement (www.cbo.gov/publication/61882), FY2030 total revenues $6,594.999B / GDP $37,390.67B. v1.0.0 used the rounded report figure 17.7%; corrected in v1.0.1."
+cbo_baseline,cbo_baseline.cit_to_gdp_baseline_year,0.0127663,sourced,"CBO February 2026 Budget and Economic Outlook: 2026 to 2036 (publication 62105), Table 1-1 data supplement (www.cbo.gov/publication/61882), FY2030 corporate income taxes $477.340B / GDP $37,390.67B. v1.0.0 used the rounded report figure 1.3% ($486.1B); corrected in v1.0.1."
+shock,shock.baseline_labor_share,0.555,sourced,"Karger 2026 (NBER w35046) Sec. 3, 2025 nonfarm-business labor share baseline (55.48%), rounded."
+shock,shock.variants.S.theta1_k,0.45,sourced,"1 - Karger Table 39 2030 labor share for Slow, Economists column, median (55.0%)."
+shock,shock.variants.S.r_ai_annual,0.02,sourced,"Karger 2026 (NBER w35046) Table 19, Slow scenario, Economists column, median 2030 annualized GDP growth rate."
+shock,shock.variants.M.theta1_k,0.46,sourced,"1 - Karger Table 39 2030 labor share for Moderate, Economists column, median (54.0%). v1.0.0 used the Total column (53.8%); corrected in v1.0.1."
+shock,shock.variants.M.r_ai_annual,0.026,sourced,"Karger 2026 (NBER w35046) Table 19, Moderate scenario, Economists column, median 2030 annualized GDP growth rate."
+shock,shock.variants.R.theta1_k,0.48,sourced,"1 - Karger Table 39 2030 labor share for Rapid, Economists column, median (52.0%). v1.0.0 used the Total column (51.3%); corrected in v1.0.1."
+shock,shock.variants.R.r_ai_annual,0.033,sourced,"Karger 2026 (NBER w35046) Table 19, Rapid scenario, Economists column, median 2030 annualized GDP growth rate."
+labor_inequality,labor_inequality.k,1,preliminary,"Literal proportional-to-g_y mapping; see docs/k_calibration_memo.md. Sensitivity range [0.5, 2]."
+passthrough,passthrough.wage_threshold_percentile,99.99,preliminary,"Saez and Zucman (2020) active-profit split, tax-unit-level threshold."
+passthrough,passthrough.wage_threshold_conditioning,positive_wages,choice,'positive_wages' matches the W-2 universe per SZ.
+passthrough,passthrough.active_below_capital_share,0.25,preliminary,Saez and Zucman (2020): 25% of below-W* active profit -> capital.
+passthrough,passthrough.active_above_capital_share,0.75,preliminary,Saez and Zucman (2020): 75% of above-W* active profit -> capital.
+passthrough,passthrough.passive_capital_share,0.75,preliminary,Saez and Zucman (2020): 75% of passive profit -> capital.
+corporate,corporate.kappa_corp,0.5,preliminary,"NIPA 2024 Z.1 F.3 narrow C-corp share (S-corps stripped from numerator). See calibration_receipts_kappa_corp sheet. Sensitivity [0.45, 0.65]."
+corporate,corporate.cit_statutory,0.21,sourced,TCJA federal C-corp rate (IRC §11).

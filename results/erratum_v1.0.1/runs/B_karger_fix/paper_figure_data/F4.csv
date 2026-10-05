@@ -1,0 +1,15 @@
+Figure 4. Federal revenue grows non-linearly with the size of the GDP shock,,,,
+"Subtitle: Change in federal revenue (y-axis) plotted against total factor income growth (x-axis), FY 2030, Billions USD",,,,
+,,,,
+"Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY 2030.",,,,
+,,,,
+Scenario,Revenue (Microsimulation),Revenue (Macro CIT),Change in Total Revenue,Gross Factor Income Expansion
+Moderate AI · Reallocated shares · Proportional labor,79.4871331410241,34.3958056308491,113.882938771873,441.530599436801
+Moderate AI · Reallocated shares · Compressive labor,59.146849516449,34.3958056308491,93.5426551472981,441.530599436801
+Moderate AI · Reallocated shares · Expansive labor,101.370448155736,34.3958056308491,135.766253786585,441.530599436801
+Rapid AI · Reallocated shares · Proportional labor,126.349982009165,75.8069427667295,202.156924775895,767.132420609509
+Rapid AI · Reallocated shares · Compressive labor,87.0294610388273,75.8069427667295,162.836403805557,767.132420609509
+Rapid AI · Reallocated shares · Expansive labor,171.887989407977,75.8069427667295,247.694932174707,767.132420609509
+Slow AI · Reallocated shares · Proportional labor,-0.200575090630082,8.36632274246801,8.16574765183793,28.4967461669469
+Slow AI · Reallocated shares · Compressive labor,-3.6317935987372,8.36632274246801,4.73452914373081,28.4967461669469
+Slow AI · Reallocated shares · Expansive labor,3.26612887733972,8.36632274246801,11.6324516198077,28.4967461669469

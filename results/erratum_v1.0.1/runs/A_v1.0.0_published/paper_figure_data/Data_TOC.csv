@@ -1,0 +1,18 @@
+AI-Fiscal — paper exhibits (FY 2030),,
+October 2026,,
+The Budget Lab at Yale,,
+Tables and Figures,,
+,,
+Sheet,Caption,Description
+T1,Table 1. Key Parameters,Key model parameters by AI-adoption scenario
+F1,Figure 1. Tax revenue is higher when AI adoption is faster and when inequality rises,Headline federal revenue change by scenario
+F2,Figure 2. Capital and corporate revenue increases offset labor revenue losses in most scenarios,Revenue change decomposed by type of income
+F3,Figure 3. Revenue gains are driven by corporate and individual income tax revenue increases,Revenue change by tax instrument
+F4,Figure 4. Federal revenue grows non-linearly with the size of the GDP shock,Revenue vs. total factor income growth
+F5,Figure 5. Federal revenue is higher in all scenarios when capital-labor shares are held fixed.,Revenue under fixed vs. reallocated factor shares
+F6,Figure 6. Overall inequality changes are driven by assumptions about labor income inequality,Change in income inequality (Gini)
+F7,"Figure 7. Despite a falling labor share, average tax rates tend to rise slightly in the Moderate AI scenario",Average tax rate change by income decile
+FA1,Figure A1. How AI Scenario GDP Growth Assumptions Compare to Historical GDP Growth,AI scenario vs. historical GDP growth
+FA2,Figure A2. How AI Scenario Labor Share Assumptions Compare to the Historical Labor Share,AI scenario vs. historical labor share
+FA3,Figure A3. Federal revenue gains versus change in pre-tax income,Revenue gains vs. pre-tax income change
+FA4,Figure A4. The debt-to-GDP ratio falls more when AI adoption is faster,Debt-to-GDP by scenario (BLSMM)

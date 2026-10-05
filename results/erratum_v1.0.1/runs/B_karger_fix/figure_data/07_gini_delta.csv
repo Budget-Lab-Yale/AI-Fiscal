@@ -1,0 +1,23 @@
+Title:,Inequality.response.(Gini),X3,X4,X5,X6,X7,X8,X9,X10,X11
+Subtitle:,"Change in within-scenario Gini, FY 2030. Positive = inequality up.",,,,,,,,,
+Notes:,"Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY 2030.",,,,,,,,,
+,,,,,,,,,,
+scenario_id,variant,variant_label,labor,labor_label,realization,realization_label,income_concept,gini_baseline,gini_cf,delta
+ai_M_R_S0_V1,M,Moderate,S0,Proportional,V1,Mechanical,aftertax,0.554723007083343,0.556846975499188,0.00212396841584506
+ai_M_R_S0_V1,M,Moderate,S0,Proportional,V1,Mechanical,pretax,0.591605525530161,0.593727708415495,0.00212218288533417
+ai_M_R_S2_V1,M,Moderate,S2,Compressive,V1,Mechanical,aftertax,0.554723007083343,0.546302636014886,-0.0084203710684565
+ai_M_R_S2_V1,M,Moderate,S2,Compressive,V1,Mechanical,pretax,0.591605525530161,0.58204777395084,-0.00955775157932159
+ai_M_R_S3_V1,M,Moderate,S3,Expansive,V1,Mechanical,aftertax,0.554723007083343,0.567436925514403,0.0127139184310602
+ai_M_R_S3_V1,M,Moderate,S3,Expansive,V1,Mechanical,pretax,0.591605525530161,0.60542710730706,0.0138215817768991
+ai_R_R_S0_V1,R,Rapid,S0,Proportional,V1,Mechanical,aftertax,0.554723007083343,0.559636303883901,0.00491329680055819
+ai_R_R_S0_V1,R,Rapid,S0,Proportional,V1,Mechanical,pretax,0.591605525530161,0.596550196912608,0.00494467138244681
+ai_R_R_S2_V1,R,Rapid,S2,Compressive,V1,Mechanical,aftertax,0.554723007083343,0.538876124113076,-0.015846882970267
+ai_R_R_S2_V1,R,Rapid,S2,Compressive,V1,Mechanical,pretax,0.591605525530161,0.573580990444202,-0.0180245350859591
+ai_R_R_S3_V1,R,Rapid,S3,Expansive,V1,Mechanical,aftertax,0.554723007083343,0.580604621671912,0.0258816145885689
+ai_R_R_S3_V1,R,Rapid,S3,Expansive,V1,Mechanical,pretax,0.591605525530161,0.619608861337528,0.0280033358073667
+ai_S_R_S0_V1,S,Slow,S0,Proportional,V1,Mechanical,aftertax,0.554723007083343,0.555343655924813,0.000620648841470062
+ai_S_R_S0_V1,S,Slow,S0,Proportional,V1,Mechanical,pretax,0.591605525530161,0.592210868249462,0.000605342719301016
+ai_S_R_S2_V1,S,Slow,S2,Compressive,V1,Mechanical,aftertax,0.554723007083343,0.553596118824457,-0.00112688825888563
+ai_S_R_S2_V1,S,Slow,S2,Compressive,V1,Mechanical,pretax,0.591605525530161,0.590265834463162,-0.00133969106699938
+ai_S_R_S3_V1,S,Slow,S3,Expansive,V1,Mechanical,aftertax,0.554723007083343,0.557083258091105,0.00236025100776249
+ai_S_R_S3_V1,S,Slow,S3,Expansive,V1,Mechanical,pretax,0.591605525530161,0.594137779701154,0.0025322541709929

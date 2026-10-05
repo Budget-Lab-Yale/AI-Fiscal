@@ -1,0 +1,15 @@
+Figure 1. Tax revenue is higher when AI adoption is faster and when inequality rises,
+"Subtitle: Change in federal revenue, including corporate tax wedge, FY 2030, Billions USD",
+,
+"Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY 2030.",
+,
+Scenario,total_with_macro_cit
+Slow AI · Reallocated shares · Proportional labor,8.16574765183793
+Slow AI · Reallocated shares · Compressive labor,4.73452914373081
+Slow AI · Reallocated shares · Expansive labor,11.6324516198077
+Moderate AI · Reallocated shares · Proportional labor,105.153773547655
+Moderate AI · Reallocated shares · Compressive labor,84.8475732441497
+Moderate AI · Reallocated shares · Expansive labor,126.994510443822
+Rapid AI · Reallocated shares · Proportional labor,170.746253043999
+Rapid AI · Reallocated shares · Compressive labor,131.703881974806
+Rapid AI · Reallocated shares · Expansive labor,216.044660068707

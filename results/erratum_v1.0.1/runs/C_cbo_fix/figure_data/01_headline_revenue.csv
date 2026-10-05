@@ -1,0 +1,14 @@
+Title:,"AI-fiscal.revenue.impact,.all.scenarios",X3,X4,X5,X6,X7,X8
+Subtitle:,"Total ΔR including macro corporate-tax wedge, FY 2030 ($B)",,,,,,
+Notes:,"Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY 2030.",,,,,,
+,,,,,,,
+scenario_id,variant,variant_label,labor,labor_label,realization,realization_label,total_with_macro_cit
+ai_S_R_S0_V1,S,Slow,S0,Proportional,V1,Mechanical,8.01534691145987
+ai_S_R_S2_V1,S,Slow,S2,Compressive,V1,Mechanical,4.58412840335275
+ai_S_R_S3_V1,S,Slow,S3,Expansive,V1,Mechanical,11.4820508794297
+ai_M_R_S0_V1,M,Moderate,S0,Proportional,V1,Mechanical,104.494761893696
+ai_M_R_S2_V1,M,Moderate,S2,Compressive,V1,Mechanical,84.18856159019
+ai_M_R_S3_V1,M,Moderate,S3,Expansive,V1,Mechanical,126.335498789863
+ai_R_R_S0_V1,R,Rapid,S0,Proportional,V1,Mechanical,169.236170452785
+ai_R_R_S2_V1,R,Rapid,S2,Compressive,V1,Mechanical,130.193799383592
+ai_R_R_S3_V1,R,Rapid,S3,Expansive,V1,Mechanical,214.534577477494
