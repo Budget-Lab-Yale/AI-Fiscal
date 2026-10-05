@@ -261,7 +261,7 @@ flowchart TB
 | SOI Pub 1304 Tbl 1.4; SOI IRA Bulletin Tbl 1; DFA pension entitlements | TY2022 | N22, A3 | yes (retirement yaml) |
 | SOI Pub 1304 line totals (wages, interest, dividends, gains, Sch C/E, pensions, IRA, SS) | TY2022 | R1 (PUF vs NIPA gap), validation | yes, `validation_benchmarks.csv` |
 | DFA / SCF top-share holdings | 2022 / Q4 2024 | A1 validation | yes, `validation_benchmarks.csv` |
-| Tax-Data 2030 tax-unit file (PUF+SCF aged) | vintage `202607091035` | A1–P7 | cluster |
+| Tax-Data 2030 tax-unit file (PUF+SCF aged) | vintage `2026050315` (v1.0 results timestamp `202607091035`) | A1–P7 | cluster |
 | Tax-Simulator (`state-tax` @ `ab45a6661` local) | — | T1–T5 | local clone |
 
 ---
