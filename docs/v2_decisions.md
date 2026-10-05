@@ -68,7 +68,7 @@ historical realization variant `V2`.
 
 | ID | Topic | Status | Settle by (roadmap week) | Amended 2026-10-02 |
 |---|---|---|---|---|
-| D1 | Survey source, sector, and share bridge | **respondent group SET 2026-10-05** (pooled); bridge PROPOSED | 1 | reframed |
+| D1 | Survey source, sector, and share bridge | **respondent group SET 2026-10-05: Economists column for both GDP and labor share** (supersedes the same-day "pooled"); bridge PROPOSED | 1 | reframed |
 | D2 | Shock coverage within complete accounts | PROPOSED | 2 | reframed |
 | D3 | Factor accounts and named non-factor components | **φ rule SET 2026-10-05**; `Q` rules PROPOSED | 2 | reframed |
 | D4 | Corporate tax: baseline bridge vs marginal response | PROPOSED | 4 | reframed |
@@ -80,7 +80,7 @@ historical realization variant `V2`.
 | D10 | Capital-gains object, timing, basis at death | **valuation rule SET 2026-10-05** (Rule A default, Rule B built); realization calibration PROPOSED | 2 concept, 9 calibration | **new** (absorbs Q2.3) |
 | D11 | Retirement balances and withdrawals | PROPOSED | 2 concept, 6 calibration | **new** |
 | D12 | Distributional estimand and CIT incidence | **lead panel + incidence SET 2026-10-05** | 2 definition, 10 implementation | **new** (absorbs the CIT-burden node) |
-| D13 | Release horizon and required outputs | **horizon SET 2026-10-05** (10-year window); outputs PROPOSED | 1 | **new** |
+| D13 | Release horizon and required outputs | **horizon SET 2026-10-05** (10-year window); **post-2030 path = model setting SET** {hold 2030 gap (proposed reference) / interpolate to Karger 2050 / continue 2025–30 growth}; outputs PROPOSED | 1 | **new** |
 | D14 | Revenue-parameter register as a model output | **SET 2026-10-05** (concept); contents PROPOSED | 2 definition, 12–13 sensitivities | **new 2026-10-05** |
 
 **2026-10-05 — John's review of the methodology proposal** (PDF comments on
@@ -222,6 +222,12 @@ commitments, all to be carried as D14 register entries:
   (Table 40), NFB labor productivity and TFP (Tables 21–24).
 - **Output-label bug:** v1 `key_parameters` sheet says "CBO no-AI baseline
   path"; CBO's baseline includes AI (+0.1 pp TFP). Fix the label in v2.
+- **Resolved later the same day (John):** use the **Economists column for
+  both inputs** in v2, re-run v1.0 that way and publish a short erratum
+  (carried-over item **V1-8**, a TODO for the next server session); the
+  post-2030 path becomes a three-way model setting (D13); the 80/20
+  discussion moves out of the mixed-income section into Distributional
+  analysis (tracked changes in the Word plan).
 - **To add to `lit_macro_to_micro_structures.md`:** Treasury OTA
   (retained earnings = accrued gains), Penn Wharton OLG, JCT OLG, CBO
   distributional income definitions.
@@ -838,6 +844,7 @@ operational, not design decisions.
 | V1-4 | Archive `Budget-Lab-Yale/ai_fiscal` | Confirmed still open: `isArchived: false`, private, last push 2026-06-11. Checklist in `repo_consolidation.md`; that doc can go once this is done | Nothing — five minutes |
 | V1-5 | Attach release assets to `v1.0.0` | `gh release view v1.0.0` returns `"assets": []`. The publishable xlsx and figure PNGs were never attached, so non-R readers can't get the deliverables | Nothing — five minutes |
 | V1-6 | Upstream the three Tax-Simulator patches | Filed as issues **#128** (timeburden segfault under `--multicore scenario`), **#129** (non-unique `breaks` in `build_horizontal_table`), **#130** (`mc.cores` oversubscribes shared SLURM nodes) on 2026-06-22 — all three still **OPEN**, no PRs. Diagnosis in `tax_simulator_patches.md`. Review: record the patch diff and its effect on outputs; don't let release timing depend on upstream merging | Phase 6's release candidate, which re-runs the grid through Tax-Simulator and hits all three again |
+| **V1-8** | **TODO ON THE SERVER — re-run v1.0 with the Economists column and prepare a short erratum** (John, 2026-10-05) | v1.0 took GDP growth from Karger Table 19 **Economists** (2.0/2.6/3.3) but the 2030 labor share from Table 39 **Total/pooled** (55.0/53.8/51.3); Economists = 55.0/**54.0**/**52.0**. Only the reallocate-mode Moderate and Rapid cells move (Slow is 55.0 in both columns; fixed-share cells pin θ1 = θ0; g_Y is unchanged). Steps: (1) branch from tag `v1.0.0`; (2) `config/scenario_params.yaml`: `M.theta1_k` 0.462 → **0.460**, `R.theta1_k` 0.487 → **0.480**, and fix the `_source` strings to say "Economists column" (the 2025 baseline 0.555 is a data value, 55.48 in the paper); (3) full release run on the cluster with the same Tax-Data vintage `202607091035` and Tax-Simulator patches; (4) diff against the published bundle (`results/aggregates/*_2030_latest.xlsx`) — headline revenue, Figures 1–7, Table 1; (5) draft the erratum: what changed, by how much, which numbers/figures; fold in the methodology fixes (V1-7 sign; "economist subsample" wording; "CBO no-AI baseline" label in `key_parameters`); (6) tag `v1.0.1`, update CHANGELOG/CITATION, attach release assets (V1-5) | Erratum publication |
 | V1-7 | Public-methodology sign in the revenue-share formula | Review: the published methodology's displayed rearrangement of `Δz = (ΔR/Y0 − z0·g)/(1+g)` shows a positive sign on the GDP-denominator term; the repo's Markdown and code use the negative sign correctly. A web-document correction only, not a results error. Not re-verified against the live page | Nothing |
 
 Two `todo.md` §C4 leftovers judged not worth carrying: replacing the

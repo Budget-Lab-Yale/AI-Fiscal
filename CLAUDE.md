@@ -8,6 +8,13 @@ conventions, integration with Tax-Simulator, common gotchas.
 
 > On the Yale HPC, cluster setup (R module load, Slurm, paths) lives in your user-level `~/.claude/CLAUDE.md`.
 
+> **Open TODO for the next server session (added 2026-10-05):** re-run
+> v1.0 with Karger's *Economists* labor shares (Moderate 54.0%, Rapid
+> 52.0%; v1.0 used the pooled 53.8% / 51.3%) and prepare a short
+> erratum. Steps are in
+> [`docs/v2_decisions.md`](docs/v2_decisions.md) §3, item **V1-8**.
+> Remove this note when V1-8 is done.
+
 ## What this model does — and doesn't
 
 AI-Fiscal estimates the change in federal revenue and the
