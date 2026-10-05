@@ -75,34 +75,6 @@ and runs Tax-Simulator. Outputs are federal receipts by instrument, two
 distributional panels, and a flow reconciliation that accounts for
 every dollar of ΔY.
 
-A Mermaid version of the same structure (renders on GitHub):
-
-```mermaid
-flowchart TB
-  CBO["CBO baseline · D6"] --> PA
-  AI["AI path: GDP level + NFB labor share · D1"] --> PA
-  MA["macro adapter (opt.)"] -.-> AI
-  PA["1 Production accounts Y = L + K + Q · D1 D2 D3"]
-  PA --> LAB["2 Labor ΔL → wages → S0/S2/S3"]
-  PA --> CC["C-corp ΔΠ_C"] --> CIT["3 Entity tax ΔR_CIT · D4"] --> PAY["payout p · D7"]
-  PA --> PT["pass-throughs ΔΠ_S, ΔΠ_P"]
-  PA --> RI["rental, interest"]
-  PAY & PT & RI --> OWN["4 Ownership × wrapper · D9"]
-  OWN --> CASH["5a cash income"]
-  OWN --> AL["5b asset ledger · D10"]
-  OWN --> RET["5c retirement · D11"]
-  OWN -.-> UNT["untaxed / deferred destinations"]
-  CASH & AL & RET --> REC["6 Reconciliation · D5"]
-  REC --> MS["7 allocation → tax units → Tax-Simulator"]
-  LAB --> MS
-  MS --> REV["federal receipts · D13"]
-  CIT -. "counted once" .-> REV
-  MS --> DIST["distribution panels · D12"]
-  MS --> FLOW["flow reconciliation"]
-  UNT --> FLOW
-  REV -.-> BLSMM["BLSMM debt/GDP (opt.)"]
-```
-
 ---
 
 ## 3. Modules

@@ -68,19 +68,55 @@ historical realization variant `V2`.
 
 | ID | Topic | Status | Settle by (roadmap week) | Amended 2026-10-02 |
 |---|---|---|---|---|
-| D1 | Survey source, sector, and share bridge | PROPOSED | 1 | reframed |
+| D1 | Survey source, sector, and share bridge | **respondent group SET 2026-10-05** (pooled); bridge PROPOSED | 1 | reframed |
 | D2 | Shock coverage within complete accounts | PROPOSED | 2 | reframed |
-| D3 | Factor accounts and named non-factor components | PROPOSED | 2 | reframed |
+| D3 | Factor accounts and named non-factor components | PROPOSED — φ walk-through pending | 2 | reframed |
 | D4 | Corporate tax: baseline bridge vs marginal response | PROPOSED | 4 | reframed |
 | D5 | Reconciliation ordering | PROPOSED | 4 | proposal replaced |
-| D6 | Baseline, counterfactual, time and prices | PROPOSED | 1–2 | widened |
+| D6 | Baseline, counterfactual, time and prices | **baseline source SET 2026-10-05** (Macro-Projections); rest PROPOSED | 1–2 | widened |
 | D7 | Payout ratio on a matched universe | OPEN | 6 | narrowed |
 | D8 | Labor displacement | PROPOSED: defer | 1 | reframed |
-| D9 | Ownership and wrapper boundary | PROPOSED | 2 | **new** |
-| D10 | Capital-gains object, timing, basis at death | PROPOSED | 2 concept, 9 calibration | **new** (absorbs Q2.3) |
+| D9 | Ownership and wrapper boundary | PROPOSED; **granularity widened 2026-10-05** | 2 | **new** |
+| D10 | Capital-gains object, timing, basis at death | PROPOSED — valuation walk-through pending | 2 concept, 9 calibration | **new** (absorbs Q2.3) |
 | D11 | Retirement balances and withdrawals | PROPOSED | 2 concept, 6 calibration | **new** |
-| D12 | Distributional estimand and CIT incidence | PROPOSED | 2 definition, 10 implementation | **new** (absorbs the CIT-burden node) |
-| D13 | Release horizon and required outputs | PROPOSED | 1 | **new** |
+| D12 | Distributional estimand and CIT incidence | **lead panel + incidence SET 2026-10-05** | 2 definition, 10 implementation | **new** (absorbs the CIT-burden node) |
+| D13 | Release horizon and required outputs | **horizon SET 2026-10-05** (10-year window); outputs PROPOSED | 1 | **new** |
+
+**2026-10-05 — John's review of the methodology proposal** (PDF comments on
+`v2_methodology_proposal_2026-10-02_v1.pdf`). Each decision below is a
+concept choice; receipts are still to land, so the "SET" is for the
+choice, not a number.
+
+- **D1:** use the **pooled (Total) column** of Karger Table 39 — the
+  column v1.0 actually used (yaml `baseline_labor_share_source`). The
+  published methodology's "economist subsample" wording is therefore the
+  thing to correct, not the numbers. *Follow-up:* confirm the GDP growth
+  rates (Table 19: 2.0 / 2.6 / 3.3, which the review attributes to the
+  economists' group) are taken from the same pooled column, or record why
+  the two tables use different groups.
+- **D6:** adopt **Macro-Projections** (`projections.csv`, the vintage
+  Tax-Simulator reads) as the v2 baseline module. *Added concern:* if CBO's
+  baseline embeds AI effects, and especially if CBO publishes larger-AI
+  alternative scenarios, we may need to back out CBO's AI contribution
+  before layering ours. Feasibility depends on how much CBO discloses —
+  make this a data-gathering item (extends 2.4).
+- **D9:** ownership shares by entity type **and by income group** (not
+  only wealth group).
+- **D12:** the **cash** panel leads; the incidence convention is **the
+  Budget Lab's own** (Tax-Simulator `distribution.R`: labor share of
+  corporate-tax changes phasing 0 → 20% over ten years).
+- **D13:** build out a **10-year window** (not the 2030 endpoint only).
+  Consequences: a post-2030 shock path (Karger's horizon ends in 2030),
+  annual tax-unit files for every scored year, and the asset/retirement
+  ledgers (D10, D11) carrying balances across the full window.
+- **Scope principle (general comment):** the primary output is federal
+  revenue. Model non-revenue destinations (foreign, exempt, deferred)
+  only as far as they determine what reaches a tax base; don't build
+  full estimates of those components where that needs heavier
+  assumptions.
+- **Walk-throughs requested** before deciding: D10 reference valuation
+  rule; BLSMM as the source of v2's GDP path; the single mixed-income φ
+  (D3).
 
 Dependency order: **D13 and D6 first** (they fix what is being
 estimated and over which years), then **D1 → D3 → D2** as one accounting
