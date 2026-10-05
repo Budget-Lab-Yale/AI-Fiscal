@@ -1,0 +1,23 @@
+Title:,"Reallocate.vs.fixed-share,.paired.by.shock",X3,X4,X5,X6,X7,X8,X9,X10
+Subtitle:,"Total ΔR including macro CIT, FY 2030 ($B). Same g_y per variant; only the labor-capital reallocation differs.",,,,,,,,
+Notes:,"Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY 2030.",,,,,,,,
+,,,,,,,,,
+scenario_id,variant,variant_label,share_mode,share_mode_label,labor,labor_label,realization,realization_label,total_with_macro_cit
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,8.01534691145987
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,4.58412840335275
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,11.4820508794297
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,29.4720839888619
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,26.0297648710552
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,32.9517848956689
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,104.494761893696
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,84.18856159019
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,126.335498789863
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,179.378215374913
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,158.775240680112
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,201.520959509256
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,169.236170452785
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,130.193799383592
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,214.534577477494
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,360.060089694361
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,319.292138966943
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,406.815517949216

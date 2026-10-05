@@ -1,0 +1,41 @@
+Title:,Revenue.change.by.instrument,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13,X14,X15
+Subtitle:,"Stacked ΔR, FY 2030 ($B). Tax credits enter as a negative bar (outlay).",,,,,,,,,,,,,
+Notes:,"Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY 2030.",,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+scenario_id,variant,variant_label,share_mode,share_mode_label,labor,labor_label,realization,realization_label,instrument,baseline,counterfactual,delta,delta_R_CIT,instrument_label
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,macro_cit_delta,,,8.21592200208995,8.21592200208995,Macro CIT
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,outlays_tax_credits,-100.96774507013,-101.336467661375,-0.368722591245188,8.21592200208995,Tax credits (outlay)
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_income_tax,3010.43359034049,3014.36905035138,3.93546001088544,8.21592200208995,Income tax
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_payroll_tax,1970.92352019412,1967.15620768385,-3.7673125102699,8.21592200208995,Payroll
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,macro_cit_delta,,,8.21592200208995,8.21592200208995,Macro CIT
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,outlays_tax_credits,-100.96774507013,-100.250164843803,0.717580226326447,8.21592200208995,Tax credits (outlay)
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_income_tax,3010.43359034049,3005.71138880988,-4.72220153060562,8.21592200208995,Income tax
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_payroll_tax,1970.92352019412,1971.29634789966,0.372827705542704,8.21592200208995,Payroll
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,macro_cit_delta,,,8.21592200208995,8.21592200208995,Macro CIT
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,outlays_tax_credits,-100.96774507013,-102.420857738251,-1.45311266812115,8.21592200208995,Tax credits (outlay)
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_income_tax,3010.43359034049,3023.09080252894,12.6572121884519,8.21592200208995,Income tax
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_payroll_tax,1970.92352019412,1962.98554955113,-7.93797064299088,8.21592200208995,Payroll
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,macro_cit_delta,,,33.7774748788545,33.7774748788545,Macro CIT
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,outlays_tax_credits,-100.96774507013,-99.8892532720676,1.07849179806213,33.7774748788545,Tax credits (outlay)
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_income_tax,3010.43359034049,3079.4865976585,69.0530073180144,33.7774748788545,Income tax
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_payroll_tax,1970.92352019412,1980.27915421907,9.3556340249479,33.7774748788545,Payroll
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,macro_cit_delta,,,33.7774748788545,33.7774748788545,Macro CIT
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,outlays_tax_credits,-100.96774507013,-93.2193727258138,7.74837234431591,33.7774748788545,Tax credits (outlay)
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_income_tax,3010.43359034049,3027.49767610528,17.064085764795,33.7774748788545,Income tax
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_payroll_tax,1970.92352019412,2005.25791160146,34.3343914073391,33.7774748788545,Payroll
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,macro_cit_delta,,,33.7774748788545,33.7774748788545,Macro CIT
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,outlays_tax_credits,-100.96774507013,-106.418859519679,-5.45111444954932,33.7774748788545,Tax credits (outlay)
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_income_tax,3010.43359034049,3133.91702913126,123.483438790769,33.7774748788545,Income tax
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_payroll_tax,1970.92352019412,1954.26164400864,-16.6618761854836,33.7774748788545,Payroll
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,macro_cit_delta,,,74.4441671879153,74.4441671879153,Macro CIT
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,outlays_tax_credits,-100.96774507013,-100.229912849212,0.737832220917753,74.4441671879153,Tax credits (outlay)
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_income_tax,3010.43359034049,3131.17450717651,120.740916836021,74.4441671879153,Income tax
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_payroll_tax,1970.92352019412,1975.79475314635,4.87123295222636,74.4441671879153,Payroll
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,macro_cit_delta,,,74.4441671879153,74.4441671879153,Macro CIT
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,outlays_tax_credits,-100.96774507013,-86.8208685103625,14.1468765597672,74.4441671879153,Tax credits (outlay)
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_income_tax,3010.43359034049,3029.7503330047,19.3167426642071,74.4441671879153,Income tax
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_payroll_tax,1970.92352019412,2024.48936200897,53.5658418148544,74.4441671879153,Payroll
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,macro_cit_delta,,,74.4441671879153,74.4441671879153,Macro CIT
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,outlays_tax_credits,-100.96774507013,-112.964773527375,-11.9970284572449,74.4441671879153,Tax credits (outlay)
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_income_tax,3010.43359034049,3242.30436050558,231.870770165091,74.4441671879153,Income tax
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_payroll_tax,1970.92352019412,1922.93776789425,-47.985752299868,74.4441671879153,Payroll

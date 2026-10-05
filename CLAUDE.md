@@ -8,12 +8,17 @@ conventions, integration with Tax-Simulator, common gotchas.
 
 > On the Yale HPC, cluster setup (R module load, Slurm, paths) lives in your user-level `~/.claude/CLAUDE.md`.
 
-> **Open TODO for the next server session (added 2026-10-05):** re-run
-> v1.0 with Karger's *Economists* labor shares (Moderate 54.0%, Rapid
-> 52.0%; v1.0 used the pooled 53.8% / 51.3%) and prepare a short
-> erratum. Steps are in
-> [`docs/v2_decisions.md`](docs/v2_decisions.md) §3, item **V1-8**.
-> Remove this note when V1-8 is done.
+> **Open TODOs for the next server session (updated 2026-10-05):**
+> the v1.0.1 erratum re-run (V1-8, V1-9) is merged into `main` and this
+> branch; v1.0.0's outputs are archived in `results/v1.0.0/`. Still to
+> do: (1) **V1-10** — regenerate the three result workbooks
+> (`results/aggregates/*_latest.xlsx`, `results/figures/2030/figure_data_2030.xlsx`)
+> from the v1.0.1 Tax-Simulator run with the merged `08`/`09` code, so
+> they carry both the v1.0.1 numbers and this branch's decomposition
+> revenue levels; (2) publish the erratum — tag `v1.0.1` on `main`,
+> GitHub release with assets (V1-5). Details in
+> [`docs/v2_decisions.md`](docs/v2_decisions.md) §3. Remove this note
+> when both are done.
 
 ## What this model does — and doesn't
 

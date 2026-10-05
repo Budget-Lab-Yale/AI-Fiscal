@@ -1,0 +1,24 @@
+Figure 6. Overall inequality changes are driven by assumptions about labor income inequality,,,,
+"Subtitle: Change in within-scenario Gini coefficient, FY 2030. Positive = inequality rises.",,,,
+,,,,
+"Source: The Budget Lab at Yale AI-Fiscal microsimulation model, FY 2030.",,,,
+,,,,
+Scenario,income_concept,gini_baseline,gini_cf,delta
+Moderate AI · Reallocated shares · Proportional labor,aftertax,0.554723007083343,0.557044523203491,0.00232151612014808
+Moderate AI · Reallocated shares · Proportional labor,pretax,0.591605525530161,0.593927531176733,0.00232200564657226
+Moderate AI · Reallocated shares · Compressive labor,aftertax,0.554723007083343,0.546523309255003,-0.00819969782833963
+Moderate AI · Reallocated shares · Compressive labor,pretax,0.591605525530161,0.582265110624254,-0.00934041490590731
+Moderate AI · Reallocated shares · Expansive labor,aftertax,0.554723007083343,0.56762009222294,0.0128970851395976
+Moderate AI · Reallocated shares · Expansive labor,pretax,0.591605525530161,0.605597422990439,0.0139918974602777
+Rapid AI · Reallocated shares · Proportional labor,aftertax,0.554723007083343,0.560442568525692,0.00571956144234964
+Rapid AI · Reallocated shares · Proportional labor,pretax,0.591605525530161,0.597351561735813,0.00574603620565162
+Rapid AI · Reallocated shares · Compressive labor,aftertax,0.554723007083343,0.539796815332324,-0.0149261917510183
+Rapid AI · Reallocated shares · Compressive labor,pretax,0.591605525530161,0.574504418651013,-0.0171011068791482
+Rapid AI · Reallocated shares · Expansive labor,aftertax,0.554723007083343,0.581295341663322,0.0265723345799795
+Rapid AI · Reallocated shares · Expansive labor,pretax,0.591605525530161,0.620252009117291,0.0286464835871295
+Slow AI · Reallocated shares · Proportional labor,aftertax,0.554723007083343,0.555343655924813,0.000620648841470062
+Slow AI · Reallocated shares · Proportional labor,pretax,0.591605525530161,0.592210868249462,0.000605342719301016
+Slow AI · Reallocated shares · Compressive labor,aftertax,0.554723007083343,0.553596118824457,-0.00112688825888563
+Slow AI · Reallocated shares · Compressive labor,pretax,0.591605525530161,0.590265834463162,-0.00133969106699938
+Slow AI · Reallocated shares · Expansive labor,aftertax,0.554723007083343,0.557083258091105,0.00236025100776249
+Slow AI · Reallocated shares · Expansive labor,pretax,0.591605525530161,0.594137779701154,0.0025322541709929
