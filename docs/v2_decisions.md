@@ -228,6 +228,21 @@ commitments, all to be carried as D14 register entries:
   post-2030 path becomes a three-way model setting (D13); the 80/20
   discussion moves out of the mixed-income section into Distributional
   analysis (tracked changes in the Word plan).
+- **Fourth round (John, 2026-10-05 evening; Word plan `-jii` copy):**
+  - **D3 φ_0:** keep v1.0's treatment of sole-proprietor/farm income as
+    100% labor; Saez–Zucman's 20% capital share is a sensitivity. The v1
+    threshold rule is SZ **NBER w27921 (2020b) p. 43** (S-corp, extended
+    to partnerships; passive 75% capital) — v1 cited the JEP paper
+    (2020a), which has no such rule. SZ's aggregate series use 50%
+    (partnership) / 20% (sole prop), ≈30% overall (p. 54).
+  - **D3 φ_AI presets:** default φ_AI = φ_0; SYZZ uniform 0.25; capital-heavy
+    0.75 (SZ above-W* rate); solo-work 0 (Palagashvili 2026).
+  - **D2 rent/interest:** reference holds both on baseline paths; two
+    sensitivities — (1) both grow with GDP as generic growth, (2) interest
+    income rises with an AI-driven rate path, with matching debtor-side
+    interest.
+  - **#57:** short "how other models handle these steps" box in the plan
+    (CBO, OTA, DINA, PWBM, JCT).
 - **To add to `lit_macro_to_micro_structures.md`:** Treasury OTA
   (retained earnings = accrued gains), Penn Wharton OLG, JCT OLG, CBO
   distributional income definitions.
