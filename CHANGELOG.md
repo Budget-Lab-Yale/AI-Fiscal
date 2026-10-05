@@ -5,6 +5,33 @@ All notable changes to AI-Fiscal are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] — Unreleased
+
+Erratum release. Corrects two input errors; see
+[`docs/erratum_v1.0.1.md`](docs/erratum_v1.0.1.md) and the
+with/without-correction result set in
+[`results/erratum_v1.0.1/`](results/erratum_v1.0.1/).
+
+### Fixed
+
+- **Karger labor shares.** 2030 labor shares now come from the
+  Economists column of Karger et al. (2026) Table 39 (55.0 / 54.0 /
+  52.0%), matching the GDP growth rates already taken from that
+  column of Table 19. v1.0.0 used the pooled Total column (55.0 / 53.8
+  / 51.3%). `theta1_k`: Moderate 0.462 → 0.460, Rapid 0.487 → 0.480.
+- **CBO baseline ratios.** `cit_to_gdp_baseline_year` 0.013 →
+  0.0127663 and `rev_to_gdp_baseline_year` 0.177 → 0.176381, from
+  CBO's Table 1-1 data supplement rather than the rounded report
+  table. The rounded CIT ratio overstated the macro CIT delta by 1.8%.
+- **Labels.** "CBO no-AI baseline" → "CBO baseline" (CBO's baseline
+  embeds +0.1 pp/yr of AI-driven TFP growth).
+
+### Changed
+
+- FY2030 revenue change (reallocate, proportional): Moderate $105.2B →
+  $113.3B; Rapid $170.7B → $200.8B. Rapid aggregate labor income now
+  rises 0.4% instead of falling 0.9%.
+
 ## [1.0.0] — 2026-07-20
 
 Initial public release, accompanying the Budget Lab report
