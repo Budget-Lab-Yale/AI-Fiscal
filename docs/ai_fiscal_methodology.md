@@ -134,10 +134,21 @@ Three intensity variants are published: Slow, Moderate, and Rapid
 Karger's 5-year horizon and pin every variant from Tables 19 (growth
 rates) and 39 (labor shares).
 
-Karger et al. (2026) surveys several different groups of AI experts;
-we use estimates for the economist subsample. Our microsimulation
-already ages the IRS PUF to the baseline year along the Congressional
-Budget Office's (CBO) no-AI growth path (2026 = 2.2%, 2027+ = 1.8%).
+Karger et al. (2026) surveys several respondent groups (economists, AI
+experts, superforecasters, and the general public); we use the
+medians for the economist group (the "Economists" column of Tables 19
+and 39) for both inputs. Our microsimulation already ages the IRS PUF
+to the baseline year along the Congressional Budget Office's (CBO)
+baseline growth path (2026 = 2.2%, 2027+ = 1.8%). CBO's baseline
+already embeds a small AI effect (+0.1 percentage point a year of
+total factor productivity growth), so our AI bumps are measured
+relative to that path rather than to a no-AI counterfactual.
+
+*Correction (v1.0.1).* Version 1.0.0 took the 2030 labor shares from
+the pooled all-respondents ("Total") column of Table 39 (Moderate
+53.8%, Rapid 51.3%) while taking GDP growth from the Economists column.
+Version 1.0.1 uses the Economists column for both (Moderate 54.0%,
+Rapid 52.0%).
 
 ### Table 1. Key parameters
 
@@ -145,12 +156,12 @@ Budget Office's (CBO) no-AI growth path (2026 = 2.2%, 2027+ = 1.8%).
 |------------------------------------------------------------|-------------:|-----------------:|--------------:|
 | *AI-adoption inputs (5-year horizon, 2025–2030)*           |              |                  |               |
 | Annual GDP growth under AI ($r_{ai}$)                      |       2.0%   |        2.6%      |       3.3%    |
-| 2030 capital share ($\theta_1^K$)                          |      45.0%   |       46.2%      |      48.7%    |
-| 2030 labor share ($\theta_1^L = 1 - \theta_1^K$)           |      55.0%   |       53.8%      |      51.3%    |
+| 2030 capital share ($\theta_1^K$)                          |      45.0%   |       46.0%      |      48.0%    |
+| 2030 labor share ($\theta_1^L = 1 - \theta_1^K$)           |      55.0%   |       54.0%      |      52.0%    |
 | *Derived growth bumps, cumulative over 5 years, above CBO* |              |                  |               |
 | GDP ($g_Y$)                                                |      0.59%   |        3.58%     |       7.17%   |
-| Capital ($g_K$)                                            |      1.72%   |        7.54%     |      17.28%   |
-| Labor ($g_L$)                                              |     −0.32%   |        0.41%     |      −0.94%   |
+| Capital ($g_K$)                                            |      1.72%   |        7.08%     |      15.60%   |
+| Labor ($g_L$)                                              |     −0.32%   |        0.78%     |       0.41%   |
 | *Labor-income inequality parameter $\lambda$ (k = 1)*      |              |                  |               |
 | Compressive ($\lambda_{S2} = 1 - k \cdot g_Y$)             |      0.994   |        0.964     |       0.928   |
 | Proportional ($\lambda_{S0}$)                              |      1.000   |        1.000     |       1.000   |
@@ -162,7 +173,7 @@ Budget Office's (CBO) no-AI growth path (2026 = 2.2%, 2027+ = 1.8%).
 AI-adoption variants, which differ in two paired targets: the
 annualized GDP growth rate under AI and the post-shock capital share.
 All derived growth rates are cumulative over the Karger 5-year horizon
-(2025–2030) and net of the no-AI CBO baseline path — i.e., they
+(2025–2030) and net of the CBO baseline path — i.e., they
 isolate the AI contribution.
 
 ### From shares and growth to growth rates by factor
@@ -344,8 +355,9 @@ delta equals the AI capital flow's share of baseline capital income
 times the CBO baseline CIT level. With $\tau_C^{\mathrm{stat}} =
 21\%$ (TCJA), $\kappa \approx 0.50$ (the narrow C-corp share of
 capital income from NIPA 2024, with S-Corp profit stripped from the
-numerator), and CBO's 2030 CIT anchor of $\sim \$486$B
-(or CIT-to-GDP equaling $0.013$ times GDP),
+numerator), and CBO's FY2030 CIT anchor of \$477.3B
+(CIT-to-GDP of 1.277%; CBO Table 1-1 data supplement; v1.0.0 used the
+rounded 1.3%, or \$486.1B),
 $\eta$ falls out to roughly one in practice; its exact value is
 reported on the `parameters` sheet of every run.
 
@@ -524,8 +536,8 @@ tax level — Tax-Simulator handles only the individual-and-payroll
 base — the model's internal revenue / GDP ratio understates the
 published level by roughly 1.3 percentage points at 2030. For the
 publishable revenue-to-GDP comparison we therefore anchor the
-baseline to CBO's published 2030 ratio (17.7%; CBO publication
-62105) and add the model's $\Delta R$ on top, where $\Delta R$ is
+baseline to CBO's FY2030 ratio (17.638%; CBO publication 62105,
+Table 1-1 data supplement; v1.0.0 used the rounded 17.7%) and add the model's $\Delta R$ on top, where $\Delta R$ is
 the model's total bottom-line revenue change — the Tax-Simulator
 change in income and payroll tax (net of refundable credits) plus
 the corporate-tax response (the macro CIT wedge on the AI capital
@@ -549,7 +561,7 @@ $(R/Y)^{\mathrm{CBO}}_{\mathrm{base}} \cdot g_Y / (1 + g_Y)$.
 Anchoring to CBO applies that drag to a realistic revenue base, so
 the published response number is meaningful relative to the
 forecast level. The AI growth bump $g_Y$ — the excess GDP over
-CBO's no-AI baseline, specific to each Karger variant — enters only
+CBO's baseline, specific to each Karger variant — enters only
 through the scenario denominator $Y_{\mathrm{base}}(1 + g_Y)$, so the
 change in GDP from the AI shock passes directly into the published
 ratio; with $g_Y = 0$ the dilution drag vanishes. The maintained
