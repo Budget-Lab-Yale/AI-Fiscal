@@ -144,6 +144,47 @@ choice, not a number.
 - **New D14: a revenue-parameter register is a required output** (see
   entry below).
 
+**2026-10-05 — What CBO's February 2026 outlook says about AI (D6
+back-out question).** Read from the full report PDF (`61882-Outlook-2026.pdf`;
+the web landing page is pub 62105 — note both numbers in receipts).
+
+- *What CBO embeds* (p. 38 of the report, Ch. 2 "potential output"):
+  annual TFP growth 2026–2036 is **0.1 pp higher** than without generative
+  AI diffusion, raising **nonfarm business output 1% by 2036**; effects
+  described as gradual. Separately, AI-related business investment (data
+  centers, computers, IP) drives 2026 investment growth and part of a GDP
+  level 2.4% above the Jan-2025 projection in 2035 (p. 99 of the report) — that
+  investment effect is **not** separated from the reconciliation act's.
+- *What CBO does not embed:* no AI effect on factor shares. Wage and profit
+  shares are revised for data reasons (wages and salaries/GDP down ~1.4 pp
+  a year 2027–35 toward the post-pandemic ~42%; domestic corporate
+  profits/GDP fall to 2030, then rise to 10.1% in 2036 "consistent with
+  their historical long-run trend").
+- *Other AI touchpoints:* higher long-run interest rates partly because AI
+  raises returns on capital (relevant to Rule B's `r` and to interest
+  income); AI capex deductions are inside the FY2026 CIT baseline.
+- *No quantified AI alternative scenario* in this report — uncertainty is
+  qualitative (faster or slower diffusion). Pub 62184 ("How Budgetary and
+  Economic Outcomes Might Differ…") may have one; not yet read (cbo.gov
+  blocks scripted access — needs a manual download).
+
+**Implications (proposed):**
+1. *GDP: no back-out needed in the reference case.* Karger's `r_ai` is
+   total real GDP growth, and `g_Y = (1+r_ai)^h / G_CBO − 1` measures it
+   against CBO's total path, so CBO's AI is netted out by construction.
+   The estimand is "AI beyond what CBO assumes." State this explicitly.
+2. *Optional AI-vs-no-AI framing:* an ex-AI baseline is constructible from
+   what CBO discloses (remove 0.1 pp/yr of NFB TFP; NFB output −1% by
+   2036, roughly −0.5% by 2030 if diffusion were linear — CBO gives only
+   the endpoint). Offer as an alternative presentation, not the default.
+3. *Shares:* nothing AI-specific to back out, but the scenario's labor
+   share change must be layered on CBO's own (non-AI) share path — the
+   open D1 question of "change relative to today's share vs the projected
+   baseline share" matters more than thought, because CBO's wage share
+   is itself moving.
+4. *CIT:* the incremental rate `τ^m` (D4) applies to investment beyond
+   CBO's; AI capex already in the baseline must not be expensed twice.
+
 ---
 
 ### D14 — Revenue-parameter register as a model output  *(new)*
