@@ -13,8 +13,10 @@
 # The two appendix context charts (Fig A1 GDP growth, Fig A2 labor share)
 # are NOT produced by the model pipeline — in the draft they are
 # Datawrapper charts built from historical macro series. This script
-# regenerates their underlying data directly from FRED (no API key — the
-# public fredgraph.csv endpoint), so the workbook is self-contained.
+# regenerates their underlying data from FRED (no API key — the public
+# ALFRED csv endpoint), pinned to the data vintage of the v1.0.0
+# publication (.FRED_VINTAGE_DATE), so the workbook is self-contained and
+# re-runs reproduce the published series rather than later releases.
 #
 # Output:
 #   results/figures/<year>/paper_figure_data_<year>.xlsx
@@ -58,6 +60,12 @@ source("code/00_utils.R")
 .FRED_GDP_ID    <- "GDPC1"        # Real GDP, quarterly, Bil. Chn. 2017$ (annual avg = GDPCA)
 .FRED_LABOR_ID  <- "PRS85006173"  # Nonfarm Business Sector: Labor Share (Index 2017=100)
 
+# Data vintage for every FRED pull: the series as they stood on the date the
+# v1.0.0 exhibits were built (identical to the 2026-07-20 release-day
+# vintage). Fetched from ALFRED, so later BLS/BEA quarters and revisions
+# never leak into the published appendix charts.
+.FRED_VINTAGE_DATE <- "2026-07-09"
+
 # The BLS index is 2017=100; the figure plots the labor share in percent.
 # Anchor the index to the nonfarm-business labor-share level in the index
 # base year (2017 ~ 56.5%, matching the BLS/Haver LXNFBL level the draft
@@ -70,13 +78,14 @@ source("code/00_utils.R")
 .GDP_PROJECTION_END   <- 2036L    # how far to carry the CBO projection line
 
 # --------------------------------------------------------------------------
-# FRED download (public fredgraph.csv endpoint — no API key required)
+# FRED download (public ALFRED csv endpoint — no API key required)
 # --------------------------------------------------------------------------
 
 # Returns a data.frame(date = Date, value = numeric) or NULL on any failure
 # (offline, timeout, bad series). Callers degrade gracefully to a placeholder.
 .fred_series <- function(series_id, timeout = 30L) {
-  url <- sprintf("https://fred.stlouisfed.org/graph/fredgraph.csv?id=%s", series_id)
+  url <- sprintf("https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=%s&vintage_date=%s",
+                 series_id, .FRED_VINTAGE_DATE)
   tmp <- tempfile(fileext = ".csv")
   ok <- tryCatch({
     old <- options(timeout = timeout); on.exit(options(old), add = TRUE)
@@ -89,7 +98,7 @@ source("code/00_utils.R")
   if (!ok || !file.exists(tmp) || file.info(tmp)$size == 0) return(NULL)
   df <- tryCatch(utils::read.csv(tmp, stringsAsFactors = FALSE), error = function(e) NULL)
   if (is.null(df) || ncol(df) < 2L || !nrow(df)) return(NULL)
-  # fredgraph.csv: col1 = observation_date, col2 = <series_id>. Coerce; FRED
+  # alfredgraph.csv: col1 = observation_date, col2 = <series_id>_<vintage>. Coerce; FRED
   # marks missing as ".".
   out <- data.frame(
     date  = as.Date(df[[1]]),
@@ -191,7 +200,9 @@ cli_or_message <- function(msg) {
 
 # --------------------------------------------------------------------------
 # A2 — labor share: BLS nonfarm-business labor share in percent, with the
-# three AI scenario 2030 labor-share reference lines.
+# three AI scenario 2030 labor-share reference lines. The latest year is
+# usually incomplete; it is kept but flagged year-to-date in `Coverage`
+# (and labelled on the PNG).
 # --------------------------------------------------------------------------
 
 .build_fred_labor_share <- function(params) {
@@ -204,6 +215,9 @@ cli_or_message <- function(msg) {
   data.frame(
     Year             = ann$year,
     `Labor Share`    = ann$value * scale,
+    Coverage         = ifelse(ann$n_obs >= 4L, "Full year",
+                              ifelse(ann$n_obs == 1L, "Year to date (Q1)",
+                                     sprintf("Year to date (Q1-Q%d)", ann$n_obs))),
     `Slow (2030)`    = params$labor_2030[["Slow"]],
     `Moderate (2030)`= params$labor_2030[["Moderate"]],
     `Rapid (2030)`   = params$labor_2030[["Rapid"]],
@@ -316,6 +330,7 @@ cli_or_message <- function(msg) {
   xmin <- min(hist$year); xmax <- max(df$Year)
   rec  <- .clamp_bands(rec_bands, xmin)
   refl <- .scenario_ref_layers(df, c("Slow (2030)", "Moderate (2030)", "Rapid (2030)"), xmax)
+  ytd  <- df[df$Coverage != "Full year", c("Year", "Labor Share")]; names(ytd) <- c("year", "value")
 
   p <- ggplot2::ggplot()
   if (!is.null(rec)) {
@@ -326,6 +341,10 @@ cli_or_message <- function(msg) {
   p <- p + refl$hline +
     ggplot2::geom_line(data = hist, ggplot2::aes(year, value),
                        color = YBL_NAVY, linewidth = 0.9) +
+    ggplot2::geom_point(data = ytd, ggplot2::aes(year, value),
+                        color = YBL_NAVY, size = 1.8) +
+    ggplot2::geom_text(data = ytd, ggplot2::aes(year, value, label = sprintf("%d YTD", year)),
+                       color = YBL_NAVY, hjust = 1.1, vjust = 1.6, size = 3.0) +
     refl$text + refl$scale +
     ggplot2::scale_y_continuous(labels = scales::label_percent(accuracy = 1)) +
     ggplot2::labs(
@@ -365,7 +384,7 @@ cli_or_message <- function(msg) {
        desc = "Headline federal revenue change by scenario",
        units = "Change in federal revenue, including corporate tax wedge, FY 2030, Billions USD",
        kind = "fig", source = "01_headline_revenue", builder = NULL, cite = NA_character_, note = NA_character_),
-  list(tab = "F2", caption = "Figure 2. Capital and corporate revenue increases offset labor revenue losses in most scenarios",
+  list(tab = "F2", caption = "Figure 2. Capital and corporate revenue gains drive the increase; labor revenue falls mainly under slow adoption",
        desc = "Revenue change decomposed by type of income",
        units = "Change in federal revenue by type of income, FY 2030, Billions USD",
        kind = "fig", source = "04_decomposition", builder = NULL, cite = NA_character_, note = NA_character_),
@@ -413,14 +432,14 @@ cli_or_message <- function(msg) {
        kind = "fred", source = NA_character_, builder = .build_fred_gdp_growth,
        render = .render_gdp_growth,
        cite = "BEA/BLS via FRED (GDPC1), CBO February 2026 baseline, NBER recessions; The Budget Lab at Yale.",
-       note = "Real GDP from FRED GDPC1 (Bil. Chn. 2017$). 5-yr annualized log growth; projection extends GDP with the CBO baseline path. Reference lines = AI scenario GDP CAGRs."),
+       note = sprintf("Real GDP from FRED GDPC1 (Bil. Chn. 2017$). 5-yr annualized log growth; projection extends GDP with the CBO baseline path. Reference lines = AI scenario GDP CAGRs. Data vintage: %s (ALFRED).", .FRED_VINTAGE_DATE)),
   list(tab = "FA2", caption = "Figure A2. How AI Scenario Labor Share Assumptions Compare to the Historical Labor Share",
        desc = "AI scenario vs. historical labor share",
        units = "Labor share of income (nonfarm business, percent)",
        kind = "fred", source = NA_character_, builder = .build_fred_labor_share,
        render = .render_labor_share,
        cite = "BLS via FRED (PRS85006173), NBER recessions; The Budget Lab at Yale.",
-       note = "Labor share from FRED PRS85006173 (BLS NFB labor share, index 2017=100), rescaled to percent at the 2017 level. Reference lines = AI scenario 2030 labor shares."),
+       note = sprintf("Labor share from FRED PRS85006173 (BLS NFB labor share, index 2017=100), rescaled to percent at the 2017 level. Annual averages of quarterly data; the latest year is a year-to-date average of the quarters available at publication (see Coverage). Reference lines = AI scenario 2030 labor shares. Data vintage: %s (ALFRED).", .FRED_VINTAGE_DATE)),
   list(tab = "FA3", caption = "Figure A3. Federal revenue gains versus change in pre-tax income",
        desc = "Revenue gains vs. pre-tax income change",
        units = "Change in federal revenue (y-axis) plotted against pre-tax income growth (x-axis), FY 2030, Billions USD",

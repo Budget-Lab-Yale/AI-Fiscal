@@ -97,9 +97,9 @@ exhibit sheet, row and column, with the effect of each correction).
 - **The title needs revisiting.** "Capital and corporate revenue
   increases offset labor revenue losses in most scenarios": labor
   revenue now falls in 4 of the 9 reallocate scenarios (the three Slow
-  scenarios and Rapid-Compressive), down from 6 of 9. A possible
-  replacement: "Capital and corporate revenue gains drive the increase;
-  labor revenue falls only under slow adoption or compressed wages."
+  scenarios and Rapid-Compressive), down from 6 of 9. Revised title:
+  "Capital and corporate revenue gains drive the increase; labor
+  revenue falls mainly under slow adoption."
 
 **Figure 3 (by instrument).** In Rapid-Proportional, three signs flip:
 - payroll tax −$11.3B → +$4.9B;
@@ -137,7 +137,10 @@ proportional).**
 - A1 (GDP growth history): unchanged; the scenario GDP rates are the
   same.
 - A2 (labor-share history): the Moderate and Rapid reference lines move
-  to 54.0% and 52.0%.
+  to 54.0% and 52.0%. The historical series is unchanged: A1 and A2 use
+  the FRED data as of publication (2026-07-09 vintage), so the 2026
+  point is still the first-quarter value (53.7%), now labelled
+  year-to-date.
 - A3 (revenue vs income): moves as in Figures 1–4.
 - A4 (debt-to-GDP change, Budget Lab Small Macro Model): Rapid-Proportional
   −7.07 → −7.31 pp; Moderate-Proportional −3.61 → −3.68 pp; fixed-share
