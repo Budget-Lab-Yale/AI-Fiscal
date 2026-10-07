@@ -1,8 +1,21 @@
 # Erratum: "How potential AI futures would play out in the current tax system" (model v1.0.1)
 
-*DRAFT for review, 2026-10-05. Not yet published.*
+*Published 2026-10-07 as model version 1.0.1 (tag `v1.0.1`).*
 
-## Public note
+## Published erratum (as posted with the report)
+
+> Erratum: In the original version of this article, the GDP and labor
+> share assumptions were drawn from the economist and total subsamples,
+> respectively, of the Karger et al. (2026) survey. For consistency, the
+> labor share assumptions were revised on October 7, 2026 to reflect the
+> economist subsample. The pattern of results is not qualitatively
+> different.
+
+The posted note covers the survey-column correction. The CBO-ratio
+rounding correction (V1-9) is a 1.8 percent change to the macro corporate
+tax term in every scenario and is documented below and in the changelog.
+
+## Extended note
 
 We have corrected two input errors in the model behind our July 2026
 report, ["How potential AI futures would play out in the current tax system"](https://budgetlab.yale.edu/research/how-potential-ai-futures-would-play-out-current-tax-system).
