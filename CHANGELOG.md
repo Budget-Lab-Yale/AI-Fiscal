@@ -5,7 +5,7 @@ All notable changes to AI-Fiscal are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.1] — Unreleased
+## [1.0.1] — 2026-10-07
 
 Erratum release. Corrects two input errors; see
 [`docs/erratum_v1.0.1.md`](docs/erratum_v1.0.1.md) and the
@@ -88,3 +88,4 @@ shift, built on the Budget Lab Tax-Simulator.
 - General-equilibrium re-pricing of the asset stock.
 
 [1.0.0]: https://github.com/Budget-Lab-Yale/AI-Fiscal/releases/tag/v1.0.0
+[1.0.1]: https://github.com/Budget-Lab-Yale/AI-Fiscal/releases/tag/v1.0.1

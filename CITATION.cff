@@ -18,8 +18,8 @@ authors:
   - family-names: Nunn
     given-names: Ryan
     affiliation: "The Budget Lab at Yale"
-version: 1.0.0
-date-released: 2026-07-20
+version: 1.0.1
+date-released: 2026-10-07
 repository-code: "https://github.com/Budget-Lab-Yale/AI-Fiscal"
 license: MIT
 keywords:
