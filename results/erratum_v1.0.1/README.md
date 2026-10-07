@@ -115,11 +115,14 @@ The after-tax Gini increase in Rapid falls from 0.0057 to 0.0049.
   All 54 counterfactual tax-unit files were byte-identical to the
   published run's, and every sheet of both published workbooks matched
   to within 1e-9.
-- **Appendix A1 and A2:** these two charts are historical series pulled
-  live from FRED. All four runs used the same pull (2026-10-05). FRED's
-  revisions since the July 2026 publication move the historical values
-  by at most 0.005, so run A's `FA1`/`FA2` differ from the published
-  workbook by that much. The model-driven exhibits (`T1`, `F1`–`F7`,
-  `FA3`, `FA4`) match the published workbook exactly.
+- **Appendix A1 and A2:** these two charts are historical series from
+  FRED, fetched from ALFRED at the 2026-07-09 data vintage (the v1.0.0
+  build date) in all four runs, so later BLS/BEA releases and revisions
+  are excluded. The 2026 labor-share point is the first-quarter value
+  available at publication (53.7%), flagged year-to-date in `FA2`'s
+  `Coverage` column. Every exhibit in run A, including `FA1`/`FA2`,
+  matches the published workbook exactly. The paper-exhibit workbooks
+  were built with the v1.0.1 `code/paper_figure_data.R`, so all four
+  runs carry the revised Figure 2 title.
 - **Regenerating these CSVs:** `code/erratum_v1_0_1_export.R` builds
   them from the four runs' result snapshots.
