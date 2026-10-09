@@ -6,8 +6,8 @@ Tables and Figures,,
 Sheet,Caption,Description
 T1,Table 1. Key Parameters,Key model parameters by AI-adoption scenario
 F1,Figure 1. Tax revenue is higher when AI adoption is faster and when inequality rises,Headline federal revenue change by scenario
-F2,Figure 2. Capital and corporate revenue gains drive the increase; labor revenue falls mainly under slow adoption,Revenue change decomposed by type of income
-F3,Figure 3. Revenue gains are driven by corporate and individual income tax revenue increases,Revenue change by tax instrument
+F2,Figure 2. Capital and corporate revenue gains drive increased revenues,Revenue change decomposed by type of income
+F3,Figure 3. Corporate and individual income tax revenues increase in most scenarios,Revenue change by tax instrument
 F4,Figure 4. Federal revenue grows non-linearly with the size of the GDP shock,Revenue vs. total factor income growth
 F5,Figure 5. Federal revenue is higher in all scenarios when capital-labor shares are held fixed.,Revenue under fixed vs. reallocated factor shares
 F6,Figure 6. Overall inequality changes are driven by assumptions about labor income inequality,Change in income inequality (Gini)
