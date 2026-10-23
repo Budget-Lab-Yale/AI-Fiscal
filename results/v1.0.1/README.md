@@ -2,7 +2,7 @@
 
 These are the v1.0.1 erratum outputs, copied unchanged from the canonical
 `results/aggregates/` and `results/figures/2030/` folders at the `v1.0.1`
-tag (2026-10-07) so they stay readable after later versions overwrite
+tag (2026-10-09) so they stay readable after later versions overwrite
 those folders. Every file is byte-identical to the tagged version.
 
 | Folder | Contents |

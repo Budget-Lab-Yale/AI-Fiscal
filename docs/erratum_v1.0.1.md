@@ -1,15 +1,15 @@
 # Erratum: "How potential AI futures would play out in the current tax system" (model v1.0.1)
 
-*Published 2026-10-07 as model version 1.0.1 (tag `v1.0.1`).*
+*Published 2026-10-09 as model version 1.0.1 (tag `v1.0.1`).*
 
 ## Published erratum (as posted with the report)
 
 > Erratum: In the original version of this article, the GDP and labor
 > share assumptions were drawn from the economist and total subsamples,
 > respectively, of the Karger et al. (2026) survey. For consistency, the
-> labor share assumptions were revised on October 7, 2026 to reflect the
-> economist subsample. The pattern of results is not qualitatively
-> different.
+> labor share assumptions were revised on October 9, 2026 to reflect the
+> economist subsample; assumed labor share is now moderately higher. The
+> pattern of results is not qualitatively different.
 
 The posted note covers the survey-column correction. The CBO-ratio
 rounding correction (V1-9) is a 1.8 percent change to the macro corporate

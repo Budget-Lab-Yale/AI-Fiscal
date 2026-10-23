@@ -27,7 +27,7 @@ module load R/4.4.2-gfbf-2024a
 export RENV_CONFIG_AUTOLOADER_ENABLED=FALSE
 
 # --- required: Tax-Simulator working tree ---
-export TAX_SIMULATOR_DIR=/nfs/roberts/project/pi_nrs36/ji252/repos/Tax-Simulator
+export TAX_SIMULATOR_DIR="${TAX_SIMULATOR_DIR:-$(cd "${SLURM_SUBMIT_DIR:-$PWD}/../Tax-Simulator" && pwd)}"
 
 # --- optional: BLSMM for the 2030 debt/GDP step (comment out to skip) ---
 # export BLSMM_DIR=/path/to/Budget-Lab-Small-Macro-Model
