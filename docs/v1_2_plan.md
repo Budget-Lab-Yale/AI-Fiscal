@@ -363,8 +363,12 @@ time and changes every output's shape.
   the 54 are duplicates), so E3 can write one per variant and share mode.
 - *Reproduction tests, three layers:* (1) derived parameters against the
   `D` column of `results/erratum_v1.0.1/comparison/cell_params_2030.csv`
-  (CI); (2) macro targets and counterfactual-file checksums or weighted
-  sums (synthetic fixture in CI, real vintage on the server); (3) a full
+  (CI; DONE in `tests/testthat/test-params.R`); (2) the full legacy grid
+  built through the run store on the real vintage: all 108 counterfactual
+  files against the v1.0.1 checksums, per-cell macro parameters and
+  `parameter_index` against run D (DONE 2026-10-28, job 31161818:
+  `tests/server/legacy_inputs.sbatch`, about 5 minutes, re-run at every
+  rung); (3) a full
   legacy run whose tables match run D's aggregates within a relative
   tolerance of 1e-9 (server). "Reproduces exactly" means layer 3, since
   workbooks carry timestamps.
