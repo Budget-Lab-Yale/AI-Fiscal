@@ -202,6 +202,7 @@ tests/      # testthat suite (Rscript tests/testthat.R)
 | `11_validation.R` | Input-side benchmark check (CBO / SOI / NIPA / DFA / SCF). Standalone diagnostic — not in the main pipeline. |
 | `13_macro_params_table.R` | Helper used by 09 to assemble the per-cell `cell_params` sheet. |
 | `15_blsmm_debt_gdp.R` | Pipe per-scenario revenue/GDP deltas through the Budget Lab Small Macro Model to recover scenario-specific 2030 debt/GDP. Requires `BLSMM_DIR`; skips gracefully if unset. |
+| `16_chart_data.R` | Website figure data: for each figure in `config/charts.yaml`, build the columns its spec in `charts/<collection>/` plots, from a run directory; then validate and render through the chart engine when Node is available. |
 | `make_synthetic_tax_units.R` | Regenerate the synthetic PUF/SCF fixture. |
 | `paper_figure_data.R` | Post-processor (run after the pipeline). Assembles only the draft's exhibits into `paper_figure_data_<year>.xlsx` in paper order, and regenerates the two appendix context charts (Fig A1 GDP growth, A2 labor share) from FRED — data sheets + PNGs. Needs network for A1/A2; degrades gracefully offline. |
 
@@ -269,6 +270,9 @@ Each run writes `results/runs/<setting>-<stamp>/`:
   vintages).
 - `tables/`: the files below.
 - `figures/`: the figure suite.
+- `charts/<collection>/`: the website figures (spec + generated `data.csv`
+  per figure, from `code/16_chart_data.R`), ready to validate, render, and
+  publish; plus `<collection>_html/` previews when Node is available.
 - `run.log`.
 
 The table and workbook layouts are those of v1.0; they are redesigned
@@ -297,6 +301,22 @@ describes every column on every data sheet; the `scenario_guide`
 sheet documents the axis codes; the `cell_params` sheet carries the
 per-cell macro / shock parameters; the `parameter_index` sheet is
 auto-generated from the run's merged parameters (`inputs/params.yaml`).
+
+### Website figures (chart engine)
+
+The published figures are specs for the Budget Lab chart engine, kept in
+`charts/<collection>/` and filled with data per run by `16_chart_data.R`.
+The engine is pinned in `package.json` to the tag `budget-lab-charts` uses:
+
+```bash
+npm install                                  # once; Node >= 20
+npx playwright install chromium              # once, for PNG export
+npm run charts:validate -- results/runs/<run_id>/charts/ai-fiscal
+npm run charts:render   -- results/runs/<run_id>/charts/ai-fiscal   # HTML previews
+npm run charts:png      -- results/runs/<run_id>/charts/ai-fiscal   # PNGs
+npm run charts:serve    -- results/runs/<run_id>/charts             # local gallery
+npm run charts:pin-check -- <budget-lab-charts checkout>
+```
 
 Identity checks: `Rscript tests/testthat.R`. The GitHub Actions
 workflow runs this suite on every push against the synthetic fixture.

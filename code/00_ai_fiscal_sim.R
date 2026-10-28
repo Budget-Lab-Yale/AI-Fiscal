@@ -37,6 +37,8 @@
 #                          scenarios (both / labor_only / capital_only)
 #                          so 08 can compute the labor / capital /
 #                          interaction split.
+#   * Website figures    : 16 writes results/runs/<run_id>/charts/ and,
+#                          when Node is available, validates and renders it.
 #   * Deliverables       : 08 (microsim bundle) + 09 (publishable
 #                          workbook + decile panel + grid) + 10
 #                          (publishable figure suite).
@@ -69,6 +71,7 @@ source("code/09_tables_figures.R")
 source("code/10_figures.R")
 source("code/13_macro_params_table.R")
 source("code/15_blsmm_debt_gdp.R")
+source("code/16_chart_data.R")
 
 # Canonical 18-cell grid: 3 variants × 2 share modes × 3 labor scenarios
 # × V1 realization. The release pipeline does not accept overrides.
@@ -521,6 +524,11 @@ build_ai_fiscal_runs <- function(specs, run,
     runscript_path = runscript_path,
     params_yaml    = run$params_yaml
   )
+
+  # Website figure data for this run (run$dir/charts/), then validation and
+  # preview pages through the pinned chart engine when Node is available.
+  write_chart_data(run$dir)
+  render_chart_previews(run$dir)
 
   succeeded <- TRUE
   invisible(output_root)

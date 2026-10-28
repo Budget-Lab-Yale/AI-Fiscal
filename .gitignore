@@ -76,3 +76,6 @@ docs/repo_consolidation.md
 # Perf harness output (regenerable; tracked harness lives in tests/perf/)
 tests/perf/last_run.csv
 tests/perf/profvis.html
+
+# Node toolchain for the chart engine (package.json)
+node_modules/

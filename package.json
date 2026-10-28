@@ -1,0 +1,24 @@
+{
+  "name": "ai-fiscal-charts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Chart-engine toolchain for AI-Fiscal's published figures (docs/v1_2_figure_pipeline_plan.md, F2).",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "charts:validate": "node tools/charts.mjs validate",
+    "charts:render": "node tools/charts.mjs render",
+    "charts:png": "node tools/charts.mjs png",
+    "charts:serve": "tbl-chart serve",
+    "charts:pin-check": "node tools/charts.mjs pin-check"
+  },
+  "dependencies": {
+    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.18.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
+  }
+}

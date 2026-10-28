@@ -137,9 +137,22 @@ Add a minimal Node toolchain at the repository root:
 
 The R orchestrator calls `charts:validate` and `charts:render` after
 `16_chart_data.R` when Node is available, and skips with a message when it is
-not (the cluster may not have Node; renders then happen on the laptop from
-the pushed outputs). Calls go through `system2()` with `shQuote(type = "cmd")`
-on Windows.
+not. Calls go through `system2()` with `shQuote(type = "cmd")` on Windows.
+
+**As built (F2, 2026-10-28).** `tools/charts.mjs` (not `scripts/`, which the
+repository's `.gitignore` excludes) loops the engine CLI over a collection
+folder; `package.json` aliases it as `charts:validate`, `charts:render`,
+`charts:png`, `charts:pin-check`, and `charts:serve` runs `tbl-chart serve`.
+On the cluster the R module already loads Node 20 (a dependency of
+`R-bundle-CRAN`), so the orchestrator's figure step always runs there; no
+separate `nodejs` module is needed. Playwright's Chromium (about 680 MB)
+lives in `~/.cache/ms-playwright` after `npx playwright install chromium`.
+Deviation: `charts:png` uses the engine's own headless render
+(`tbl-chart snapshot`), a page render that includes the Data/Image buttons,
+not the site's "Image" download. That is enough for review (goal a); the
+download-identical export moves to F3 with the slide-size variants, which
+need the same height patch. `tbl-chart snapshot` exits 0 even when the
+render fails, so `charts:png` checks the PNG exists.
 
 ### 4. Alternative versions (goal c)
 
@@ -210,7 +223,7 @@ system.
 |---|---|---|
 | F0 | Import the 13 v1.0.1 site specs into `charts/ai-fiscal/`; write `config/charts.yaml` with the full mapping (site folder, figure number, model slug, source output) | manifest covers all 13 figures — **DONE 2026-10-28** (specs from `budget-lab-charts` at `a2a3f60`) |
 | F1 | `16_chart_data.R` builders, reading the run store | acceptance test reproduces all 13 live CSVs from the v1.0.1 run directory — **DONE 2026-10-28** (`tests/testthat/test-chart-data.R`; builders reuse `10_figures.R`'s data functions via the extracted `.load_figure_inputs()`; the reference run `results/runs/legacy_v1_0_1-202610281529/` is committed: tables, inputs, manifest) |
-| F2 | Node toolchain: validate, render, serve, png; pin check | gallery shows all 13; PNGs match site downloads |
+| F2 | Node toolchain: validate, render, serve, png; pin check | gallery shows all 13; PNGs match site downloads — **DONE 2026-10-28** except download-identical PNGs (moved to F3): all 13 validate, render, and export on the v1.0.1 reference run; pin check passes (`v1.18.0`) |
 | F3 | Variants: merge script and three worked examples (fixed shares, slide size, relabeled series) | the September 30 slide set rebuilds from variants |
 | F4 | Publish script; dry run into a scratch branch of `budget-lab-charts` | that repository's `npm run validate` passes |
 | F5 | Choose the Version 1.2 figure set (published and diagnostic) from the ten-year outputs; likely annual fiscal-year paths (line and stacked-bar charts by year), the v1.0.1 → v1.2 bridge, the national-income reconciliation, the early-evidence exhibit | specs reviewed by John before identity is fixed |

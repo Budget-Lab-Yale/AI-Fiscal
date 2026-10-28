@@ -205,8 +205,33 @@ write_chart_data <- function(run_dir,
   invisible(written)
 }
 
+# Validate the run's figures and render preview pages through the pinned
+# chart engine (tools/charts.mjs). Skipped, not failed, where Node or the
+# engine is absent (e.g. a batch job without the nodejs module); a figure
+# that fails validation aborts.
+render_chart_previews <- function(run_dir, manifest_path = .CHART_MANIFEST) {
+  collection_dir <- file.path(run_dir, "charts", yaml::read_yaml(manifest_path)$collection)
+  if (!nzchar(Sys.which("node")) ||
+      !dir.exists(file.path("node_modules", "budget-lab-chart-engine"))) {
+    cli::cli_inform(c(
+      "Node or the chart engine is unavailable; skipping figure validation and previews.",
+      i = "Later: {.code npm run charts:validate -- {collection_dir}} (after {.code npm install})."
+    ))
+    return(invisible(FALSE))
+  }
+  quote_arg <- function(x) shQuote(x, type = if (.Platform$OS.type == "windows") "cmd" else "sh")
+  for (cmd in c("validate", "render")) {
+    status <- system2("node", c("tools/charts.mjs", cmd, quote_arg(collection_dir)))
+    if (!identical(as.integer(status), 0L)) {
+      cli::cli_abort("Figure {cmd} failed for {.path {collection_dir}}; see the output above.")
+    }
+  }
+  invisible(TRUE)
+}
+
 if (!interactive() && sys.nframe() == 0L) {
   args <- commandArgs(trailingOnly = TRUE)
   if (length(args) != 1L) stop("Usage: Rscript code/16_chart_data.R <run dir>")
   write_chart_data(args[[1]])
+  render_chart_previews(args[[1]])
 }
