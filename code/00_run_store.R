@@ -30,7 +30,9 @@
 .SCRATCH_SUBDIR    <- "ai_fiscal"
 .TAX_DATA_LINK_PFX <- "aif-"
 .RUN_CONFIG_COPIES <- c("config/retirement_calibration.yaml",
-                        "config/asset_to_income_map.csv")
+                        "config/asset_to_income_map.csv",
+                        "config/calibration/cbo_2026_02_baseline_path.csv",
+                        "config/calibration/nipa_sector_gva_2025.csv")
 
 scratch_root <- function() {
   root <- Sys.getenv("TAXSIM_LOCAL_ROOT", unset = "")

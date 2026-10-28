@@ -327,7 +327,7 @@ v1.0.1, and the rung's revenue effect recorded.
 | Rung | Work | Runs on |
 |---|---|---|
 | 0 | Switch scaffolding, `legacy_v1_0_1` and `v1_2_reference` settings; output layer E1–E3; regression test against the run store; chart pipeline F0–F2 in parallel | laptop + CI, then server |
-| 1 | A1 baseline path, A2 nonfarm bridge (2030 only) | laptop, then server |
+| 1 | A1 baseline path, A2 nonfarm bridge (2030 only) — **DONE 2026-10-28** | laptop, then server |
 | 2 | B1 reconciliation, B2 corporate ratio, B3 rent and interest | laptop, then server |
 | 3 | C1 payout and realization, C2 allocator, C3 sensitivities | laptop, then server |
 | 4 | A3 annual paths and A4 generic shock input (ten fiscal years); A5 early-evidence check | server |
@@ -385,6 +385,90 @@ time and changes every output's shape.
   passing confirms the substitution changes no result. The edit is
   recorded in each run's `inputs/tax_simulator_local.diff`. Old dependency
   vintages on the shared filer are not guaranteed to persist.
+
+**Rung 1 choices (2026-10-28).** Three switches in the base yaml, each at
+its v1.0.1 value there and at its Version 1.2 value in
+`config/settings/v1_2_reference.yaml`:
+
+| Switch | v1.0.1 | Version 1.2 | Plan item |
+|---|---|---|---|
+| `cbo_baseline.growth_path` | `flat`: 2.2% in 2026, then 1.8% a year | `annual`: CBO's calendar-year real GDP path | A1 |
+| `shock.share_baseline` | `survey_2025`: 0.555 | `projected`: 0.555 plus CBO's 2025→2030 drift in compensation / GDP | A1 |
+| `shock.sector` | `whole_economy` | `nonfarm_business` | A2 |
+
+- *Data.* Two committed receipts in `config/calibration/`, built by the
+  standalone `code/12_baseline_receipts.R`:
+  `cbo_2026_02_baseline_path.csv` (CBO February 2026 calendar-year real
+  GDP, real nonfarm-business output, nominal GDP, and compensation,
+  2025–2036, from CBO's `Economic-Projections.xlsx`, the workbook
+  Macro-Projections `2026071916` is built from) and
+  `nipa_sector_gva_2025.csv` (BEA 2025 value added by sector, Table 1.3.5,
+  and compensation outside nonfarm business, Tables 1.13 and 6.2D).
+  Macro-Projections itself starts its income lines and real-GDP index in
+  2026, so it cannot supply the survey's 2025 base; its 2026–2036 values
+  match the receipt exactly. Both receipts are copied into each run's
+  `inputs/`.
+- *Answers to A1's "check first".* No Macro-Projections or CBO series is a
+  labor share on the survey's concept (the BLS nonfarm-business share).
+  CBO's production function holds the nonfarm-business capital share at
+  0.329 in every year, and its income projections give compensation /
+  GDP, which drifts from 0.5137 (2025) to 0.5145 (2030), +0.08 points. The
+  `projected` baseline adds that drift to the survey's 0.555, so 0.5558 in
+  2030. `gdp_corp` is NIPA corporate profits with inventory valuation and
+  capital consumption adjustments (the CBO row
+  "Profits, corporate, with IVA & CCAdj"); it bears on B2, not rung 1.
+- *Shares, not changes.* The survey's 2030 share is a level, compared with
+  the projected baseline share, the same way `g_y` compares Karger's growth
+  with the CBO path. Drift the baseline already projects is not
+  attributed to AI.
+- *The `annual` growth path* uses calendar-year real GDP: 2.36% in 2026
+  (CBO's 2.2% is fourth quarter to fourth quarter), 1.75–1.86% after. The
+  cumulative 2025→2030 baseline growth rises from 9.75% to 9.94%, so
+  `g_y` falls by about 0.17 points in every preset.
+- *The bridge (A2).* Nonfarm business is 76.3% of 2025 GDP (BEA), moved to
+  77.3% in 2030 by CBO's faster projected growth of real nonfarm-business
+  output than of real GDP. Outside nonfarm business, the labor share is
+  employee compensation over value added: 0.530 (government 77%, nonprofit
+  institutions 82%, households including owner-occupied housing about 1%,
+  farms 21%; farm proprietors' labor is not imputed). The economy-wide
+  baseline labor share is then 0.550, and the share shift for Moderate is
+  −1.21 points rather than −1.50. Formulas are in `code/02_params.R`'s
+  header; `cell_params` gains `theta_0_L_economy`, `theta_1_L_economy`,
+  and `nfb_gva_share`.
+- *Effect on the derived growth rates* (2030, reallocated shares; X uses
+  the 2030 `y_k` of $4.51T, so it is approximate):
+
+  | Step | Slow `g_k` / `g_l` | Moderate `g_k` / `g_l` | Rapid `g_k` / `g_l` | Moderate X |
+  |---|---|---|---|---|
+  | v1.0.1 | 1.72% / −0.32% | 7.08% / 0.79% | 15.6% / 0.41% | $319B |
+  | + A1 growth path | 1.55% / −0.48% | 6.90% / 0.62% | 15.4% / 0.24% | $311B |
+  | + A1 share baseline | 1.73% / −0.62% | 7.09% / 0.48% | 15.6% / 0.10% | $320B |
+  | + A2 nonfarm bridge | 1.42% / −0.39% | 6.20% / 1.13% | 13.6% / 1.58% | $280B |
+
+  A2 is the large step: the capital increment falls by about an eighth and
+  labor income grows more, because all of the excess growth lands in
+  nonfarm business, where labor still takes 54% of it.
+- *Revenue effect of rung 1* (FY2030 change in federal revenue including
+  the macro corporate tax, $ billions; run
+  `results/runs/v1_2_reference-202610281748/`, job 31196091, against the
+  layer-3 legacy run `legacy_v1_0_1-202610281529`; same Tax-Simulator pin):
+
+  | Cell | v1.0.1 | Version 1.2 rung 1 | Change |
+  |---|---|---|---|
+  | Moderate, reallocated, proportional (headline) | 113.3 | 116.1 | +2.9 |
+  | Rapid, reallocated, proportional | 200.8 | 221.6 | +20.8 |
+  | Slow, reallocated, proportional | 8.0 | 1.6 | −6.4 |
+  | Moderate, fixed, proportional | 179.4 | 171.6 | −7.7 |
+
+  Under reallocated shares revenue rises for Moderate and Rapid although
+  `X` falls by an eighth: the bridge moves income from capital to labor,
+  which carries payroll tax and here also raises individual income tax
+  (Rapid: income tax +$15B, payroll +$14B, corporate −$9.5B). Fixed-share
+  and Slow cells fall by $6–9B, mostly the 0.17-point lower `g_y` from the
+  annual growth path. The same pattern holds across the three labor rules.
+  Run time 19m45s on 16 cores (two jobs shared the filer), peak memory
+  97 GB. Layer 2 still passes after the rung (job 31196090): 108 of 108
+  files, cell parameters, and run D's `parameter_index` rows unchanged.
 
 Full runs need the cluster; the laptop cannot reach it over ssh, so work moves
 between machines through pushes to this branch.

@@ -75,12 +75,16 @@ test_that("legacy_v1_0_1 reproduces the v1.0.1 derived parameters", {
 })
 
 # Build a throwaway config dir holding a copy of the base yaml, its
-# retirement calibration, and one overlay named `trial`.
+# retirement calibration and baseline receipts, and one overlay named `trial`.
 .setting_fixture <- function(overlay) {
   dir <- tempfile("settings_fixture_")
   dir.create(file.path(dir, "settings"), recursive = TRUE)
+  dir.create(file.path(dir, "calibration"))
   file.copy(.params_yaml, file.path(dir, "scenario_params.yaml"))
   file.copy(here::here("config", "retirement_calibration.yaml"), dir)
+  file.copy(here::here("config", "calibration",
+                       c("cbo_2026_02_baseline_path.csv", "nipa_sector_gva_2025.csv")),
+            file.path(dir, "calibration"))
   yaml::write_yaml(overlay, file.path(dir, "settings", "trial.yaml"))
   file.path(dir, "scenario_params.yaml")
 }
@@ -115,4 +119,59 @@ test_that("an unknown setting aborts naming the available ones", {
 test_that("the committed v1_2_reference overlay loads", {
   p <- load_params(.params_yaml, variant = "M", setting = "v1_2_reference")
   expect_identical(p$setting, "v1_2_reference")
+})
+
+# Rung 1 (docs/v1_2_plan.md A1, A2): each switch moves only its own piece.
+.rung1 <- function(...) {
+  yml <- .setting_fixture(list(...))
+  lapply(setNames(nm = c("R", "F")), function(m)
+    load_params(yml, variant = "M", share_mode = m, setting = "trial"))
+}
+.legacy_m <- lapply(setNames(nm = c("R", "F")), function(m)
+  load_params(.params_yaml, variant = "M", share_mode = m))
+
+test_that("growth_path = annual measures g_y against CBO's real GDP path", {
+  p    <- .rung1(cbo_baseline = list(growth_path = "annual"))$R
+  path <- data.table::fread(here::here("config", "calibration",
+                                       "cbo_2026_02_baseline_path.csv"))
+  expect_equal(p$cum_base, path[year == 2030, real_gdp_B2017] /
+                           path[year == 2025, real_gdp_B2017])
+  expect_equal(p$g_y, (1 + p$r_ai_annual)^p$horizon / p$cum_base - 1)
+  expect_identical(p$theta0_l, .legacy_m$R$theta0_l)
+})
+
+test_that("share_baseline = projected moves theta0_l by the CBO compensation drift", {
+  p    <- .rung1(shock = list(share_baseline = "projected"))$R
+  path <- data.table::fread(here::here("config", "calibration",
+                                       "cbo_2026_02_baseline_path.csv"))
+  drift <- path[year == 2030, comp_paid_B / gdp_B] - path[year == 2025, comp_paid_B / gdp_B]
+  expect_equal(p$theta0_l, .legacy_m$R$theta0_l + drift)
+  expect_identical(p$g_y, .legacy_m$R$g_y)
+  expect_identical(p$theta1_k, .legacy_m$R$theta1_k)
+})
+
+test_that("sector = nonfarm_business keeps the economy's factor income adding up", {
+  for (p in .rung1(shock = list(sector = "nonfarm_business"))) {
+    expect_true(p$nfb_gva_share > 0.7 && p$nfb_gva_share < 0.85)
+    expect_true(p$labor_other > 0.4 && p$labor_other < 0.7)
+    # Labor plus capital growth, weighted by baseline shares, is g_y.
+    expect_equal(p$g_l * p$theta0_l_economy + p$g_k * (1 - p$theta0_l_economy),
+                 p$g_y, tolerance = 1e-12)
+    expect_equal((1 + p$g_l) * p$theta0_l_economy, p$theta1_l_economy * (1 + p$g_y),
+                 tolerance = 1e-12)
+    expect_identical(p$g_y, .legacy_m[[p$share_mode]]$g_y)
+  }
+})
+
+test_that("the nonfarm-business bridge damps the economy-wide share shift", {
+  p <- .rung1(shock = list(sector = "nonfarm_business"))$R
+  shift_economy <- p$theta1_l_economy - p$theta0_l_economy
+  expect_true(shift_economy < 0)
+  expect_true(abs(shift_economy) < abs(p$theta1_l - p$theta0_l))
+  expect_true(p$g_k < .legacy_m$R$g_k)
+})
+
+test_that("an unknown switch value aborts naming the choices", {
+  yml <- .setting_fixture(list(shock = list(sector = "nonfarm")))
+  expect_error(load_params(yml, setting = "trial"), "whole_economy")
 })

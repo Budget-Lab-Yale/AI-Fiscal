@@ -143,7 +143,8 @@ test_that("build_ai_fiscal_runs writes to scratch, links into the vintage, and r
     expect_true(file.exists(file.path(link, "factor_channels_2030.csv")))
   }
   for (f in c("params.yaml", "runscript_macro.csv", "runscript_cell_params.csv",
-              "retirement_calibration.yaml", "asset_to_income_map.csv")) {
+              "retirement_calibration.yaml", "asset_to_income_map.csv",
+              "cbo_2026_02_baseline_path.csv", "nipa_sector_gva_2025.csv")) {
     expect_true(file.exists(file.path(run$inputs, f)), info = f)
   }
   expect_identical(yaml::read_yaml(run$params_yaml),

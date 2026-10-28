@@ -13,6 +13,23 @@
 # uses g for cumulative, r for annual); they apply to aggregate capital and
 # labor income as Y1^K = Y0^K (1 + g_k) and Y1^L = Y0^L (1 + g_l).
 #
+# Version 1.2 rung 1 switches (legacy values give the formulas above):
+#   cbo_baseline.growth_path = annual: cum_base is CBO's real GDP ratio,
+#     baseline_year over horizon_start_year, from cbo_baseline.path_file.
+#   shock.share_baseline = projected: theta0_l is the survey's 2025 share
+#     plus the CBO path's change in compensation / GDP over the horizon.
+#   shock.sector = nonfarm_business: theta0_l -> theta1_l and all of g_y
+#     happen within nonfarm business, a share n of baseline GDP; the rest
+#     of the economy keeps its income and its labor share theta_o
+#     (shock.sector_file). With baseline GDP = 1:
+#       L0 = theta0_l n + theta_o (1 - n)
+#       L1 = theta1_l (n + g_y) + theta_o (1 - n)
+#       g_l = L1 / L0 - 1,   g_k = (1 + g_y - L1) / (1 - L0) - 1
+#     n is the 2025 NIPA share moved by the CBO path's ratio of real
+#     nonfarm-business output to real GDP. theta0_l / theta1_l stay the
+#     survey-concept (nonfarm-business) shares; theta0_l_economy /
+#     theta1_l_economy are the economy-wide shares the bridge implies.
+#
 # `share_mode` selects the factor-evolution counterfactual:
 #   R (default): reallocate — use the Karger post-shock capital share
 #                theta1_k for the chosen variant so the labor share falls.
@@ -42,8 +59,9 @@ source("code/00_utils.R")
   paste0("cbo_baseline.",
          c("horizon_start_year", "g_2026", "g_2027plus",
            "gdp_baseline_year_B", "rev_to_gdp_baseline_year",
-           "cit_to_gdp_baseline_year")),
-  "shock.baseline_labor_share",
+           "cit_to_gdp_baseline_year", "growth_path", "path_file")),
+  paste0("shock.",
+         c("baseline_labor_share", "share_baseline", "sector", "sector_file")),
   unlist(lapply(c("S", "M", "R"), function(v) {
     sprintf("shock.variants.%s.%s", v, c("theta1_k", "r_ai_annual"))
   })),
@@ -131,6 +149,64 @@ source("code/00_utils.R")
   yaml::read_yaml(fp) %||% list()
 }
 
+# Allowed values of the rung-1 switches; the first is the v1.0.1 value.
+.SWITCH_VALUES <- list(
+  "cbo_baseline.growth_path" = c("flat", "annual"),
+  "shock.share_baseline"     = c("survey_2025", "projected"),
+  "shock.sector"             = c("whole_economy", "nonfarm_business")
+)
+
+.validate_switches <- function(raw) {
+  for (key in names(.SWITCH_VALUES)) {
+    value   <- .dotted_path(raw, key)$value
+    allowed <- .SWITCH_VALUES[[key]]
+    if (!is.character(value) || length(value) != 1L || !value %in% allowed) {
+      cli::cli_abort(c(
+        "{.field {key}} is {.val {value}}.",
+        i = "Choose one of {.val {allowed}}."
+      ))
+    }
+  }
+}
+
+# A calibration receipt named in the yaml, relative to the config directory.
+.read_receipt <- function(config_dir, file) {
+  fp <- file.path(config_dir, file)
+  if (!file.exists(fp)) {
+    cli::cli_abort(c(
+      "Calibration receipt not found: {.path {fp}}.",
+      i = "Rebuild it with {.code Rscript code/12_baseline_receipts.R}."
+    ))
+  }
+  data.table::fread(fp)
+}
+
+# Ratio of a CBO baseline path column between two years.
+.path_ratio <- function(path, column, from, to) {
+  vals <- path[[column]][match(c(from, to), path$year)]
+  if (anyNA(vals)) {
+    cli::cli_abort("The CBO baseline path has no {.field {column}} for {.val {c(from, to)[is.na(vals)]}}.")
+  }
+  vals[2] / vals[1]
+}
+
+# Nonfarm business's share of GDP and the labor share of the rest of the
+# economy, from the NIPA sector receipt. Outside nonfarm business, labor
+# income is employee compensation (government, households, nonprofit
+# institutions, farms); farm proprietors' labor is not imputed.
+.nipa_sector_shares <- function(sector) {
+  value <- function(component) {
+    v <- sector$value_B[sector$component == component]
+    if (length(v) != 1L || is.na(v)) cli::cli_abort("NIPA sector receipt lacks {.val {component}}.")
+    v
+  }
+  gdp_other  <- value("gdp") - value("gva_nonfarm_business")
+  comp_other <- value("comp_farms") + value("comp_households") +
+                value("comp_npish") + value("comp_general_government")
+  list(gva_share   = value("gva_nonfarm_business") / value("gdp"),
+       labor_other = comp_other / gdp_other)
+}
+
 .RETIREMENT_CAL_KEYS <- c("r_R", "s_P", "s_I", "tau_P", "tau_I")
 
 # Load the R1 retirement cascade calibration — see Table 2 of
@@ -197,22 +273,34 @@ load_params <- function(path = "config/scenario_params.yaml",
       i = "Set baseline_year > horizon_start_year in {.path {path}}."
     ))
   }
-  # The CBO growth keys are named by calendar year but consumed
-  # positionally: g_2026 applies to the first horizon year, g_2027plus
-  # to the rest. That is only correct while the horizon starts at 2025.
-  # Rolling the CBO baseline forward without renaming the keys would
-  # silently shift the compounding — assert until the v2 year-indexed
-  # baseline object replaces this (docs/v2_architecture.md §2).
-  if (!identical(as.integer(start_year), 2025L)) {
-    cli::cli_abort(c(
-      "cbo_baseline.horizon_start_year is {.val {start_year}} but the growth keys assume 2025.",
-      x = "{.field g_2026} / {.field g_2027plus} are applied positionally to horizon years 1 / 2+.",
-      i = "Rename the keys and update the compounding in {.fn load_params} before rolling the baseline forward."
-    ))
+  .validate_switches(raw)
+  config_dir   <- dirname(path)
+  cbo          <- raw$cbo_baseline
+  uses_path    <- cbo$growth_path == "annual" ||
+                  raw$shock$share_baseline == "projected" ||
+                  raw$shock$sector == "nonfarm_business"
+  cbo_path     <- if (uses_path) .read_receipt(config_dir, cbo$path_file)
+
+  if (cbo$growth_path == "flat") {
+    # The CBO growth keys are named by calendar year but consumed
+    # positionally: g_2026 applies to the first horizon year, g_2027plus
+    # to the rest. That is only correct while the horizon starts at 2025.
+    # Rolling the CBO baseline forward without renaming the keys would
+    # silently shift the compounding — assert until the v2 year-indexed
+    # baseline object replaces this (docs/v2_architecture.md §2).
+    if (!identical(as.integer(start_year), 2025L)) {
+      cli::cli_abort(c(
+        "cbo_baseline.horizon_start_year is {.val {start_year}} but the growth keys assume 2025.",
+        x = "{.field g_2026} / {.field g_2027plus} are applied positionally to horizon years 1 / 2+.",
+        i = "Rename the keys and update the compounding in {.fn load_params} before rolling the baseline forward."
+      ))
+    }
+    g_2026     <- cbo$g_2026
+    g_2027plus <- cbo$g_2027plus
+    cum_base   <- (1 + g_2026) * (1 + g_2027plus)^(horizon - 1)
+  } else {
+    cum_base <- .path_ratio(cbo_path, "real_gdp_B2017", start_year, baseline_year)
   }
-  g_2026     <- raw$cbo_baseline$g_2026
-  g_2027plus <- raw$cbo_baseline$g_2027plus
-  cum_base   <- (1 + g_2026) * (1 + g_2027plus)^(horizon - 1)
   if (!is.numeric(v$r_ai_annual) || is.na(v$r_ai_annual) || v$r_ai_annual <= -1) {
     cli::cli_abort(
       "Variant {.val {active}}: {.field r_ai_annual} must be a number > -1 (got {.val {v$r_ai_annual}})."
@@ -221,6 +309,11 @@ load_params <- function(path = "config/scenario_params.yaml",
   g_y        <- (1 + v$r_ai_annual)^horizon / cum_base - 1
 
   theta0_l <- raw$shock$baseline_labor_share
+  if (raw$shock$share_baseline == "projected") {
+    comp_share <- cbo_path$comp_paid_B / cbo_path$gdp_B
+    theta0_l   <- theta0_l + comp_share[match(baseline_year, cbo_path$year)] -
+                             comp_share[match(start_year, cbo_path$year)]
+  }
   if (!is.numeric(theta0_l) || is.na(theta0_l) || theta0_l <= 0 || theta0_l >= 1) {
     cli::cli_abort(
       "{.field shock.baseline_labor_share} must be strictly inside (0, 1); got {.val {theta0_l}}."
@@ -229,7 +322,7 @@ load_params <- function(path = "config/scenario_params.yaml",
   theta0_k <- 1 - theta0_l
   # Under share_mode = "F" we pin the post-shock capital share to baseline
   # (theta1_k := theta0_k) so the labor-capital split is preserved while g_y
-  # is unchanged. g_k and g_l both collapse to g_y.
+  # is unchanged. g_k and g_l both collapse to g_y (whole-economy shock).
   theta1_k <- if (share_mode == "F") theta0_k else v$theta1_k
   if (!is.numeric(theta1_k) || is.na(theta1_k) || theta1_k <= 0 || theta1_k >= 1) {
     cli::cli_abort(
@@ -237,8 +330,26 @@ load_params <- function(path = "config/scenario_params.yaml",
     )
   }
   theta1_l <- 1 - theta1_k
-  g_k <- (theta1_k * (1 + g_y) - theta0_k) / theta0_k
-  g_l <- (theta1_l * (1 + g_y) - theta0_l) / theta0_l
+  if (raw$shock$sector == "whole_economy") {
+    nfb_gva_share <- 1
+    labor_other   <- NA_real_
+    theta0_l_economy <- theta0_l
+    theta1_l_economy <- theta1_l
+    g_k <- (theta1_k * (1 + g_y) - theta0_k) / theta0_k
+    g_l <- (theta1_l * (1 + g_y) - theta0_l) / theta0_l
+  } else {
+    shares        <- .nipa_sector_shares(.read_receipt(config_dir, raw$shock$sector_file))
+    labor_other   <- shares$labor_other
+    nfb_gva_share <- shares$gva_share *
+      .path_ratio(cbo_path, "real_gva_nfb_B2017", start_year, baseline_year) /
+      .path_ratio(cbo_path, "real_gdp_B2017", start_year, baseline_year)
+    labor0 <- theta0_l * nfb_gva_share + labor_other * (1 - nfb_gva_share)
+    labor1 <- theta1_l * (nfb_gva_share + g_y) + labor_other * (1 - nfb_gva_share)
+    theta0_l_economy <- labor0
+    theta1_l_economy <- labor1 / (1 + g_y)
+    g_l <- labor1 / labor0 - 1
+    g_k <- (1 + g_y - labor1) / (1 - labor0) - 1
+  }
 
   k_inequality <- raw$labor_inequality$k
 
@@ -257,6 +368,10 @@ load_params <- function(path = "config/scenario_params.yaml",
     horizon        = horizon,
     cum_base       = cum_base,
     g_k = g_k, g_l = g_l,
+    nfb_gva_share    = nfb_gva_share,
+    labor_other      = labor_other,
+    theta0_l_economy = theta0_l_economy,
+    theta1_l_economy = theta1_l_economy,
     k_inequality   = k_inequality,
     retirement_cal = retirement_cal
   )

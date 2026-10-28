@@ -23,6 +23,22 @@ pre-realization NIPA corporate base.
   (superseded by the runtime-calibrated `eta_corp`). Kept because the
   NIPA effective-rate arithmetic remains a useful cross-check on
   `eta_corp`'s magnitude. Ported from the archived internal development tree 2026-06-11.
+- `cbo_2026_02_baseline_path.csv` — CBO February 2026 baseline,
+  calendar years 2025–2036: real GDP, real nonfarm-business gross value
+  added, nominal GDP, compensation of employees. Read when
+  `cbo_baseline.growth_path = annual`, `shock.share_baseline = projected`,
+  or `shock.sector = nonfarm_business` (Version 1.2 rung 1; see
+  `docs/v1_2_plan.md`). Source: CBO's `Economic-Projections.xlsx`, sheet
+  "2. Calendar Year" (<https://www.cbo.gov/publication/61882>).
+- `nipa_sector_gva_2025.csv` — BEA NIPA 2025 gross value added by sector
+  (Table 1.3.5) and compensation of employees outside nonfarm business
+  (Tables 1.13, 6.2D), for the nonfarm-business bridge
+  (`shock.sector = nonfarm_business`). Source: BEA's annual flat file
+  (<https://apps.bea.gov/national/Release/TXT/NipaDataA.txt>); the
+  `retrieved` column dates the download.
+
+  Both are rebuilt by
+  `Rscript code/12_baseline_receipts.R <Economic-Projections.xlsx> [BEA download dir]`.
 - `validation_benchmarks.csv` — published benchmarks used by
   `code/11_validation.R` to spot-check the pinned vintage against
   CBO/Treasury (federal IIT, CIT, payroll, total revenue), IRS SOI

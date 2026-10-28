@@ -5,9 +5,10 @@
 #   1. md5 of the 54 counterfactual tax-unit files and 54 factor_channels
 #      sidecars, against tests/reference/v1_0_1_counterfactual_md5.csv;
 #   2. the per-cell macro parameters (g_k, X, delta_R_CIT, ...), against
-#      the erratum result set's run D;
-#   3. the parameter_index built from the run's merged parameters, against
-#      run D's.
+#      the erratum result set's run D, on run D's columns;
+#   3. the parameter_index built from the run's merged parameters: every
+#      row of run D's unchanged. Keys added by later rungs are listed, not
+#      failed; their legacy values are covered by checks 1 and 2.
 # Tax-Simulator is not run. The check deletes its scratch files and Tax-Data
 # links on exit. Needs the real vintage; run on the cluster with
 #   sbatch --output=<log dir>/%x-%j.out tests/server/legacy_inputs.sbatch
@@ -53,7 +54,8 @@ check_legacy_inputs <- function() {
   key      <- c("variant", "share_mode", "labor_scenario")
   cell     <- fread(sub("\\.csv$", "_cell_params.csv", rs_path), key = key)
   cell_ref <- fread(file.path(REF_RUN_D, "cell_params.csv"), key = key)
-  cell_cmp <- all.equal(as.data.frame(cell), as.data.frame(cell_ref),
+  cell_cmp <- all.equal(as.data.frame(cell[, names(cell_ref), with = FALSE]),
+                        as.data.frame(cell_ref),
                         tolerance = REL_TOL, check.attributes = FALSE)
   cat("Cell parameters:", if (isTRUE(cell_cmp)) "match run D" else "DIFFER", "\n")
   if (!isTRUE(cell_cmp)) {
@@ -66,8 +68,11 @@ check_legacy_inputs <- function() {
   fwrite(.build_parameter_index(run$params_yaml), idx_fp)
   idx     <- fread(idx_fp, colClasses = "character")
   idx_ref <- fread(file.path(REF_RUN_D, "parameter_index.csv"), colClasses = "character")
-  idx_cmp <- all.equal(idx, idx_ref, check.attributes = FALSE)
-  cat("parameter_index:", if (isTRUE(idx_cmp)) "matches run D" else "DIFFERS", "\n")
+  added   <- setdiff(idx$parameter, idx_ref$parameter)
+  if (length(added)) cat("parameter_index: keys added since v1.0.1:", paste(added, collapse = ", "), "\n")
+  idx_cmp <- all.equal(idx[match(idx_ref$parameter, parameter)], idx_ref,
+                       check.attributes = FALSE)
+  cat("parameter_index:", if (isTRUE(idx_cmp)) "run D's rows unchanged" else "DIFFERS", "\n")
   if (!isTRUE(idx_cmp)) {
     print(idx_cmp)
     failures <- c(failures, "parameter_index differs from run D")
