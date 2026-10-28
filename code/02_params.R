@@ -21,6 +21,13 @@
 #
 # load_params() validates that every required key is present and aborts with
 # a list of any gaps.
+#
+# `setting` selects a named parameter setting (docs/v1_2_plan.md, rung 0).
+# The base yaml carries every key at its v1.0.1 value, so the legacy setting
+# is the base yaml unchanged and has no overlay file. Any other setting is an
+# overlay at <dir of path>/settings/<setting>.yaml that lists only the keys it
+# changes; each changed leaf may carry a `<key>_rung` tag naming the rung
+# that introduced it. Overlays may only override keys present in the base.
 
 suppressPackageStartupMessages({
   library(yaml)
@@ -75,6 +82,55 @@ source("code/00_utils.R")
   }
 }
 
+.LEGACY_SETTING     <- "legacy_v1_0_1"
+.SETTING_RUNG_SUFFIX <- "_rung"
+
+# Merge a setting overlay into the base yaml, recursing into named lists.
+# Rung tags are bookkeeping for the bridge table and are dropped.
+.apply_setting_overlay <- function(base, overlay, setting, where = "") {
+  for (key in names(overlay)) {
+    if (endsWith(key, .SETTING_RUNG_SUFFIX)) next
+    path <- paste0(where, key)
+    if (!key %in% names(base)) {
+      cli::cli_abort(c(
+        "Setting {.val {setting}} overrides {.field {path}}, which is not in the base yaml.",
+        i = "Add the key to {.path config/scenario_params.yaml} at its v1.0.1 value first."
+      ))
+    }
+    # Assigning NULL with [[<- would delete the key rather than override it.
+    if (is.null(overlay[[key]])) {
+      cli::cli_abort("Setting {.val {setting}} sets {.field {path}} to null; give it a value.")
+    }
+    is_branch <- is.list(overlay[[key]]) && !is.null(names(overlay[[key]]))
+    base[[key]] <- if (is_branch) {
+      .apply_setting_overlay(base[[key]], overlay[[key]], setting,
+                             where = paste0(path, "."))
+    } else {
+      overlay[[key]]
+    }
+  }
+  base
+}
+
+.read_setting_overlay <- function(setting, path) {
+  if (!grepl("^[a-z0-9_]+$", setting)) {
+    cli::cli_abort("Setting name {.val {setting}} must be lower-case letters, digits, and underscores.")
+  }
+  settings_dir <- file.path(dirname(path), "settings")
+  fp <- file.path(settings_dir, paste0(setting, ".yaml"))
+  if (!file.exists(fp)) {
+    available <- c(.LEGACY_SETTING,
+                   sub("\\.yaml$", "", list.files(settings_dir, "\\.yaml$")))
+    cli::cli_abort(c(
+      "Unknown setting {.val {setting}}.",
+      x = "No overlay at {.path {fp}}.",
+      i = "Available: {.val {available}}."
+    ))
+  }
+  # An overlay holding only comments reads as NULL: no keys changed yet.
+  yaml::read_yaml(fp) %||% list()
+}
+
 .RETIREMENT_CAL_KEYS <- c("r_R", "s_P", "s_I", "tau_P", "tau_I")
 
 # Load the R1 retirement cascade calibration — see Table 2 of
@@ -100,7 +156,8 @@ load_retirement_calibration <- function(path = "config/retirement_calibration.ya
 }
 
 load_params <- function(path = "config/scenario_params.yaml",
-                        variant = NULL, share_mode = "R") {
+                        variant = NULL, share_mode = "R",
+                        setting = .LEGACY_SETTING) {
   if (!file.exists(path)) {
     cli::cli_abort(c(
       "Parameter config not found.",
@@ -116,6 +173,10 @@ load_params <- function(path = "config/scenario_params.yaml",
   }
   raw <- yaml::read_yaml(path)
   .validate_required_keys(raw, path)
+  if (!identical(setting, .LEGACY_SETTING)) {
+    raw <- .apply_setting_overlay(raw, .read_setting_overlay(setting, path),
+                                  setting)
+  }
 
   active <- variant %||% "M"
   if (!active %in% names(raw$shock$variants)) {
@@ -186,6 +247,7 @@ load_params <- function(path = "config/scenario_params.yaml",
 
   list(
     raw            = raw,
+    setting        = setting,
     active_variant = active,
     share_mode     = share_mode,
     theta0_l = theta0_l, theta0_k = theta0_k,

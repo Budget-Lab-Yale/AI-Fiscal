@@ -7,6 +7,7 @@
 #                                   [--runscript-path PATH]
 #                                   [--vintage YYYYMMDDHHMM]
 #                                   [--multicore none|scenario|year]
+#                                   [--setting legacy_v1_0_1|<name>]
 #                                   [--overwrite]
 #                                   [--publish]
 #                                   [--log PATH]
@@ -34,6 +35,10 @@
 #                          (publishable figure suite).
 #   * Log file           : tee'd to logs/release_<timestamp>.log unless
 #                          --log overrides.
+#
+# `--setting NAME` selects a named parameter setting: `legacy_v1_0_1`
+# (default) is config/scenario_params.yaml unchanged; any other name is an
+# overlay at config/settings/<NAME>.yaml (see code/02_params.R).
 #
 # `--data-dir PATH` points at a Tax-Data root (defaults to the symlink
 # at data/tax_data). Pass `tests/fixtures/synthetic_tax_data` for a
@@ -146,6 +151,7 @@ default_runscript_path <- function() {
 build_ai_fiscal_runs <- function(specs,
                                  runscript_path  = default_runscript_path(),
                                  params_yaml     = "config/scenario_params.yaml",
+                                 setting         = .LEGACY_SETTING,
                                  data_dir        = "data/tax_data",
                                  vintage_paths   = NULL,
                                  years           = NULL,
@@ -165,7 +171,13 @@ build_ai_fiscal_runs <- function(specs,
   if (is.null(vintage_paths)) vintage_paths <- tax_data_vintage(symlink = data_dir)
   force(vintage_paths)
 
-  params0 <- load_params(params_yaml)
+  params0 <- load_params(params_yaml, setting = setting)
+  cli::cli_inform("Parameter setting: {.val {setting}}")
+  if (!identical(setting, .LEGACY_SETTING)) {
+    # Until the run manifest lands (v1_2_plan.md E1), 08 and 09 rebuild
+    # parameter_index / key_parameters by re-reading the base yaml.
+    cli::cli_warn("The parameter_index and key_parameters sheets show base-yaml values, not setting {.val {setting}}.")
+  }
   year    <- params0$raw$baseline_year
   # Default years starts one year before baseline_year. Tax-Simulator's
   # FY-adjustment drops the earliest year of each scenario, so a single-
@@ -214,7 +226,8 @@ build_ai_fiscal_runs <- function(specs,
     parts <- strsplit(key, "|", fixed = TRUE)[[1]]
     p  <- load_params(params_yaml,
                       variant    = parts[1],
-                      share_mode = parts[2])
+                      share_mode = parts[2],
+                      setting    = setting)
     sb <- allocate_capital(dt_split, p,
                            asset_map_path = "config/asset_to_income_map.csv")
     sb <- apply_realization(sb)
@@ -288,7 +301,7 @@ build_ai_fiscal_runs <- function(specs,
 # boolean `--flag`. Unknown flags abort.
 .parse_cli_args <- function(argv) {
   known_value <- c("data-dir", "years", "runscript-path",
-                   "vintage", "multicore", "log")
+                   "vintage", "multicore", "log", "setting")
   known_bool  <- c("overwrite", "publish")
   out <- list()
   i <- 1L
@@ -437,6 +450,7 @@ build_ai_fiscal_runs <- function(specs,
   build_ai_fiscal_runs(
     specs,
     runscript_path = runscript_path,
+    setting        = flags$setting %||% .LEGACY_SETTING,
     data_dir       = data_dir,
     years          = flags$years,
     overwrite      = isTRUE(flags$overwrite)

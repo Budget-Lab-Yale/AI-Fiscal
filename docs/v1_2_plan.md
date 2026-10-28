@@ -324,7 +324,8 @@ time and changes every output's shape.
 - *Settings are overlays.* `config/scenario_params.yaml` stays the legacy
   file; each rung adds its new keys there at their Version 1 values.
   `config/settings/v1_2_reference.yaml` lists only the keys that differ,
-  each tagged with its rung (`legacy_v1_0_1.yaml` is empty).
+  each tagged with its rung. `legacy_v1_0_1` has no overlay file: it is
+  the base yaml by definition, so no file exists that could drift.
   `load_params()` gains a `setting` argument, merges before key
   validation, and aborts on an overlay key absent from the base; the
   orchestrator gains `--setting`. `08_aggregate.R:628` and
@@ -333,12 +334,16 @@ time and changes every output's shape.
 - *Tax-Simulator pin.* Rungs 0–3 run on `256f03ea9` plus the three local
   patches, the build that produced v1.0.1; rung 4 fixes the window's pin,
   and any change of pin is its own rung in the bridge.
-- *v1.0.1 counterfactual checksums first.* Before any run overwrites
-  them, record checksums of the 54 scenario folders in the shared
-  Tax-Data vintage (written 2026-10-05). Only the Karger labor-share fix
-  changes tax-unit files (the CBO-ratio fix acts on the macro CIT wedge
-  alone), so these files are either the A/C or the B/D erratum version;
-  regenerating under `legacy_v1_0_1` and matching checksums settles which.
+- *v1.0.1 counterfactual checksums — DONE 2026-10-28.* The 108 files
+  (54 `tax_units_2030.csv` + 54 `factor_channels_2030.csv`) in the shared
+  Tax-Data vintage, all written in one run on 2026-10-05, are hashed in
+  `tests/reference/v1_0_1_counterfactual_md5.csv`. Three cells regenerated
+  under `legacy_v1_0_1` into scratch (`ai_M_R_S0_V1_CO`, `ai_M_R_S0_V1`,
+  `ai_S_F_S2_V1_LO`) match byte for byte, with `theta1_k = 0.460` for
+  Moderate: the files are the B/D (v1.0.1 labor shares) version, and the
+  pipeline's counterfactual files are reproducible, as E3 assumes.
+  Capital-only files are identical across the three labor rules (12 of
+  the 54 are duplicates), so E3 can write one per variant and share mode.
 - *Reproduction tests, three layers:* (1) derived parameters against the
   `D` column of `results/erratum_v1.0.1/comparison/cell_params_2030.csv`
   (CI); (2) macro targets and counterfactual-file checksums or weighted

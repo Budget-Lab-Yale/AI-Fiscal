@@ -52,3 +52,67 @@ test_that("rolling horizon_start_year forward aborts until the keys move", {
   yaml::write_yaml(raw, tmp)
   expect_error(load_params(tmp, variant = "M"), "2025")
 })
+
+# Rung 0 reproduction, layer 1 (docs/v1_2_plan.md): the legacy setting
+# derives the v1.0.1 parameters. Reference is run D (v1.0.1) of the erratum
+# result set, which records them per cell; they do not vary by labor rule.
+test_that("legacy_v1_0_1 reproduces the v1.0.1 derived parameters", {
+  ref <- data.table::fread(here::here(
+    "results", "erratum_v1.0.1", "comparison", "cell_params_2030.csv"))
+  ref <- ref[labor_scenario == "S0"]
+  metric_to_field <- c(g_y = "g_y", g_k = "g_k", g_l = "g_l",
+                       theta_0_L = "theta0_l", theta_1_K = "theta1_k")
+  for (v in names(.AXIS_VARIANTS)) for (m in names(.AXIS_SHARE_MODES)) {
+    p <- load_params(.params_yaml, variant = v, share_mode = m,
+                     setting = "legacy_v1_0_1")
+    for (name in names(metric_to_field)) {
+      expected <- ref[variant == v & share_mode == m & metric == name, D]
+      expect_length(expected, 1L)
+      expect_equal(p[[metric_to_field[[name]]]], expected, tolerance = 1e-12,
+                   info = paste(v, m, name))
+    }
+  }
+})
+
+# Build a throwaway config dir holding a copy of the base yaml, its
+# retirement calibration, and one overlay named `trial`.
+.setting_fixture <- function(overlay) {
+  dir <- tempfile("settings_fixture_")
+  dir.create(file.path(dir, "settings"), recursive = TRUE)
+  file.copy(.params_yaml, file.path(dir, "scenario_params.yaml"))
+  file.copy(here::here("config", "retirement_calibration.yaml"), dir)
+  yaml::write_yaml(overlay, file.path(dir, "settings", "trial.yaml"))
+  file.path(dir, "scenario_params.yaml")
+}
+
+test_that("a setting overlay overrides only the keys it lists", {
+  yml <- .setting_fixture(list(labor_inequality = list(k = 2, k_rung = 0L)))
+  p   <- load_params(yml, variant = "M", setting = "trial")
+  p0  <- load_params(yml, variant = "M")
+  expect_identical(p$setting, "trial")
+  expect_equal(p$k_inequality, 2)
+  expect_null(p$raw$labor_inequality$k_rung)
+  p$raw$labor_inequality$k <- p0$raw$labor_inequality$k
+  expect_identical(p$raw, p0$raw)
+})
+
+test_that("an overlay key absent from the base yaml aborts", {
+  yml <- .setting_fixture(list(labor_inequality = list(kk = 2)))
+  expect_error(load_params(yml, setting = "trial"), "labor_inequality.kk",
+               fixed = TRUE)
+})
+
+test_that("an overlay null value aborts instead of deleting the key", {
+  yml <- .setting_fixture(list(labor_inequality = list(k = NULL)))
+  expect_error(load_params(yml, setting = "trial"), "null")
+})
+
+test_that("an unknown setting aborts naming the available ones", {
+  expect_error(load_params(.params_yaml, setting = "no_such_setting"),
+               "Unknown setting")
+})
+
+test_that("the committed v1_2_reference overlay loads", {
+  p <- load_params(.params_yaml, variant = "M", setting = "v1_2_reference")
+  expect_identical(p$setting, "v1_2_reference")
+})

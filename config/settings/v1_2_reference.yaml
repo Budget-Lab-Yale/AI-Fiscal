@@ -1,0 +1,15 @@
+# Version 1.2 reference setting (docs/v1_2_plan.md).
+#
+# An overlay on config/scenario_params.yaml, which holds every key at its
+# v1.0.1 value (the legacy_v1_0_1 setting, which has no overlay file). List
+# only the keys Version 1.2 changes, nested as in the base yaml, each leaf
+# with its _status / _source siblings and a _rung tag naming the rung that
+# introduced it, e.g.
+#
+#   shock:
+#     baseline_labor_share: <value>
+#     baseline_labor_share_status: sourced
+#     baseline_labor_share_source: "..."
+#     baseline_labor_share_rung: 1
+#
+# Rung 0: no keys changed yet.
