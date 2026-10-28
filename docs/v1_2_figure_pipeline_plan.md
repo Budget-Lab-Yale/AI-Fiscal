@@ -67,9 +67,10 @@ step imports the 13 published v1.0.1 specs as they are.
 ### 2. The model writes each figure's data
 
 A new numbered step, `code/16_chart_data.R`, builds every published figure's
-`data.csv` from the model outputs (the aggregate CSVs and bundles from `08`,
-`09`, `15`, and the FRED pulls in `paper_figure_data.R`). It is driven by one
-manifest, `config/charts.yaml`:
+`data.csv` from a run's tables in the run store (`results/runs/<run_id>/tables/`,
+model plan workstream E) plus the FRED pulls in `paper_figure_data.R`. It
+does not read the workbooks, which become views of the same store. It is
+driven by one manifest, `config/charts.yaml`:
 
 ```yaml
 revenue-headline:
@@ -90,10 +91,18 @@ The manifest replaces the hand-maintained mapping in the header of
 `paper_figure_data.R`, so the model slug, draft exhibit, and site folder
 of each figure are recorded in one place.
 
-**Acceptance test:** run against `results/v1.0.1/`, `16_chart_data.R`
+**Acceptance test:** run against the v1.0.1 run directory, `16_chart_data.R`
 reproduces the 13 live `data.csv` files (live URL pattern
 `https://charts.budgetlab.yale.edu/ai-fiscal/<chart>/data.csv`) exactly,
 apart from the BOM. Those files become committed test fixtures.
+
+**The figure set will change.** Every Version 1 figure is a 2030
+cross-section; with ten fiscal years most will be replaced by annual paths
+and window totals, and some single-year cuts may survive as views of one
+year. The 13 v1.0.1 figures are therefore a test of the plumbing (specs,
+manifest, builders, rendering, publishing), not a commitment to keep them.
+Builders for them stay minimal, and choosing the Version 1.2 figure set
+(published and diagnostic) waits for the ten-year outputs (F5).
 
 ### 3. Rendering: see figures as the site shows them (goal a)
 
@@ -174,7 +183,8 @@ the first copy.
 ### 6. What happens to the ggplot suite
 
 `10_figures.R` keeps the diagnostic figures that are never published
-(sensitivity heatmap, waterfalls, scatter diagnostics). For the published
+(today: sensitivity heatmap, waterfalls, scatter diagnostics; the Version 1.2
+set is chosen at F5, see section 2). For the published
 figures the engine render becomes the reference, and their ggplot versions are
 retired once the engine path covers them, so two styles of the same figure do
 not drift. The YBL palette constants then serve the diagnostic figures only.
@@ -188,11 +198,11 @@ system.
 | Step | Work | Done when |
 |---|---|---|
 | F0 | Import the 13 v1.0.1 site specs into `charts/ai-fiscal/`; write `config/charts.yaml` with the full mapping (site folder, figure number, model slug, source output) | manifest covers all 13 figures |
-| F1 | `16_chart_data.R` builders | acceptance test reproduces all 13 live CSVs from `results/v1.0.1/` |
+| F1 | `16_chart_data.R` builders, reading the run store | acceptance test reproduces all 13 live CSVs from the v1.0.1 run directory |
 | F2 | Node toolchain: validate, render, serve, png; pin check | gallery shows all 13; PNGs match site downloads |
 | F3 | Variants: merge script and three worked examples (fixed shares, slide size, relabeled series) | the September 30 slide set rebuilds from variants |
 | F4 | Publish script; dry run into a scratch branch of `budget-lab-charts` | that repository's `npm run validate` passes |
-| F5 | Version 1.2 figures: annual fiscal-year paths (line and stacked-bar charts by year), the v1.0.1 → v1.2 bridge, the national-income reconciliation | specs reviewed by John before identity is fixed |
+| F5 | Choose the Version 1.2 figure set (published and diagnostic) from the ten-year outputs; likely annual fiscal-year paths (line and stacked-bar charts by year), the v1.0.1 → v1.2 bridge, the national-income reconciliation, the early-evidence exhibit | specs reviewed by John before identity is fixed |
 | F6 | CI: a Node job in `.github/workflows/test.yml` running `charts:validate` and the F1 acceptance test | green on the branch |
 
 F0–F2 can run alongside rungs 0–1 of the model plan; F5 waits for the
