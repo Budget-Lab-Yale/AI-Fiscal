@@ -20,9 +20,13 @@ pre-realization NIPA corporate base.
   reproducible.
 - `cit_avoidance_calculation.csv` — **historical documentation only.**
   Derivation of the retired standalone `cit_avoidance` parameter
-  (superseded by the runtime-calibrated `eta_corp`). Kept because the
-  NIPA effective-rate arithmetic remains a useful cross-check on
-  `eta_corp`'s magnitude. Ported from the archived internal development tree 2026-06-11.
+  (superseded by the runtime-calibrated `eta_corp`). Ported from the
+  archived internal development tree 2026-06-11. Its 14.7% rate divides
+  receipts by profits *without* inventory and capital-consumption
+  adjustments; applied to a base *with* them (the Version 2 proposal's
+  $3,007B) it gives about $442B rather than $492B. That inconsistency was
+  the deck's B2 issue. It never reached results: no model step reads this
+  file (checked 2026-10-28, Version 1.2 rung 2).
 - `cbo_2026_02_baseline_path.csv` — CBO February 2026 baseline,
   calendar years 2025–2036: real GDP, real nonfarm-business gross value
   added, nominal GDP, compensation of employees. Read when
@@ -46,11 +50,29 @@ pre-realization NIPA corporate base.
   (national income, household net worth), and SCF (top-1% / top-10%
   wealth and stock shares). One row per benchmark with source URL.
 
+## The live corporate-tax change (Version 1.2 rung 2, B2)
+
+`04_allocate_capital.R::compute_macro_targets` computes
+
+    delta_R_CIT = cit_statutory * kappa_corp * X / eta_corp
+                = X * CBO_CIT / Y0^K        (eta_corp cancels the rest)
+
+where `CBO_CIT` is CBO's corporate receipts in the policy year
+(`cit_to_gdp_baseline_year * gdp_baseline_year_B`, FY2030 $477.3B) and
+`Y0^K` is tax units' baseline capital income `y_k` (2030: $4.51T). Since
+`X = g_k * Y0^K`, the corporate tax grows at the rate `g_k`. No NIPA
+profits measure enters, so `kappa_corp` (and the proprietors' split in
+`kappa_corp_calculation.csv`) and `cit_statutory` affect no result; they
+are kept as documentation of the original calibration. Version 1.2 keeps
+this formula, including the full `Y0^K` denominator after B3 takes
+interest off the AI flow (decided 2026-10-28: narrowing only the
+denominator would raise the corporate change by about 16% by definition).
+
 ## Adopted values
 
 | Parameter | Value | Tier | Sensitivity range |
 |---|---|---|---|
-| `kappa_corp` | 0.50 | Preliminary (NIPA-anchored) | [0.45, 0.65] |
+| `kappa_corp` | 0.50 | Preliminary (NIPA-anchored); cancels in `delta_R_CIT`, documentation only | [0.45, 0.65] |
 | `cit_statutory` | 0.21 | Sourced (TCJA IRC §11) | — |
 | `eta_corp` | Derived at runtime | Calibrated to CBO baseline | — |
 

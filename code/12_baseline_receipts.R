@@ -14,9 +14,10 @@
 #     2025, so the receipt reads the workbook.
 #
 #   config/calibration/nipa_sector_gva_2025.csv
-#     BEA NIPA, 2025: gross value added by sector (Table 1.3.5) and
+#     BEA NIPA, 2025: gross value added by sector (Table 1.3.5),
 #     compensation of employees in each sector outside nonfarm business
-#     (Tables 1.13 and 6.2D), from BEA's public annual flat file.
+#     (Tables 1.13 and 6.2D), and the income side of GDP (Table 1.10),
+#     from BEA's public annual flat file.
 #
 # Usage (from repo root):
 #   Rscript code/12_baseline_receipts.R <path to CBO Economic-Projections.xlsx> [BEA download dir]
@@ -41,15 +42,28 @@ suppressPackageStartupMessages({
 )
 
 # NIPA series codes (BEA SeriesRegister) and where they print.
+# The gdi_* rows are the income side of GDP (Table 1.10), for the
+# national-income reconciliation (09_tables_figures.R, plan item B1):
+# GDP = compensation + production taxes - subsidies + net operating
+# surplus + depreciation + statistical discrepancy.
 .NIPA_ROWS <- data.table(
   component = c("gdp", "gva_nonfarm_business", "gva_farm", "gva_households",
                 "gva_npish", "gva_general_government",
                 "comp_farms", "comp_households", "comp_npish",
-                "comp_general_government"),
+                "comp_general_government",
+                "gdi_compensation", "gdi_taxes_on_production", "gdi_subsidies",
+                "gdi_net_interest", "gdi_business_transfers", "gdi_proprietors",
+                "gdi_rental", "gdi_corporate_profits", "gdi_gov_enterprise_surplus",
+                "gdi_depreciation", "gdi_statistical_discrepancy"),
   nipa_code = c("A191RC", "A358RC", "B359RC", "B701RC", "B702RC", "A765RC",
-                "N4005C", "W151RC", "W152RC", "A194RC"),
+                "N4005C", "W151RC", "W152RC", "A194RC",
+                "A4002C", "W056RC", "A107RC", "W272RC", "B029RC", "A041RC",
+                "A048RC", "A445RC", "A108RC", "A262RC", "A030RC"),
   nipa_line = c("T10305:1", "T10305:3", "T10305:4", "T10305:6", "T10305:7",
-                "T10305:8", "T60200D:5", "T11300:43", "T11300:50", "T11300:56")
+                "T10305:8", "T60200D:5", "T11300:43", "T11300:50", "T11300:56",
+                "T11000:2", "T11000:7", "T11000:8", "T11000:11", "T11000:12",
+                "T11000:13", "T11000:14", "T11000:15", "T11000:20", "T11000:21",
+                "T11000:24")
 )
 
 build_cbo_baseline_path <- function(workbook) {

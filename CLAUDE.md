@@ -140,6 +140,7 @@ orchestrator (00_ai_fiscal_sim.R)
 | `code/11_validation.R` | Standalone input-side diagnostic against CBO / SOI / NIPA / DFA. Not in main pipeline. |
 | `code/12_baseline_receipts.R` | Standalone. Rebuilds the CBO baseline-path and NIPA sector receipts in `config/calibration/` behind the Version 1.2 growth path and nonfarm-business bridge (`02_params.R` reads them). |
 | `code/13_macro_params_table.R` | Helper for 09's `cell_params` sheet. |
+| `code/14_reconciliation.R` | National-income reconciliation (Version 1.2 B1): GDP → labor, capital, rest of GDP, baseline and AI change, next to tax-unit income. Called by 09; writes `national_income_reconciliation_<year>.csv`. |
 | `code/15_blsmm_debt_gdp.R` | Optional BLSMM debt/GDP tie-in. Reads `revenue_to_gdp_<year>.csv`. |
 | `code/16_chart_data.R` | Website figure data per run (`config/charts.yaml` → `<run>/charts/<collection>/`); builders reuse `10_figures.R`'s `fig_*()` data via `.load_figure_inputs()`. Validates/renders via `tools/charts.mjs` when Node is present. |
 | `tools/charts.mjs` | Chart-engine CLI wrapper (validate / render / png / pin-check) over a collection folder; `npm run charts:*`. |

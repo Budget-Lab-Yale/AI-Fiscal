@@ -182,6 +182,19 @@ passthrough:
 # CBO_CIT_baseline / Y0_K$, where Y0_K$ is aggregate baseline capital
 # income (sum of weight * y_k). The full X flows to households.
 # ---------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# Routing of the AI capital flow X within a tax unit (Version 1.2 rung 2,
+# B3). by_holdings: X_i is split over equities, bonds, pass-throughs, and
+# retirement by holdings, so bonds carry part of it as interest (v1.0.1).
+# baseline_path: interest stays on its baseline path and the bond slice
+# goes to the other classes; X keeps its dollar size (decision 2). Rent
+# and estate income never receive X (no real-estate class).
+# ---------------------------------------------------------------------
+capital_flow:
+  interest: by_holdings
+  interest_status: choice
+  interest_source: "docs/v1_2_plan.md B3 and decision 2. by_holdings reproduces v1.0.1."
+
 corporate:
   kappa_corp: 0.50
   kappa_corp_status: preliminary

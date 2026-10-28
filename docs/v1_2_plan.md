@@ -328,7 +328,7 @@ v1.0.1, and the rung's revenue effect recorded.
 |---|---|---|
 | 0 | Switch scaffolding, `legacy_v1_0_1` and `v1_2_reference` settings; output layer E1–E3; regression test against the run store; chart pipeline F0–F2 in parallel | laptop + CI, then server |
 | 1 | A1 baseline path, A2 nonfarm bridge (2030 only) — **DONE 2026-10-28** | laptop, then server |
-| 2 | B1 reconciliation, B2 corporate ratio, B3 rent and interest | laptop, then server |
+| 2 | B1 reconciliation, B2 corporate ratio, B3 rent and interest — **DONE 2026-10-28** | laptop, then server |
 | 3 | C1 payout and realization, C2 allocator, C3 sensitivities | laptop, then server |
 | 4 | A3 annual paths and A4 generic shock input (ten fiscal years); A5 early-evidence check | server |
 | 5 | B4 incidence table, register, outputs, figures; methodology doc and CHANGELOG | server + laptop |
@@ -387,13 +387,13 @@ time and changes every output's shape.
   vintages on the shared filer are not guaranteed to persist.
 
 **Rung 1 choices (2026-10-28).** Three switches in the base yaml, each at
-its v1.0.1 value there and at its Version 1.2 value in
+its v1.0.1 value there; two take a new value in
 `config/settings/v1_2_reference.yaml`:
 
 | Switch | v1.0.1 | Version 1.2 | Plan item |
 |---|---|---|---|
 | `cbo_baseline.growth_path` | `flat`: 2.2% in 2026, then 1.8% a year | `annual`: CBO's calendar-year real GDP path | A1 |
-| `shock.share_baseline` | `survey_2025`: 0.555 | `projected`: 0.555 plus CBO's 2025→2030 drift in compensation / GDP | A1 |
+| `shock.share_baseline` | `survey_2025`: 0.555 | unchanged, `survey_2025` (SET 2026-10-28); `projected` (0.555 plus CBO's 2025→2030 drift in compensation / GDP) is a sensitivity | A1 |
 | `shock.sector` | `whole_economy` | `nonfarm_business` | A2 |
 
 - *Data.* Two committed receipts in `config/calibration/`, built by the
@@ -413,14 +413,16 @@ its v1.0.1 value there and at its Version 1.2 value in
   CBO's production function holds the nonfarm-business capital share at
   0.329 in every year, and its income projections give compensation /
   GDP, which drifts from 0.5137 (2025) to 0.5145 (2030), +0.08 points. The
-  `projected` baseline adds that drift to the survey's 0.555, so 0.5558 in
-  2030. `gdp_corp` is NIPA corporate profits with inventory valuation and
+  `projected` option adds that drift to the survey's 0.555, so 0.5558 in
+  2030. The reference keeps 0.555 (no drift), consistent with CBO's
+  production function; the drift is small (+$9B of `X` for Moderate) and
+  rests on a proxy for the survey's concept. `gdp_corp` is NIPA corporate profits with inventory valuation and
   capital consumption adjustments (the CBO row
   "Profits, corporate, with IVA & CCAdj"); it bears on B2, not rung 1.
 - *Shares, not changes.* The survey's 2030 share is a level, compared with
-  the projected baseline share, the same way `g_y` compares Karger's growth
-  with the CBO path. Drift the baseline already projects is not
-  attributed to AI.
+  the baseline share in 2030, the same way `g_y` compares Karger's growth
+  with the CBO path. With no projected drift, that baseline share is the
+  2025 share.
 - *The `annual` growth path* uses calendar-year real GDP: 2.36% in 2026
   (CBO's 2.2% is fourth quarter to fourth quarter), 1.75–1.86% after. The
   cumulative 2025→2030 baseline growth rises from 9.75% to 9.94%, so
@@ -444,31 +446,82 @@ its v1.0.1 value there and at its Version 1.2 value in
   | + A1 growth path | 1.55% / −0.48% | 6.90% / 0.62% | 15.4% / 0.24% | $311B |
   | + A1 share baseline | 1.73% / −0.62% | 7.09% / 0.48% | 15.6% / 0.10% | $320B |
   | + A2 nonfarm bridge | 1.42% / −0.39% | 6.20% / 1.13% | 13.6% / 1.58% | $280B |
+  | Reference (A1 growth path + A2, no share drift) | 1.28% / −0.28% | 6.06% / 1.24% | 13.4% / 1.69% | $273B |
 
   A2 is the large step: the capital increment falls by about an eighth and
   labor income grows more, because all of the excess growth lands in
   nonfarm business, where labor still takes 54% of it.
 - *Revenue effect of rung 1* (FY2030 change in federal revenue including
   the macro corporate tax, $ billions; run
-  `results/runs/v1_2_reference-202610281748/`, job 31196091, against the
+  `results/runs/v1_2_reference-202610281825/`, job 31200709, against the
   layer-3 legacy run `legacy_v1_0_1-202610281529`; same Tax-Simulator pin):
 
   | Cell | v1.0.1 | Version 1.2 rung 1 | Change |
   |---|---|---|---|
-  | Moderate, reallocated, proportional (headline) | 113.3 | 116.1 | +2.9 |
-  | Rapid, reallocated, proportional | 200.8 | 221.6 | +20.8 |
-  | Slow, reallocated, proportional | 8.0 | 1.6 | −6.4 |
-  | Moderate, fixed, proportional | 179.4 | 171.6 | −7.7 |
+  | Moderate, reallocated, proportional (headline) | 113.3 | 118.7 | +5.5 |
+  | Rapid, reallocated, proportional | 200.8 | 224.1 | +23.3 |
+  | Slow, reallocated, proportional | 8.0 | 4.3 | −3.8 |
+  | Moderate, fixed, proportional | 179.4 | 171.6 | −7.8 |
 
   Under reallocated shares revenue rises for Moderate and Rapid although
-  `X` falls by an eighth: the bridge moves income from capital to labor,
-  which carries payroll tax and here also raises individual income tax
-  (Rapid: income tax +$15B, payroll +$14B, corporate −$9.5B). Fixed-share
-  and Slow cells fall by $6–9B, mostly the 0.17-point lower `g_y` from the
-  annual growth path. The same pattern holds across the three labor rules.
-  Run time 19m45s on 16 cores (two jobs shared the filer), peak memory
-  97 GB. Layer 2 still passes after the rung (job 31196090): 108 of 108
+  `X` falls by about a seventh: the bridge moves income from capital to
+  labor, which carries payroll tax and here also raises individual income
+  tax (Rapid: income tax +$16.8B, payroll +$15.2B, corporate −$10.3B).
+  Fixed-share and Slow cells fall by $3–9B, mostly the 0.17-point lower
+  `g_y` from the annual growth path. The same pattern holds across the
+  three labor rules. Run time 11m on 16 cores, peak memory 99 GB. (An
+  earlier run with the share drift, job 31196091, gave 116.1 for the
+  headline.) Layer 2 still passes after the rung (job 31196090): 108 of 108
   files, cell parameters, and run D's `parameter_index` rows unchanged.
+
+**Rung 2 (2026-10-28).** B1–B3 as decided on 2026-10-28: B3 as a switch,
+B2 as documentation, B1 as an output table.
+
+- *B2: the corporate ratio.* The deck's $442B vs $492B inconsistency is in
+  the retired `cit_avoidance_calculation.csv` (14.7% = receipts over profits
+  without IVA/CCAdj, applied to a base with them) and in the Version 2
+  proposal; no model step reads it. The live change is
+  `ΔR_CIT = X · CBO_CIT / Y0^K = g_k · CBO_CIT` (`kappa_corp` and
+  `cit_statutory` cancel), so the corporate tax grows at the rate of
+  tax-unit capital income. Kept, with the full `Y0^K` denominator after B3
+  (narrowing it would add about 16% by definition alone). Written up in
+  `config/calibration/README.md`.
+- *B3: interest on its baseline path.* New switch `capital_flow.interest`:
+  `by_holdings` (v1.0.1; the bond slice of each unit's `X_i` becomes
+  interest) or `baseline_path` (reference; the bond slice goes to the
+  unit's equities, pass-throughs, and retirement). Rent and estate income
+  never received `X` (no real-estate class), so only interest moves:
+  about $16B of Moderate's $273B. `X` keeps its dollar size (decision 2).
+- *B1: national-income reconciliation.* `code/14_reconciliation.R`, called
+  by `09`, writes `national_income_reconciliation_<year>.csv`: for each
+  variant and share mode, GDP in the policy year split into labor
+  (compensation, proprietors' labor), capital (corporate profits,
+  proprietors' capital, rental income, net interest, government
+  enterprise surplus), and the rest of GDP (depreciation, production
+  taxes less subsidies, business transfers, statistical discrepancy), at
+  baseline and under the shock, next to tax units' labor and capital
+  income. Baseline shares are BEA's 2025 income side of GDP (Table 1.10,
+  added to `nipa_sector_gva_2025.csv`); proprietors' income is split with
+  the tax file's Saez–Zucman capital share on the national-accounts
+  coverage (sole proprietorships, farms, partnerships: 0.165), new in
+  `cell_params` as `proprietors_capital_share`. Rules for the change: the
+  rest of GDP holds its share of GDP; labor grows at `g_l`; rent, net
+  interest, and government enterprises stay on their baseline paths; the
+  remainder goes to corporate profits and proprietors' capital. Moderate,
+  reallocated, 2030 ($B): GDP +1,288; labor +265; corporate profits +653;
+  proprietors' capital +62; rest of GDP +299. Tax units carry +194 of
+  labor income and +273 of capital income (`X`): about 38% of the
+  profit-type increment. For scale, applying CBO's ratio of corporate
+  receipts to domestic profits (about 12.8% in 2030) to the +653 would give
+  about $83B of corporate tax, against the model's $28.9B; that gap is the
+  Version 2.0 question of sizing the shock in the national accounts.
+- *Revenue effect of rung 2* (run `v1_2_reference-202610281847`, job
+  31204272, against rung 1's `v1_2_reference-202610281825`): headline
+  118.7 → 118.2 ($B, −0.5); Rapid reallocated proportional 224.1 → 223.0;
+  fixed-share cells −0.04 to −0.57. All of it is individual income tax
+  (interest moved to dividends, gains, pass-through, and retirement
+  income); payroll and corporate are unchanged. Layer 2 passes (job
+  31204271), now listing `capital_flow.interest` as an added key.
 
 Full runs need the cluster; the laptop cannot reach it over ssh, so work moves
 between machines through pushes to this branch.

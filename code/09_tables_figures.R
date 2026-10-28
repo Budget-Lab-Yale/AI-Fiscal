@@ -33,6 +33,7 @@ suppressPackageStartupMessages({
 
 source("code/00_utils.R")
 source("code/08_aggregate.R")
+source("code/14_reconciliation.R")
 
 # Resolve a path inside the repo, robust to the caller's CWD. Walks up
 # from getwd() until it finds the `.git` anchor at the repo root, then
@@ -984,6 +985,30 @@ write_publishable_excel_bundle <- function(out_dir, year,
   fp
 }
 
+# A calibration receipt named in the parameters (relative to config/): the
+# run's copy in inputs/ beside params_yaml, else the repo's config/ copy.
+.resolve_receipt <- function(params_yaml, file) {
+  for (fp in c(file.path(dirname(params_yaml), basename(file)),
+               file.path(dirname(params_yaml), file),
+               .resolve_repo_path(file.path("config", file)))) {
+    if (file.exists(fp)) return(fp)
+  }
+  cli::cli_abort("Calibration receipt {.path {file}} not found beside {.path {params_yaml}} or in config/.")
+}
+
+# National-income reconciliation (14_reconciliation.R) for the run's
+# policy year, from its cell_params and the receipts its parameters name.
+# NULL (skipped) for cell_params written before the reconciliation existed.
+.build_reconciliation_for_run <- function(cell_params, params_yaml, year) {
+  if (!"proprietors_capital_share" %in% names(cell_params)) return(NULL)
+  raw   <- yaml::read_yaml(params_yaml)
+  nipa  <- fread(.resolve_receipt(params_yaml, raw$shock$sector_file))
+  path  <- fread(.resolve_receipt(params_yaml, raw$cbo_baseline$path_file))
+  gdp_B <- path$gdp_B[path$year == year]
+  if (length(gdp_B) != 1L) cli::cli_abort("CBO baseline path has no GDP for {.val {year}}.")
+  build_national_income_reconciliation(cell_params, nipa, gdp_B, year)
+}
+
 # Driver. Resolves inputs from defaults in 08_aggregate.R; pass an
 # explicit `runscript_path` when the runscript lives outside Tax-Simulator
 # (e.g. dev runs).
@@ -1041,6 +1066,11 @@ assemble_deliverables <- function(
     }
   }
 
+  recon <- NULL
+  if (file.exists(cell_params_fp) && file.exists(params_yaml)) {
+    recon <- .build_reconciliation_for_run(fread(cell_params_fp), params_yaml, year)
+  }
+
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
   long_fp <- file.path(out_dir, sprintf("revenue_grid_%d.csv",      year))
   wide_fp <- file.path(out_dir, sprintf("revenue_grid_wide_%d.csv", year))
@@ -1068,6 +1098,12 @@ assemble_deliverables <- function(
     fwrite(rev_gdp, rev_gdp_fp)
     msgs <- c(msgs,
               "Wrote {.path {rev_gdp_fp}} ({nrow(rev_gdp)} rows)")
+  }
+  if (!is.null(recon)) {
+    recon_fp <- file.path(out_dir,
+                          sprintf("national_income_reconciliation_%d.csv", year))
+    fwrite(recon, recon_fp)
+    msgs <- c(msgs, "Wrote {.path {recon_fp}} ({nrow(recon)} rows)")
   }
   cli::cli_inform(msgs)
 

@@ -50,7 +50,8 @@ build_macro_params_table <- function(per_variant, labor_scenarios) {
         kappa_corp      = m$kappa_corp,
         cit_statutory   = m$cit_statutory,
         eta_corp        = m$eta_corp,
-        delta_R_CIT_B   = m$delta_R_CIT / 1e9
+        delta_R_CIT_B   = m$delta_R_CIT / 1e9,
+        proprietors_capital_share = m$proprietors_capital_share
       )
     }
   }

@@ -44,7 +44,7 @@ allocate_capital <- function(dt, params,
                              asset_map_path = "config/asset_to_income_map.csv") {
   macro <- compute_macro_targets(dt, params)
   dt    <- allocate_across_units(dt, macro$X_to_units)
-  dt    <- allocate_within_unit(dt)
+  dt    <- allocate_within_unit(dt, params$raw$capital_flow$interest)
   out   <- map_to_income_types(dt, asset_map_path, params)
 
   setattr(out, "macro", c(macro, list(
@@ -85,6 +85,17 @@ compute_macro_targets <- function(dt, params) {
   delta_R_CIT <- corp$cit_statutory * corp$kappa_corp * X / eta_corp
   X_to_units  <- X
 
+  # Capital share of proprietors' income on the national-accounts concept
+  # (sole proprietorships, farms, partnerships; S corporations are in
+  # corporate profits there) under the Saez-Zucman split the tax file
+  # uses (01_load_data.R). Reported for the national-income
+  # reconciliation (14_reconciliation.R); it does not enter X.
+  proprietors_total <- sum(dt$weight * (dt$sole_prop + dt$farm +
+                                        dt$part_active_net + dt$part_passive_net))
+  proprietors_capital <- sum(dt$weight * (
+    dt$part_active_cap_share * dt$part_active_net +
+    params$raw$passthrough$passive_capital_share * dt$part_passive_net))
+
   list(
     y0_l_dollar = y0_l_dollar, y0_k_dollar = y0_k_dollar, y0_dollar = y0_dollar,
     y1_k_dollar = y1_k_dollar, y1_l_dollar = y1_l_dollar, y1_dollar = y1_dollar,
@@ -92,7 +103,8 @@ compute_macro_targets <- function(dt, params) {
     cbo_cit_baseline_dollar = cbo_cit_baseline_dollar,
     eta_corp                = eta_corp,
     delta_R_CIT             = delta_R_CIT,
-    X_to_units              = X_to_units
+    X_to_units              = X_to_units,
+    proprietors_capital_share = proprietors_capital / proprietors_total
   )
 }
 
@@ -142,19 +154,26 @@ allocate_across_units <- function(dt, X_to_units) {
 # (deferred) so that sum_i w_i * X_i is preserved. X_i is non-negative
 # provided A_base >= 0 for every unit — allocate_across_units warns when
 # that fails (negative pass_throughs exceeding other holdings).
-allocate_within_unit <- function(dt) {
-  inc_cols <- unname(.INCOME_BEARING_COLS)
+#
+# interest = "baseline_path" (Version 1.2 rung 2, B3) keeps interest on its
+# baseline path: fixed income gets none of X_i, which is split over the
+# unit's other income-bearing classes instead.
+allocate_within_unit <- function(dt, interest = "by_holdings") {
+  classes  <- names(.INCOME_BEARING_COLS)
+  if (interest == "baseline_path") classes <- setdiff(classes, "fixed_income")
+  inc_cols <- unname(.INCOME_BEARING_COLS[classes])
   # Clamp per-class holdings at zero before computing proportional
   # shares: a handful of SCF-imputed `pass_throughs` rows carry small
   # negative values (artifact of the donor-pool blend).
   pos_mat <- as.matrix(dt[, ..inc_cols])
   pos_mat[pos_mat < 0] <- 0
   dt[, A_inc := rowSums(pos_mat)]
-  for (cls in names(.INCOME_BEARING_COLS)) {
+  for (cls in classes) {
     col <- .INCOME_BEARING_COLS[[cls]]
     pos_col <- pos_mat[, col]
     dt[, (paste0("X_", cls)) := fifelse(A_inc > 0, X_i * pos_col / A_inc, 0)]
   }
+  if (!"fixed_income" %in% classes) dt[, X_fixed_income := 0]
 
   dt[, X_residual := X_i - (X_public_equity_taxable + X_fixed_income +
                             X_passthrough_equity + X_retirement_dc_ira)]

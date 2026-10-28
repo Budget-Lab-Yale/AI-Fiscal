@@ -38,3 +38,20 @@ test_that("eta calibration recovers CBO CIT level at baseline", {
   expect_equal(baseline_cit, macro$cbo_cit_baseline_dollar,
                tolerance = 1e-6 * macro$cbo_cit_baseline_dollar)
 })
+
+# Rung 2 (docs/v1_2_plan.md B3): with interest on its baseline path, the
+# bond slice moves to the other classes and X keeps its dollar size.
+test_that("capital_flow.interest = baseline_path routes no X to interest", {
+  p <- params
+  p$raw$capital_flow$interest <- "baseline_path"
+  sb <- allocate_capital(copy(dt_baseline), p,
+                         asset_map_path = here::here("config", "asset_to_income_map.csv"))
+  expect_equal(sum(sb$X_taxable_int), 0)
+  expect_equal(sum(sb$X_tax_exempt_int), 0)
+  expect_equal(sb$X_i, step_b$X_i)
+  inc_cols <- c("X_qualified_div", "X_ltcg_gross", "X_passthrough_ordinary",
+                "X_pens_gross", "X_ira_gross")
+  total <- sum(vapply(inc_cols, function(col) sum(sb$weight * sb[[col]]), numeric(1)))
+  expect_lt(abs(total / attr(sb, "macro")$X_to_units - 1), 1e-6)
+  expect_identical(attr(sb, "macro")$delta_R_CIT, macro$delta_R_CIT)
+})

@@ -20,13 +20,17 @@ cbo_baseline:
   growth_path_source: "docs/v1_2_plan.md A1: CBO's annual real GDP path rather than the Table 1 rounded rates."
   growth_path_rung: 1
 
+# shock.share_baseline stays survey_2025 (no drift): CBO's production
+# function holds the nonfarm-business factor shares constant, and the
+# projected alternative is a sensitivity (decided 2026-10-28).
 shock:
-  share_baseline: projected
-  share_baseline_status: choice
-  share_baseline_source: "docs/v1_2_plan.md A1: the survey's 2030 share is compared with the projected baseline share."
-  share_baseline_rung: 1
-
   sector: nonfarm_business
   sector_status: choice
   sector_source: "docs/v1_2_plan.md A2, decision 1 (SET 2026-10-28): share change and excess growth within nonfarm business only."
   sector_rung: 1
+
+capital_flow:
+  interest: baseline_path
+  interest_status: choice
+  interest_source: "docs/v1_2_plan.md B3, decision 2 (SET 2026-10-28): interest on its baseline path; X keeps its dollar size."
+  interest_rung: 2
