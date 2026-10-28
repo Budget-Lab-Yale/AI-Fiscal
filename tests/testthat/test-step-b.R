@@ -55,3 +55,17 @@ test_that("capital_flow.interest = baseline_path routes no X to interest", {
   expect_lt(abs(total / attr(sb, "macro")$X_to_units - 1), 1e-6)
   expect_identical(attr(sb, "macro")$delta_R_CIT, macro$delta_R_CIT)
 })
+
+# Rung 2: the primary residence, cash, and other nonfinancial assets can be
+# left out of the wealth that sets each unit's share of X.
+test_that("capital_flow.allocation_base = ex_home_cash_nonfin drops those assets", {
+  p <- params
+  p$raw$capital_flow$allocation_base <- "ex_home_cash_nonfin"
+  sb_dt <- allocate_across_units(copy(dt_baseline), macro$X_to_units,
+                                 p$raw$capital_flow$allocation_base)
+  kept <- setdiff(.ASSET_BASE_ALL_ASSETS, c("primary_home", "cash", "other_nonfin"))
+  expect_equal(sb_dt$A_base, rowSums(sb_dt[, ..kept]))
+  expect_lt(abs(sum(sb_dt$weight * sb_dt$X_i) / macro$X_to_units - 1), 1e-9)
+  only_excluded <- sb_dt$A_base == 0
+  expect_true(all(sb_dt$X_i[only_excluded] == 0))
+})

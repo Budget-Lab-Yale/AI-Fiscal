@@ -66,6 +66,7 @@ source("code/00_utils.R")
     sprintf("shock.variants.%s.%s", v, c("theta1_k", "r_ai_annual"))
   })),
   "labor_inequality.k",
+  "capital_flow.allocation_base",
   "capital_flow.interest",
   paste0("passthrough.",
          c("wage_threshold_percentile", "wage_threshold_conditioning",
@@ -155,6 +156,7 @@ source("code/00_utils.R")
   "cbo_baseline.growth_path" = c("flat", "annual"),
   "shock.share_baseline"     = c("survey_2025", "projected"),
   "shock.sector"             = c("whole_economy", "nonfarm_business"),
+  "capital_flow.allocation_base" = c("all_assets", "ex_home_cash_nonfin"),
   "capital_flow.interest"    = c("by_holdings", "baseline_path")
 )
 

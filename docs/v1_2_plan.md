@@ -522,6 +522,54 @@ B2 as documentation, B1 as an output table.
   (interest moved to dividends, gains, pass-through, and retirement
   income); payroll and corporate are unchanged. Layer 2 passes (job
   31204271), now listing `capital_flow.interest` as an added key.
+- *Allocation base (decided 2026-10-28).* New switch
+  `capital_flow.allocation_base`: `all_assets` (v1.0.1: every SCF asset
+  column except DB pensions) or `ex_home_cash_nonfin` (reference: also
+  without the primary residence, cash, and `other_nonfin`, which is
+  vehicles plus the SCF's other nonfinancial assets). Each unit's share of
+  `X` follows its wealth in the base. Moderate, 2030: the base falls from
+  $242T to $164T; the share of it in assets that cannot receive income
+  directly falls from 45% to 19%; the flow to retirement accounts falls
+  from $117.7B to $90.6B, to equities rises from $91.6B to $105.1B, to
+  pass-throughs from $63.9B to $77.5B; units with no income-bearing
+  holdings, whose share defaults to retirement, fall from 67M carrying
+  $18.3B to 16M carrying $3.9B. Revenue barely moves (run
+  `v1_2_reference-202610281936`, job 31212180): headline 118.24 → 118.10
+  ($B), Rapid reallocated proportional 222.95 → 222.29, every cell within
+  $0.8B, all of it individual income tax. The change is mainly in who
+  receives the flow, not how much of it is taxed.
+- *The rest of the base is treated as financial wealth.* The remaining
+  columns that cannot receive the flow directly keep their place in the
+  base, and their share goes to the unit's equities, pass-throughs, and
+  retirement accounts (bonds too under `by_holdings`). This includes
+  `other_home` (second homes and residential rentals held directly, SCF
+  `ORESRE`) and `re_fund` (equity in nonresidential real estate, SCF
+  `NNRESRE`), treated as investment assets (decided 2026-10-28), so their
+  AI return is reported as the unit's financial income rather than as
+  Schedule E rent. Where each column's income would be reported, for
+  reference (Moderate's approximate share of `X` under the new base):
+
+  | Column | Reported as | Share of `X` |
+  |---|---|---|
+  | `other_home` | Schedule E rents (rentals); Schedule D gains incl. §1250 on sale | ~$21B |
+  | `re_fund` | Schedule E rents; Schedule D or Form 4797 gains | ~$9B |
+  | `trusts` (trusts, managed accounts) | Owner's dividends, interest, gains (grantor trusts, managed accounts); Schedule E part III (other trusts) | ~$12B |
+  | `other_fin` (loans to others, royalties, deferred pay, private stock) | Interest, royalties (Schedule E part I), other income, gains | ~$4B |
+  | `life_ins` (cash value) | Nothing until surrender (line 5); tax-free at death | ~$3B |
+  | `annuities` | Taxable part of payouts on line 5 | ~$2B |
+
+  Life insurance and annuities share the retirement accounts' timing
+  issue: their income is deferred, but the model reports it now. That is
+  taken up with the retirement step below.
+- *Open: the retirement step* (`04_allocate_capital.R`,
+  `apply_retirement_cascade_R1`). The retirement slice of `X` is pooled
+  and paid in full this year as taxable pension and IRA distributions to
+  the units now taking distributions, by retirement wealth; 57% of it
+  starts with units that take none. Candidates: route the residual
+  across units with income-bearing holdings rather than to retirement;
+  a sensitivity that taxes only the withdrawal share in-year (`r_R` =
+  4.9% of balances). D11 assigns retirement balances to Version 2, so
+  any change here is a scope decision.
 
 Full runs need the cluster; the laptop cannot reach it over ssh, so work moves
 between machines through pushes to this branch.

@@ -14,8 +14,10 @@
 #        X_to_units        = X                                       (no reduction)
 #      eta absorbs both the household-realized-vs-pre-realization wedge
 #      and the statutory-vs-effective gap.
-#   4. Across units: X_i proportional to A_i (sum of all-assets wealth
-#      columns for unit i).
+#   4. Across units: X_i proportional to A_i (sum of the unit's wealth
+#      columns in the allocation base: all assets in v1.0.1; without the
+#      primary residence, cash, and other nonfinancial assets under
+#      capital_flow.allocation_base = ex_home_cash_nonfin).
 #   5. Within unit: distribute X_i across the income-bearing asset classes
 #      {equities, bonds, pass_throughs, retirement} only. Map to taxable
 #      income types via config/asset_to_income_map.csv. Hard-coded
@@ -43,7 +45,8 @@ source("code/00_utils.R")
 allocate_capital <- function(dt, params,
                              asset_map_path = "config/asset_to_income_map.csv") {
   macro <- compute_macro_targets(dt, params)
-  dt    <- allocate_across_units(dt, macro$X_to_units)
+  dt    <- allocate_across_units(dt, macro$X_to_units,
+                                 params$raw$capital_flow$allocation_base)
   dt    <- allocate_within_unit(dt, params$raw$capital_flow$interest)
   out   <- map_to_income_types(dt, asset_map_path, params)
 
@@ -108,10 +111,20 @@ compute_macro_targets <- function(dt, params) {
   )
 }
 
-# Step 4: distribute X_to_units across tax units in proportion to total
-# wealth (all-assets base).
-allocate_across_units <- function(dt, X_to_units) {
-  base_cols <- .ASSET_BASE_ALL_ASSETS
+# Asset columns left out of the across-unit allocation base, by
+# capital_flow.allocation_base. ex_home_cash_nonfin (Version 1.2): the
+# primary residence, cash, and other nonfinancial assets (vehicles and
+# the SCF's OTHNFIN) earn none of X.
+.ALLOCATION_BASE_EXCLUDED <- list(
+  all_assets          = character(),
+  ex_home_cash_nonfin = c("primary_home", "cash", "other_nonfin")
+)
+
+# Step 4: distribute X_to_units across tax units in proportion to wealth
+# in the allocation base (all assets in v1.0.1).
+allocate_across_units <- function(dt, X_to_units, allocation_base = "all_assets") {
+  base_cols <- setdiff(.ASSET_BASE_ALL_ASSETS,
+                       .ALLOCATION_BASE_EXCLUDED[[allocation_base]])
   missing   <- setdiff(base_cols, names(dt))
   if (length(missing)) {
     cli::cli_abort(c(

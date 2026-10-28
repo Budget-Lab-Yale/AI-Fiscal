@@ -30,6 +30,11 @@ shock:
   sector_rung: 1
 
 capital_flow:
+  allocation_base: ex_home_cash_nonfin
+  allocation_base_status: choice
+  allocation_base_source: "Decided 2026-10-28: the primary residence, cash, and other nonfinancial assets (vehicles, OTHNFIN) earn none of the AI capital flow."
+  allocation_base_rung: 2
+
   interest: baseline_path
   interest_status: choice
   interest_source: "docs/v1_2_plan.md B3, decision 2 (SET 2026-10-28): interest on its baseline path; X keeps its dollar size."

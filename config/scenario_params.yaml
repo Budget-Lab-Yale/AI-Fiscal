@@ -191,6 +191,14 @@ passthrough:
 # and estate income never receive X (no real-estate class).
 # ---------------------------------------------------------------------
 capital_flow:
+  # Wealth that sets each tax unit's share of X (rung 2). all_assets: every
+  # SCF asset column except DB pensions (v1.0.1). ex_home_cash_nonfin: also
+  # without the primary residence, cash, and other nonfinancial assets
+  # (other_nonfin: vehicles and the SCF's OTHNFIN).
+  allocation_base: all_assets
+  allocation_base_status: choice
+  allocation_base_source: "docs/v1_2_plan.md rung 2 (decided 2026-10-28). all_assets reproduces v1.0.1."
+
   interest: by_holdings
   interest_status: choice
   interest_source: "docs/v1_2_plan.md B3 and decision 2. by_holdings reproduces v1.0.1."
