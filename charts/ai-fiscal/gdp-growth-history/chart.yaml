@@ -1,0 +1,44 @@
+chartType: line
+title: How AI scenario GDP growth assumptions compare to historical GDP growth
+subtitle: Real GDP growth rate
+note: Five-year annualized growth in real GDP. CBO projections from 2026 onward. Shaded areas indicate US recessions.
+xAxisType: temporal
+
+columns:
+  x: Year
+  value: gdp_growth
+  series: series
+
+series_order: [Actual, CBO Projection]
+series_colors:
+  Actual: blue
+  CBO Projection: blue
+series_styles:
+  CBO Projection:
+    dashed: true
+
+xAxisPolicy:
+  anchorAtZero: false
+  # US recession periods (NBER, annualized) — shaded behind the data.
+  bands:
+    - { start: "1953", end: "1954" }
+    - { start: "1957", end: "1958" }
+    - { start: "1960", end: "1961" }
+    - { start: "1969", end: "1970" }
+    - { start: "1973", end: "1975" }
+    - { start: "1980", end: "1982" }
+    - { start: "1990", end: "1991" }
+    - { start: "2001", end: "2002" }
+    - { start: "2007", end: "2009" }
+    - { start: "2020", end: "2021" }
+
+yAxisPolicy:
+  includeZero: true
+  # AI-speed 2030 growth assumptions, as horizontal reference lines (dictated here, not data).
+  markers:
+    - { y: 0.033, label: "Rapid (3.3%)", color: amber, labelDx: 8 }
+    - { y: 0.026, label: "Moderate (2.6%)", color: violet, labelDx: 8 }
+    - { y: 0.02, label: "Slow (2.0%)", color: green, labelDx: 8 }
+
+source: BEA, CBO, and AI-Fiscal assumptions
+data: data.csv

@@ -1,0 +1,17 @@
+chartType: bar
+title: "Tax revenue is higher when AI adoption is faster and when inequality rises"
+subtitle: "Change in federal revenue, including corporate tax wedge, FY 2030, Billions USD"
+xAxisType: categorical
+orientation: vertical
+
+columns:
+  x: ai_speed
+  value: total_with_macro_cit
+  series: labor_dist
+
+series_order: [Compressive, Proportional, Expansive]
+valueLabels:
+  show: false
+
+source: "The Budget Lab AI-Revenue Microsimulation Model."
+data: data.csv

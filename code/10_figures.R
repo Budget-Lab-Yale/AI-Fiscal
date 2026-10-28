@@ -1404,39 +1404,11 @@ fig_x_etr_scatter_per_realization <- function(tbl, realization_code, year,
 # Driver
 # ---------------------------------------------------------------------
 
-assemble_figures <- function(
-  year           = NULL,
-  runscript_path = file.path(
-    Sys.getenv("TAX_SIMULATOR_DIR", unset = NA_character_),
-    "config", "runscripts", "private", "ai_fiscal.csv"
-  ),
-  agg_dir        = "results/aggregates",
-  out_dir        = NULL,
-  # argv is accepted for signature parity with assemble_deliverables()
-  # (the orchestrator calls both uniformly) and is intentionally unused
-  # here — the figure suite takes no CLI overrides.
-  argv           = NULL
-) {
-  if (!requireNamespace("ggplot2", quietly = TRUE)) {
-    cli::cli_warn(c(
-      "{.pkg ggplot2} not installed; skipping figure suite.",
-      i = "Install with {.code install.packages('ggplot2')} to enable."
-    ))
-    return(invisible(NULL))
-  }
-  if (!requireNamespace("scales", quietly = TRUE)) {
-    cli::cli_warn(c(
-      "{.pkg scales} not installed; skipping figure suite.",
-      i = "Install with {.code install.packages('scales')} to enable."
-    ))
-    return(invisible(NULL))
-  }
-
-  if (is.null(year))    year    <- .runscript_policy_year(runscript_path)
-  if (is.null(out_dir)) out_dir <- file.path("results", "figures", as.character(year))
-  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-
-  # Load deliverable + supporting tables.
+# Load the tables the figure suite (and 16_chart_data.R) draws from:
+# deliverable CSVs in `agg_dir`, the runscript and its _macro sidecar, with
+# axis columns restored to registry-ordered factors. Returns a named list;
+# `*_R` entries are pinned to share_mode = R.
+.load_figure_inputs <- function(runscript_path, agg_dir, year) {
   wide_fp     <- file.path(agg_dir, sprintf("revenue_grid_wide_%d.csv", year))
   long_fp     <- file.path(agg_dir, sprintf("revenue_grid_%d.csv",      year))
   decile_fp   <- file.path(agg_dir, sprintf("decile_panel_%d.csv",      year))
@@ -1525,6 +1497,49 @@ assemble_figures <- function(
   long_R         <- long[share_mode == "R"]
   decile_R       <- decile[share_mode == "R"]
   axes_per_scn_R <- axes_per_scn[share_mode == "R"]
+
+  list(wide = wide, long = long, decile = decile, shares = shares,
+       gini = gini, income = income, decomp = decomp, atr_dec = atr_dec,
+       macro_per_scn = macro_per_scn, axes_per_scn = axes_per_scn,
+       macro_raw = macro_raw, g_y_by_variant = g_y_by_variant,
+       wide_R = wide_R, long_R = long_R, decile_R = decile_R,
+       axes_per_scn_R = axes_per_scn_R)
+}
+
+assemble_figures <- function(
+  year           = NULL,
+  runscript_path = file.path(
+    Sys.getenv("TAX_SIMULATOR_DIR", unset = NA_character_),
+    "config", "runscripts", "private", "ai_fiscal.csv"
+  ),
+  agg_dir        = "results/aggregates",
+  out_dir        = NULL,
+  # argv is accepted for signature parity with assemble_deliverables()
+  # (the orchestrator calls both uniformly) and is intentionally unused
+  # here — the figure suite takes no CLI overrides.
+  argv           = NULL
+) {
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    cli::cli_warn(c(
+      "{.pkg ggplot2} not installed; skipping figure suite.",
+      i = "Install with {.code install.packages('ggplot2')} to enable."
+    ))
+    return(invisible(NULL))
+  }
+  if (!requireNamespace("scales", quietly = TRUE)) {
+    cli::cli_warn(c(
+      "{.pkg scales} not installed; skipping figure suite.",
+      i = "Install with {.code install.packages('scales')} to enable."
+    ))
+    return(invisible(NULL))
+  }
+
+  if (is.null(year))    year    <- .runscript_policy_year(runscript_path)
+  if (is.null(out_dir)) out_dir <- file.path("results", "figures", as.character(year))
+  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+  # Load deliverable + supporting tables (shared with 16_chart_data.R).
+  list2env(.load_figure_inputs(runscript_path, agg_dir, year), environment())
 
   # Render each figure. Decile / top-share are pinned to one realization
   # at a time. Each fig_* function returns list(plot, data); .fig_entry

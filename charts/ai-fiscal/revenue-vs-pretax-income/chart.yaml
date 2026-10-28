@@ -1,0 +1,28 @@
+chartType: scatter
+title: "Federal revenue gains versus change in pre-tax income"
+subtitle: "Change in federal revenue (y-axis) plotted against pre-tax income growth (x-axis), FY 2030, Billions USD"
+xAxisType: numeric
+x_axis_title: Change in pre-tax factor income ($B)
+y_axis_title: Change in total revenue ($B)
+
+columns:
+  x: delta_Y
+  value: total_with_macro_cit
+  series: ai_speed
+  shape: labor_dist
+
+series_order: [Slow, Moderate, Rapid]
+# Match the AI-speed reference-line colors in fa1/fa2: Slow=green, Moderate=violet, Rapid=amber.
+series_colors:
+  Slow: green
+  Moderate: violet
+  Rapid: amber
+shape_order: [Compressive, Proportional, Expansive]
+color_legend_title: "AI speed"
+shape_legend_title: "Labor distribution"
+
+yAxisPolicy:
+  includeZero: true
+
+source: "The Budget Lab AI-Revenue Microsimulation Model."
+data: data.csv

@@ -1,0 +1,84 @@
+# Published-figure manifest (docs/v1_2_figure_pipeline_plan.md).
+#
+# One entry per figure folder in charts/<collection>/, keyed by the site
+# folder name (a permanent public embed URL). code/16_chart_data.R calls
+# `builder` on a run directory and writes the figure's data.csv with the
+# columns its chart.yaml / table.yaml plots.
+#
+#   figure      article label (also in charts/<collection>/article.yaml)
+#   builder     function in code/16_chart_data.R
+#   model_slug  the 10_figures.R / paper_figure_data.R exhibit it mirrors
+#   sources     run tables (tables/), run inputs (inputs/), or FRED
+#
+# Collection imported from budget-lab-charts charts/articles/2026/07/ai-fiscal
+# at a2a3f60 (v1.0.1 as published). This replaces the hand-maintained mapping
+# in the header of code/paper_figure_data.R.
+
+collection: ai-fiscal
+
+figures:
+  revenue-headline:
+    figure: "Figure 1"
+    builder: chart_revenue_headline
+    model_slug: 01_headline_revenue
+    sources: [tables/revenue_grid_wide]
+  revenue-by-income-type:
+    figure: "Figure 2"
+    builder: chart_revenue_by_income_type
+    model_slug: 04_decomposition
+    sources: [tables/revenue_decomp, inputs/runscript_macro]
+  revenue-by-instrument:
+    figure: "Figure 3"
+    builder: chart_revenue_by_instrument
+    model_slug: 03_instrument_breakdown
+    sources: [tables/revenue_grid]
+  revenue-vs-factor-income:
+    figure: "Figure 4"
+    builder: chart_revenue_vs_factor_income
+    model_slug: 11_revenue_vs_gross_factor
+    sources: [tables/revenue_grid_wide, inputs/runscript_macro]
+  revenue-fixed-vs-reallocated:
+    figure: "Figure 5"
+    builder: chart_revenue_fixed_vs_reallocated
+    model_slug: 12_share_mode_comparison
+    sources: [tables/revenue_grid_wide]
+  inequality-gini:
+    figure: "Figure 6"
+    builder: chart_inequality_gini
+    model_slug: 07_gini_delta
+    sources: [tables/gini_deltas]
+  atr-by-decile:
+    figure: "Figure 7"
+    builder: chart_atr_by_decile
+    model_slug: 14_atr_decile_ai_M_R_S0_V1
+    sources: [tables/atr_decile]
+  gdp-growth-history:
+    figure: "Appendix Figure 1"
+    builder: chart_gdp_growth_history
+    model_slug: A1_gdp_growth
+    sources: [fred/GDPC1, inputs/params]
+  labor-share-history:
+    figure: "Appendix Figure 2"
+    builder: chart_labor_share_history
+    model_slug: A2_labor_share
+    sources: [fred/PRS85006173, inputs/params]
+  revenue-vs-pretax-income:
+    figure: "Appendix Figure 3"
+    builder: chart_revenue_vs_pretax_income
+    model_slug: 10_revenue_vs_income
+    sources: [tables/revenue_grid_wide, tables/income_deltas]
+  debt-to-gdp:
+    figure: "Appendix Figure 4"
+    builder: chart_debt_to_gdp
+    model_slug: blsmm_debt_to_gdp
+    sources: [tables/blsmm_debt_to_gdp]
+  key-parameters:
+    figure: "Table 1"
+    builder: chart_key_parameters
+    model_slug: key_parameters
+    sources: [inputs/runscript_cell_params, inputs/params]
+  key-parameters-symbols:
+    figure: "Appendix Table 1"
+    builder: chart_key_parameters
+    model_slug: key_parameters
+    sources: [inputs/runscript_cell_params, inputs/params]

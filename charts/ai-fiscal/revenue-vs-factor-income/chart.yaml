@@ -1,0 +1,31 @@
+chartType: scatter
+title: "Federal revenue grows non-linearly with the size of the GDP shock"
+subtitle: "Change in federal revenue plotted against total factor income growth, FY 2030, Billions USD"
+xAxisType: numeric
+x_axis_title: Gross factor-income expansion ($B)
+y_axis_title: Change in total revenue ($B)
+
+# Color = AI speed; marker shape = labor distribution (two independent channels → two legends).
+columns:
+  x: Gross Factor Income Expansion
+  value: Change in Total Revenue
+  series: ai_speed
+  shape: labor_dist
+
+series_order: [Slow, Moderate, Rapid]
+# Match the AI-speed reference-line colors in fa1/fa2: Slow=green, Moderate=violet, Rapid=amber.
+series_colors:
+  Slow: green
+  Moderate: violet
+  Rapid: amber
+
+shape_order: [Compressive, Proportional, Expansive]
+
+color_legend_title: "AI speed"
+shape_legend_title: "Labor distribution"
+
+yAxisPolicy:
+  includeZero: true
+
+source: "The Budget Lab AI-Revenue Microsimulation Model."
+data: data.csv

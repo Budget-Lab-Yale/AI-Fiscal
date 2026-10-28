@@ -1,0 +1,22 @@
+chartType: bar
+title: "Federal revenue is higher in all scenarios when capital-labor shares are held fixed"
+subtitle: "Change in federal revenue, including corporate tax wedge, FY 2030, Billions USD"
+xAxisType: categorical
+orientation: vertical
+
+columns:
+  x: labor_dist
+  value: total_with_macro_cit
+  series: share_mode
+  facet: ai_speed
+
+x_order: [Compressive, Proportional, Expansive]
+series_order: [Fixed, Reallocated]
+
+small_multiples:
+  mode: shared
+  columns: 3
+  pane_order: [Slow, Moderate, Rapid]
+
+source: "The Budget Lab AI-Revenue Microsimulation Model."
+data: data.csv

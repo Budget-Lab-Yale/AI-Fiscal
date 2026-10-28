@@ -1,0 +1,46 @@
+title: "Key Parameters"
+data: data.csv
+
+stub:
+  - group
+  - label: param
+
+header:
+  - bank
+  - scenario
+value: value
+
+column_order: [Slow, Moderate, Rapid]
+sublabels:
+  Slow: '(S)'
+  Moderate: '(M)'
+  Rapid: '(R)'
+
+row_labels:
+  gdp_growth: 'Annual GDP growth under AI (\(r_{ai}\))'
+  capital_share: '2030 capital share (\(\theta_{1}^{K}\))'
+  labor_share: '2030 labor share (\(\theta_{1}^{L}\))'
+  gdp: 'GDP (\(g_{Y}\))'
+  capital: 'Capital (\(g_{K}\))'
+  labor: 'Labor (\(g_{L}\))'
+
+group_labels:
+  ai_adoption: 'AI-adoption inputs'
+  growth: 'Derived cumulative growth'
+  inequality: 'Labor-income inequality parameter (\(\lambda\))'
+
+header_labels:
+  ai_scenarios: 'AI Adoption Scenarios via Karger et al. (2026)'
+
+group_notes:
+  ai_adoption: '(5-year horizon, 2025-2030)'
+  growth: 'Cumulative over the 5-year horizon, above the CBO baseline path.'
+  inequality: 'Compressive < 1, Expansive > 1'
+
+format:
+  default: { type: percent, decimals: 1 }
+  groups:
+    growth: { type: percent, decimals: 2 }
+    inequality: { type: number, decimals: 3 }
+
+source: "Karger, Buehler, Cox, Saint-Jacques, and Bjorkegren (2026), CBO (2026), and Budget Lab calculations."

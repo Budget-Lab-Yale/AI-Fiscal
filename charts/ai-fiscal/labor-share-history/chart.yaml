@@ -1,0 +1,32 @@
+chartType: line
+title: How AI scenario labor share assumptions compare to the historical labor share
+subtitle: Labor share of national income
+note: Shaded areas indicate US recessions.
+xAxisType: temporal
+
+columns:
+  x: Year
+  value: Labor Share
+
+xAxisPolicy:
+  anchorAtZero: false
+  bands:
+    - { start: "1953", end: "1954" }
+    - { start: "1957", end: "1958" }
+    - { start: "1960", end: "1961" }
+    - { start: "1969", end: "1970" }
+    - { start: "1973", end: "1975" }
+    - { start: "1980", end: "1982" }
+    - { start: "1990", end: "1991" }
+    - { start: "2001", end: "2002" }
+    - { start: "2007", end: "2009" }
+    - { start: "2020", end: "2021" }
+
+yAxisPolicy:
+  markers:
+    - { y: 0.55, label: "Slow (55%)", color: green, labelPosition: left }
+    - { y: 0.54, label: "Moderate (54%)", color: violet, labelPosition: left }
+    - { y: 0.52, label: "Rapid (52%)", color: amber, labelPosition: left }
+
+source: BLS and AI-Fiscal assumptions
+data: data.csv

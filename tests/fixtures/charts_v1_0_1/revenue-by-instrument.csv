@@ -1,0 +1,37 @@
+ai_speed,share_mode,labor_dist,Scenario,instrument,baseline,counterfactual,delta,delta_R_CIT,instrument_label
+Slow,Reallocate,Proportional,Slow AI · Reallocated shares · Proportional labor,macro_cit_delta,,,8.215922002,8.215922002,Macro CIT
+Slow,Reallocate,Proportional,Slow AI · Reallocated shares · Proportional labor,outlays_tax_credits,-100.9677451,-101.3364677,-0.368722591,8.215922002,Tax credits (outlay)
+Slow,Reallocate,Proportional,Slow AI · Reallocated shares · Proportional labor,revenues_income_tax,3010.43359,3014.36905,3.935460011,8.215922002,Income tax
+Slow,Reallocate,Proportional,Slow AI · Reallocated shares · Proportional labor,revenues_payroll_tax,1970.92352,1967.156208,-3.76731251,8.215922002,Payroll
+Slow,Reallocate,Compressive,Slow AI · Reallocated shares · Compressive labor,macro_cit_delta,,,8.215922002,8.215922002,Macro CIT
+Slow,Reallocate,Compressive,Slow AI · Reallocated shares · Compressive labor,outlays_tax_credits,-100.9677451,-100.2501648,0.717580226,8.215922002,Tax credits (outlay)
+Slow,Reallocate,Compressive,Slow AI · Reallocated shares · Compressive labor,revenues_income_tax,3010.43359,3005.711389,-4.722201531,8.215922002,Income tax
+Slow,Reallocate,Compressive,Slow AI · Reallocated shares · Compressive labor,revenues_payroll_tax,1970.92352,1971.296348,0.372827706,8.215922002,Payroll
+Slow,Reallocate,Expansive,Slow AI · Reallocated shares · Expansive labor,macro_cit_delta,,,8.215922002,8.215922002,Macro CIT
+Slow,Reallocate,Expansive,Slow AI · Reallocated shares · Expansive labor,outlays_tax_credits,-100.9677451,-102.4208577,-1.453112668,8.215922002,Tax credits (outlay)
+Slow,Reallocate,Expansive,Slow AI · Reallocated shares · Expansive labor,revenues_income_tax,3010.43359,3023.090803,12.65721219,8.215922002,Income tax
+Slow,Reallocate,Expansive,Slow AI · Reallocated shares · Expansive labor,revenues_payroll_tax,1970.92352,1962.98555,-7.937970643,8.215922002,Payroll
+Moderate,Reallocate,Proportional,Moderate AI · Reallocated shares · Proportional labor,macro_cit_delta,,,33.77747488,33.77747488,Macro CIT
+Moderate,Reallocate,Proportional,Moderate AI · Reallocated shares · Proportional labor,outlays_tax_credits,-100.9677451,-99.889253,1.078491798,33.77747488,Tax credits (outlay)
+Moderate,Reallocate,Proportional,Moderate AI · Reallocated shares · Proportional labor,revenues_income_tax,3010.43359,3079.486598,69.05300732,33.77747488,Income tax
+Moderate,Reallocate,Proportional,Moderate AI · Reallocated shares · Proportional labor,revenues_payroll_tax,1970.92352,1980.279154,9.355634025,33.77747488,Payroll
+Moderate,Reallocate,Compressive,Moderate AI · Reallocated shares · Compressive labor,macro_cit_delta,,,33.77747488,33.77747488,Macro CIT
+Moderate,Reallocate,Compressive,Moderate AI · Reallocated shares · Compressive labor,outlays_tax_credits,-100.9677451,-93.21937273,7.748372344,33.77747488,Tax credits (outlay)
+Moderate,Reallocate,Compressive,Moderate AI · Reallocated shares · Compressive labor,revenues_income_tax,3010.43359,3027.497676,17.06408576,33.77747488,Income tax
+Moderate,Reallocate,Compressive,Moderate AI · Reallocated shares · Compressive labor,revenues_payroll_tax,1970.92352,2005.257912,34.33439141,33.77747488,Payroll
+Moderate,Reallocate,Expansive,Moderate AI · Reallocated shares · Expansive labor,macro_cit_delta,,,33.77747488,33.77747488,Macro CIT
+Moderate,Reallocate,Expansive,Moderate AI · Reallocated shares · Expansive labor,outlays_tax_credits,-100.9677451,-106.4188595,-5.451114450,33.77747488,Tax credits (outlay)
+Moderate,Reallocate,Expansive,Moderate AI · Reallocated shares · Expansive labor,revenues_income_tax,3010.43359,3133.917029,123.4834388,33.77747488,Income tax
+Moderate,Reallocate,Expansive,Moderate AI · Reallocated shares · Expansive labor,revenues_payroll_tax,1970.92352,1954.261644,-16.66187619,33.77747488,Payroll
+Rapid,Reallocate,Proportional,Rapid AI · Reallocated shares · Proportional labor,macro_cit_delta,,,74.4441672,74.4441672,Macro CIT
+Rapid,Reallocate,Proportional,Rapid AI · Reallocated shares · Proportional labor,outlays_tax_credits,-100.9677451,-100.2299128,0.737832221,74.4441672,Tax credits (outlay)
+Rapid,Reallocate,Proportional,Rapid AI · Reallocated shares · Proportional labor,revenues_income_tax,3010.43359,3131.174507,120.74091684,74.4441672,Income tax
+Rapid,Reallocate,Proportional,Rapid AI · Reallocated shares · Proportional labor,revenues_payroll_tax,1970.92352,1975.79475,4.87123295,74.4441672,Payroll
+Rapid,Reallocate,Compressive,Rapid AI · Reallocated shares · Compressive labor,macro_cit_delta,,,74.4441672,74.4441672,Macro CIT
+Rapid,Reallocate,Compressive,Rapid AI · Reallocated shares · Compressive labor,outlays_tax_credits,-100.9677451,-86.82086851,14.1468766,74.4441672,Tax credits (outlay)
+Rapid,Reallocate,Compressive,Rapid AI · Reallocated shares · Compressive labor,revenues_income_tax,3010.43359,3029.750333,19.316742664,74.4441672,Income tax
+Rapid,Reallocate,Compressive,Rapid AI · Reallocated shares · Compressive labor,revenues_payroll_tax,1970.92352,2024.489362,53.56584181,74.4441672,Payroll
+Rapid,Reallocate,Expansive,Rapid AI · Reallocated shares · Expansive labor,macro_cit_delta,,,74.4441672,74.4441672,Macro CIT
+Rapid,Reallocate,Expansive,Rapid AI · Reallocated shares · Expansive labor,outlays_tax_credits,-100.9677451,-112.9647735,-11.9970285,74.4441672,Tax credits (outlay)
+Rapid,Reallocate,Expansive,Rapid AI · Reallocated shares · Expansive labor,revenues_income_tax,3010.43359,3242.304361,231.870770,74.4441672,Income tax
+Rapid,Reallocate,Expansive,Rapid AI · Reallocated shares · Expansive labor,revenues_payroll_tax,1970.92352,1922.937768,-47.98575230,74.4441672,Payroll

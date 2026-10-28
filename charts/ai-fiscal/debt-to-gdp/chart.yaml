@@ -1,0 +1,26 @@
+chartType: bar
+title: "The debt-to-GDP ratio falls more when AI adoption is faster"
+subtitle: "Federal debt, percent of GDP, FY 2030"
+value_suffix: "%"
+xAxisType: categorical
+orientation: vertical
+
+columns:
+  x: ai_speed
+  value: blsmm_debt_to_gdp_year_pct
+  series: labor_dist
+
+series_order: [Compressive, Proportional, Expansive]
+valueLabels:
+  show: false
+
+yAxisPolicy:
+  # Level series with small variation → truncated axis (min opts out of the forced zero
+  # baseline) so the differences are visible. Baseline (no-AI) debt-to-GDP reference line.
+  min: 98
+  max: 110
+  markers:
+    - { y: 107.4, label: "BLSMM baseline", style: "dashed", color: gray }
+
+source: "The Budget Lab AI-Revenue Microsimulation Model and The Budget Lab Small Macro Model (BLSMM)"
+data: data.csv

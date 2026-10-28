@@ -1,0 +1,15 @@
+run_id: legacy_v1_0_1-202610281529
+setting: legacy_v1_0_1
+status: succeeded
+started: 2026-10-28 15:29:14 EDT
+ai_fiscal_rev: e92923caae18
+ai_fiscal_dirty: yes
+tax_simulator_rev: 256f03ea9647
+tax_simulator_patched: yes
+tax_data_vintage: '2026050315'
+tax_simulator_vintage: '202610281529'
+r_version: R version 4.4.2 (2024-10-31)
+argv: --multicore scenario --vintage 202610281529
+years: 2029:2030
+finished: 2026-10-28 15:39:23 EDT
+intermediates_kept: no

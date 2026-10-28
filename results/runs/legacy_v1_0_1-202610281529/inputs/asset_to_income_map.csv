@@ -1,0 +1,7 @@
+asset_class,income_type,share,notes
+public_equity_taxable,qualified_dividend,0.30,
+public_equity_taxable,ltcg,0.70,split realized/unrealized per realization rate
+fixed_income,taxable_interest,,scale tax-exempt share from K_i current composition
+fixed_income,tax_exempt_interest,,scale tax-exempt share from K_i current composition
+passthrough_equity,passthrough_ordinary,1.00,QBI-eligible share inherited from K_i (private_business collapsed in here)
+retirement_dc_ira,tax_deferred,1.00,see Retirement accruals section

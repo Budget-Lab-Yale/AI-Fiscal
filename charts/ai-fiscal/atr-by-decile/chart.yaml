@@ -1,0 +1,30 @@
+chartType: bar
+title: "Despite a falling labor share, average tax rates tend to rise slightly in the Moderate AI scenario"
+subtitle: "Percentage point change in average tax rate by decile, excluding corporate income tax, FY 2030"
+xAxisType: categorical
+orientation: vertical
+x_axis_title: Income decile
+tooltip_decimals: 4
+
+columns:
+  x: decile
+  value: dATR
+
+valueLabels:
+  show: false
+
+# Verbose tooltip header (axis stays compact 1–10).
+x_labels:
+  "1": 1st decile
+  "2": 2nd decile
+  "3": 3rd decile
+  "4": 4th decile
+  "5": 5th decile
+  "6": 6th decile
+  "7": 7th decile
+  "8": 8th decile
+  "9": 9th decile
+  "10": 10th decile
+
+source: "The Budget Lab AI-Revenue Microsimulation Model."
+data: data.csv

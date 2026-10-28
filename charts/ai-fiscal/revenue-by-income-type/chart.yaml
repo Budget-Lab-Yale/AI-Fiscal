@@ -1,0 +1,30 @@
+chartType: stacked
+title: "Capital and corporate revenue gains drive increased revenues"
+subtitle: "Change in federal revenue by type of income, FY 2030, Billions USD"
+xAxisType: categorical
+
+columns:
+  x: labor_dist
+  value: delta_B
+  series: component_label
+  facet: ai_speed
+
+x_order: [Compressive, Proportional, Expansive]
+series_order: [Labor, Capital, Interaction, Macro CIT]
+series_colors:
+  Labor: blue
+  Capital: violet
+  Interaction: rose
+  Macro CIT: amber
+barStack:
+  netDisplay: none
+  # Macro CIT sits at the bottom of the positive stack (legend/colors stay in series_order).
+  stackOrder: [Macro CIT]
+
+small_multiples:
+  mode: shared
+  columns: 3
+  pane_order: [Slow, Moderate, Rapid]
+
+source: "The Budget Lab AI-Revenue Microsimulation Model."
+data: data.csv

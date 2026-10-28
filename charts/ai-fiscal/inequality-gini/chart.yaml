@@ -1,0 +1,30 @@
+chartType: dotplot
+title: "Overall inequality changes are driven by assumptions about labor income inequality"
+subtitle: "Change in within-scenario Gini coefficient, FY 2030. Positive = inequality rises."
+xAxisType: categorical
+y_axis_title: Change in Gini
+# Gini deltas are small — round to 0.00 on the 2-decimal axis, so show 4 in the tooltip.
+tooltip_decimals: 4
+
+# Redundant color+shape encoding: both channels point at income_concept (pre-tax / after-tax),
+# so the legend is one combined group of colored shapes. Faceted by AI speed.
+columns:
+  x: labor_dist
+  value: delta
+  series: income_concept
+  shape: income_concept
+  facet: ai_speed
+
+x_order: [Compressive, Proportional, Expansive]
+series_order: [aftertax, pretax]
+series_labels:
+  aftertax: After-tax
+  pretax: Pre-tax
+
+small_multiples:
+  mode: shared
+  columns: 3
+  pane_order: [Slow, Moderate, Rapid]
+
+source: "The Budget Lab AI-Revenue Microsimulation Model."
+data: data.csv

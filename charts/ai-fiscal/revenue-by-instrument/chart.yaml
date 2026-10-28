@@ -1,0 +1,31 @@
+chartType: stacked
+title: "Corporate and individual income tax revenues increase in most scenarios"
+subtitle: "Change in federal revenue by tax instrument, FY 2030, Billions USD"
+xAxisType: categorical
+
+columns:
+  x: labor_dist
+  value: delta
+  series: instrument_label
+  facet: ai_speed
+
+x_order: [Compressive, Proportional, Expansive]
+series_order: [Income tax, Payroll, Tax credits (outlay), Macro CIT]
+# Macro CIT (blue) shares a color with F2.
+series_colors:
+  Income tax: green
+  Payroll: russet
+  Tax credits (outlay): red
+  Macro CIT: amber
+barStack:
+  netDisplay: none
+  # Macro CIT sits at the bottom of the positive stack (legend/colors stay in series_order).
+  stackOrder: [Macro CIT]
+
+small_multiples:
+  mode: shared
+  columns: 3
+  pane_order: [Slow, Moderate, Rapid]
+
+source: "The Budget Lab AI-Revenue Microsimulation Model."
+data: data.csv

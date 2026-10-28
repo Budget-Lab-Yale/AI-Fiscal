@@ -91,10 +91,21 @@ The manifest replaces the hand-maintained mapping in the header of
 `paper_figure_data.R`, so the model slug, draft exhibit, and site folder
 of each figure are recorded in one place.
 
-**Acceptance test:** run against the v1.0.1 run directory, `16_chart_data.R`
-reproduces the 13 live `data.csv` files (live URL pattern
-`https://charts.budgetlab.yale.edu/ai-fiscal/<chart>/data.csv`) exactly,
-apart from the BOM. Those files become committed test fixtures.
+**Acceptance test (revised 2026-10-28):** run against the v1.0.1 run
+directory, `16_chart_data.R` reproduces the **plotted columns** of the 13
+live `data.csv` files (live URL pattern
+`https://charts.budgetlab.yale.edu/ai-fiscal/<chart>/data.csv`): text
+exactly, numbers to the precision the live file prints them with. Byte
+equality was dropped because the live files were reshaped by hand (BOMs on
+four, "Reallocate" vs "Reallocated", 9-digit rounding, unused columns); a
+builder writes exactly the columns its spec plots and nothing else. The live
+files, BOM stripped, are fixtures in `tests/fixtures/charts_v1_0_1/`.
+
+**Where generated data goes.** `charts/<collection>/` holds specs only.
+`write_chart_data(<run dir>)` copies them into
+`<run dir>/charts/<collection>/` and writes each `data.csv` beside its spec,
+so every run carries a renderable, publishable figure set, and the data
+in a published figure always traces to one run's manifest.
 
 **The figure set will change.** Every Version 1 figure is a 2030
 cross-section; with ten fiscal years most will be replaced by annual paths
@@ -197,8 +208,8 @@ system.
 
 | Step | Work | Done when |
 |---|---|---|
-| F0 | Import the 13 v1.0.1 site specs into `charts/ai-fiscal/`; write `config/charts.yaml` with the full mapping (site folder, figure number, model slug, source output) | manifest covers all 13 figures |
-| F1 | `16_chart_data.R` builders, reading the run store | acceptance test reproduces all 13 live CSVs from the v1.0.1 run directory |
+| F0 | Import the 13 v1.0.1 site specs into `charts/ai-fiscal/`; write `config/charts.yaml` with the full mapping (site folder, figure number, model slug, source output) | manifest covers all 13 figures — **DONE 2026-10-28** (specs from `budget-lab-charts` at `a2a3f60`) |
+| F1 | `16_chart_data.R` builders, reading the run store | acceptance test reproduces all 13 live CSVs from the v1.0.1 run directory — **DONE 2026-10-28** (`tests/testthat/test-chart-data.R`; builders reuse `10_figures.R`'s data functions via the extracted `.load_figure_inputs()`; the reference run `results/runs/legacy_v1_0_1-202610281529/` is committed: tables, inputs, manifest) |
 | F2 | Node toolchain: validate, render, serve, png; pin check | gallery shows all 13; PNGs match site downloads |
 | F3 | Variants: merge script and three worked examples (fixed shares, slide size, relabeled series) | the September 30 slide set rebuilds from variants |
 | F4 | Publish script; dry run into a scratch branch of `budget-lab-charts` | that repository's `npm run validate` passes |
