@@ -264,7 +264,9 @@ Each run writes `results/runs/<setting>-<stamp>/`:
   vintage, years, argv.
 - `inputs/`: the merged parameters (`params.yaml`, the setting applied),
   copies of the retirement calibration and asset map, the runscript and its
-  `_macro` / `_cell_params` sidecars, and the Tax-Simulator `src/` diff.
+  `_macro` / `_cell_params` sidecars, and `tax_simulator_local.diff` (the
+  local changes to the Tax-Simulator tree: `src/` patches and dependency
+  vintages).
 - `tables/`: the files below.
 - `figures/`: the figure suite.
 - `run.log`.

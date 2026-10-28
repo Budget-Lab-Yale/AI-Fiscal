@@ -113,12 +113,13 @@ write_run_inputs <- function(run, params_raw) {
   invisible(run)
 }
 
-# Diff of the Tax-Simulator source tree against its commit, i.e. the local
-# patches the run used. Restricted to src/ so no machine paths from
-# config/interfaces/output_roots.yaml end up in the run record.
+# Diff of the Tax-Simulator tree against its commit, i.e. the local patches
+# the run used: src/ and the dependency vintages. output_roots.yaml is
+# left out so no machine paths end up in the run record.
 .tax_sim_src_diff <- function(ts_root) {
   out <- tryCatch(
-    suppressWarnings(system2("git", c("-C", shQuote(ts_root), "diff", "--", "src"),
+    suppressWarnings(system2("git", c("-C", shQuote(ts_root), "diff", "--", "src",
+                                      "config/interfaces/interface_versions.yaml"),
                              stdout = TRUE, stderr = FALSE)),
     error = function(e) character()
   )
@@ -136,7 +137,7 @@ write_manifest <- function(run, fields) {
 start_manifest <- function(run, argv, vintage_paths, ts_root) {
   ts_diff <- .tax_sim_src_diff(ts_root)
   if (length(ts_diff)) {
-    writeLines(ts_diff, file.path(run$inputs, "tax_simulator_src.diff"))
+    writeLines(ts_diff, file.path(run$inputs, "tax_simulator_local.diff"))
   }
   write_manifest(run, list(
     run_id           = run$id,

@@ -257,7 +257,8 @@ vintage):
 - `inputs/`: merged parameters (`params.yaml`), copies of the retirement
   calibration and asset map, the runscript and its per-cell and
   per-variant sidecars (no longer written into the Tax-Simulator
-  repository), and the Tax-Simulator `src/` diff;
+  repository), and the local Tax-Simulator changes (`src/` patches
+  and dependency vintages);
 - `tables/` (E1b, rung 4): long-format CSVs (revenue, income, distribution,
   reconciliation, ...) sharing one key: run, variant, share mode, labor
   rule, realization, flavor (both / labor only / capital only), calendar or
@@ -368,10 +369,22 @@ time and changes every output's shape.
   files against the v1.0.1 checksums, per-cell macro parameters and
   `parameter_index` against run D (DONE 2026-10-28, job 31161818:
   `tests/server/legacy_inputs.sbatch`, about 5 minutes, re-run at every
-  rung); (3) a full
-  legacy run whose tables match run D's aggregates within a relative
-  tolerance of 1e-9 (server). "Reproduces exactly" means layer 3, since
-  workbooks carry timestamps.
+  rung); (3) a full legacy run whose tables match run D's aggregates within
+  a relative tolerance of 1e-9 (DONE 2026-10-28, job 31177402:
+  `tests/server/legacy_full.sbatch` + `tests/server/compare_run_tables.R`,
+  12 of 12 tables match; 10m42s on 16 cores, peak job memory 99 GB of the
+  128 GB requested). "Reproduces exactly" means layer 3, since workbooks
+  carry timestamps. The comparison was validated on the erratum's own runs
+  (D vs D passes; B vs D fails on exactly the five tables carrying the
+  macro corporate tax, the only thing B and D differ in).
+- *Wealth-Tax-Simulator vintage substitution.* The `256f03ea9` pin's default
+  Wealth-Tax-Simulator vintage `2025011312` was deleted from the shared
+  filer on 2026-10-24 (no snapshot predates it). Tax-Simulator at that
+  commit only checks the folder exists (`src/misc/config_parser.R:201`) and
+  never reads it, so the pin worktree points it at `2025032414`; layer 3
+  passing confirms the substitution changes no result. The edit is
+  recorded in each run's `inputs/tax_simulator_local.diff`. Old dependency
+  vintages on the shared filer are not guaranteed to persist.
 
 Full runs need the cluster; the laptop cannot reach it over ssh, so work moves
 between machines through pushes to this branch.
