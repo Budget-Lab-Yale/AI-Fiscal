@@ -912,10 +912,12 @@ write_publishable_excel_bundle <- function(out_dir, year,
                                             decomp = NULL,
                                             share_mode_comparison = NULL,
                                             revenue_to_gdp = NULL,
-                                            argv = NULL) {
+                                            argv = NULL,
+                                            params_yaml = .resolve_repo_path("config/scenario_params.yaml")) {
   ctx <- .init_xlsx_bundle(year, output_root, runscript_path, argv,
                            bundle_type = "Publishable (microsim + macro CIT layered)",
-                           publishable = TRUE)
+                           publishable = TRUE,
+                           params_yaml = params_yaml)
   if (is.null(ctx)) return(invisible(NULL))
 
   ctx$add_sheet("variable_list",
@@ -941,9 +943,8 @@ write_publishable_excel_bundle <- function(out_dir, year,
     # baseline_year / horizon_start_year rather than hardcoded literals.
     # Falls back to NULL when the file is unreachable; the writer
     # suppresses the r_ai row and uses generic (year-free) labels then.
-    yaml_path_kp <- .resolve_repo_path("config/scenario_params.yaml")
     yaml_kp <- tryCatch(
-      if (file.exists(yaml_path_kp)) yaml::read_yaml(yaml_path_kp) else NULL,
+      if (file.exists(params_yaml)) yaml::read_yaml(params_yaml) else NULL,
       error = function(e) NULL
     )
     kp <- build_key_parameters_table(
@@ -990,7 +991,8 @@ assemble_deliverables <- function(
   agg_dir        = "results/aggregates",
   out_dir        = "results/aggregates",
   output_root    = NULL,
-  argv           = NULL
+  argv           = NULL,
+  params_yaml    = .resolve_repo_path("config/scenario_params.yaml")
 ) {
   if (is.null(output_root)) output_root <- latest_tax_sim_vintage()
   if (is.null(year)) year <- .runscript_policy_year(runscript_path)
@@ -1022,9 +1024,8 @@ assemble_deliverables <- function(
   rev_gdp <- NULL
   if (file.exists(cell_params_fp)) {
     cell_params <- fread(cell_params_fp)
-    yaml_path <- .resolve_repo_path("config/scenario_params.yaml")
-    if (file.exists(yaml_path)) {
-      cbo_y <- yaml::read_yaml(yaml_path)$cbo_baseline
+    if (file.exists(params_yaml)) {
+      cbo_y <- yaml::read_yaml(params_yaml)$cbo_baseline
       gdp_B <- cbo_y$gdp_baseline_year_B
       rev_share <- cbo_y$rev_to_gdp_baseline_year
       if (is.numeric(gdp_B) && gdp_B > 0 &&
@@ -1073,7 +1074,7 @@ assemble_deliverables <- function(
     rev_long = rev_out$long, rev_wide = rev_out$wide, decile = decile,
     output_root = output_root, runscript_path = runscript_path,
     decomp = decomp, share_mode_comparison = smc,
-    revenue_to_gdp = rev_gdp, argv = argv
+    revenue_to_gdp = rev_gdp, argv = argv, params_yaml = params_yaml
   )
 
   invisible(list(revenue_long = rev_out$long, revenue_wide = rev_out$wide,

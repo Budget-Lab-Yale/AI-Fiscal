@@ -27,7 +27,11 @@ module load R/4.4.2-gfbf-2024a
 export RENV_CONFIG_AUTOLOADER_ENABLED=FALSE
 
 # --- required: Tax-Simulator working tree ---
-export TAX_SIMULATOR_DIR="${TAX_SIMULATOR_DIR:-$(cd "${SLURM_SUBMIT_DIR:-$PWD}/../Tax-Simulator" && pwd)}"
+# No fallback: the run must name the Tax-Simulator build it scores against
+# (a sibling checkout may be on any branch). Submit with, e.g.,
+#   TAX_SIMULATOR_DIR=/path/to/Tax-Simulator--v1.0-pin sbatch run_release.sbatch
+: "${TAX_SIMULATOR_DIR:?set TAX_SIMULATOR_DIR to the Tax-Simulator worktree this run uses}"
+export TAX_SIMULATOR_DIR
 
 # --- optional: BLSMM for the 2030 debt/GDP step (comment out to skip) ---
 # export BLSMM_DIR=/path/to/Budget-Lab-Small-Macro-Model
@@ -46,6 +50,6 @@ echo "Started:         $(date)"
 # --publish: this is a final publication run, so write the Tax-Simulator
 # output tree to the shared `production` root (not the scratch/testing root).
 # Drop --publish for experimental submissions to keep output on scratch.
-Rscript code/00_ai_fiscal_sim.R --multicore scenario --overwrite --publish
+Rscript code/00_ai_fiscal_sim.R --multicore scenario --publish
 
 echo "Finished:        $(date)"

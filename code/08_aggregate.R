@@ -1094,8 +1094,10 @@ build_atr_decile <- function(output_root, runscript_path, year,
 # model doc.
 write_excel_bundle <- function(out_dir, year, rev, gini, shares, inc,
                                 output_root, runscript_path,
-                                decomp = NULL, argv = NULL) {
-  ctx <- .init_xlsx_bundle(year, output_root, runscript_path, argv)
+                                decomp = NULL, argv = NULL,
+                                params_yaml = "config/scenario_params.yaml") {
+  ctx <- .init_xlsx_bundle(year, output_root, runscript_path, argv,
+                           params_yaml = params_yaml)
   if (is.null(ctx)) return(invisible(NULL))
 
   ctx$add_sheet("variable_list",
@@ -1132,7 +1134,11 @@ aggregate_tax_sim_output <- function(
   runtype        = "static",
   tax_set        = "iit",
   out_dir        = "results/aggregates",
-  argv           = NULL
+  argv           = NULL,
+  # The orchestrator passes the run's merged parameters
+  # (results/runs/<run_id>/inputs/params.yaml) so parameter_index shows the
+  # setting the run used, not the base yaml.
+  params_yaml    = "config/scenario_params.yaml"
 ) {
   if (is.null(year)) year <- .runscript_policy_year(runscript_path)
 
@@ -1180,7 +1186,7 @@ aggregate_tax_sim_output <- function(
     rev = rev, gini = ineq$gini, shares = ineq$shares, inc = inc_totals,
     decomp = decomp,
     output_root = output_root, runscript_path = runscript_path,
-    argv = argv
+    argv = argv, params_yaml = params_yaml
   )
 
   list(revenue = rev, gini = ineq$gini, shares = ineq$shares,

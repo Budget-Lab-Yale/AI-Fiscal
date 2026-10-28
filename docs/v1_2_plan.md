@@ -242,14 +242,23 @@ CSVs reshaped by hand). The same headline number is stored up to five
 times, and nothing in this repository records which Tax-Simulator commit or
 run produced a workbook.
 
-**E1. Run store.** Each run writes `results/runs/<run_id>/` (`run_id` =
-setting and timestamp):
+**E1. Run store.** Split 2026-10-28: **E1a (run directory) done in rung
+0** (`code/00_run_store.R`); **E1b (long-format tables) and E2 move to
+rung 4**, because the ten-year window changes every table and figure
+anyway. E1a keeps the v1.0 table and workbook layouts in `tables/`, so the
+legacy reproduction test compares files directly against the erratum's
+run D. Each run writes `results/runs/<run_id>/` (`run_id` =
+`<setting>-<stamp>`, the stamp also being the Tax-Simulator output
+vintage):
 
-- `manifest.yaml`: setting, merged parameters, AI-Fiscal and Tax-Simulator
-  commits, Tax-Data and Macro-Projections vintages, years, timing;
-- `inputs/`: the per-cell and per-variant sidecars, copied out of the
-  Tax-Simulator repository at run time;
-- `tables/`: long-format CSVs (revenue, income, distribution,
+- `manifest.yaml`: setting, status, AI-Fiscal and Tax-Simulator commits
+  (and whether Tax-Simulator was patched), Tax-Data vintage, years, timing
+  (Macro-Projections vintage from rung 1);
+- `inputs/`: merged parameters (`params.yaml`), copies of the retirement
+  calibration and asset map, the runscript and its per-cell and
+  per-variant sidecars (no longer written into the Tax-Simulator
+  repository), and the Tax-Simulator `src/` diff;
+- `tables/` (E1b, rung 4): long-format CSVs (revenue, income, distribution,
   reconciliation, ...) sharing one key: run, variant, share mode, labor
   rule, realization, flavor (both / labor only / capital only), calendar or
   fiscal year, measure, value, unit. Labels are decoded once from the axis
@@ -271,7 +280,8 @@ with the move from one year to ten (every Version 1 figure is a 2030
 cross-section), so which published and diagnostic figures exist is
 decided from the ten-year outputs (figure plan F5), not in rung 0.
 
-**E3. Large intermediates in scratch.** Counterfactual tax-unit files are
+**E3. Large intermediates in scratch — done in rung 0** (except writing
+each capital-only file once, which moves to rung 4). Counterfactual tax-unit files are
 reproducible (no random draws in `03`–`06`; the manifest records the code,
 vintage, and setting), so they move to
 `$TAXSIM_LOCAL_ROOT/ai_fiscal/<run_id>/tax_data/<scenario>/`, with the
@@ -298,8 +308,15 @@ is purged on inactivity, so the run store is the permanent record. After
 the v1.0.1 checksums are taken, the 54 v1.0.1 scenario folders in the
 shared vintage (about 10 GB) can be removed.
 
-Also fix: `code/07_run_tax_sim.R:56` reads a `local:` key that current
-Tax-Simulator removed in favor of `TAXSIM_LOCAL_ROOT`.
+Done with E3: `tax_sim_output_root()` falls back to `TAXSIM_LOCAL_ROOT`
+when `output_roots.yaml` has no `local:` key (current Tax-Simulator); every
+pipeline read of parameters after `02` uses the run's `inputs/params.yaml`
+(the `parameter_index` and `key_parameters` sheets, the CBO baseline in
+`09`'s revenue-to-GDP table, and the Karger growth rates in `15`);
+`run_release.sbatch` requires `TAX_SIMULATOR_DIR` instead of falling back
+to a sibling checkout. `code/paper_figure_data.R` still reads the base
+yaml; it is a standalone post-processor whose exhibits are replaced in
+rung 4.
 
 ## Order of work
 

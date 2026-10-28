@@ -126,12 +126,13 @@ orchestrator (00_ai_fiscal_sim.R)
 |---|---|
 | `code/00_ai_fiscal_sim.R` | Orchestrator. Loops the 18-cell grid; CLI parser; log tee. |
 | `code/00_utils.R` | Shared helpers + asset-column registry. **Source first** in every other file. |
+| `code/00_run_store.R` | Run directory (`results/runs/<setting>-<stamp>/`), manifest, scratch placement of counterfactual files, run-specific Tax-Data links, cleanup. |
 | `code/01_load_data.R` | Load merged PUF + SCF; SZ pass-through split. Handles vintage column rename (`value.*` → bare; `dc` → `retirement`). |
 | `code/02_params.R` | Resolve `(g_k, g_l)` from `(theta1_k, g_y, theta0_l)`. Validates yaml keys present. |
 | `code/03_shock_labor.R` | **Step A** — labor redistribution (S0 / S2 / S3). |
 | `code/04_allocate_capital.R` | **Step B** — macro CIT, across-unit allocation, within-unit allocation, R1 cascade. |
 | `code/05_realization.R` | **Step C** — V1 mechanical realization. Tiny file by design. |
-| `code/06_build_counterfactual.R` | Build per-unit cf data; write to sibling scenario folder under Tax-Data vintage; emit runscript rows. |
+| `code/06_build_counterfactual.R` | Build per-unit cf data; write the scenario folder (the orchestrator puts it in the run's scratch area); emit runscript rows. |
 | `code/07_run_tax_sim.R` | Invoke Tax-Simulator's `src/main.R` via `callr` in a clean subprocess. |
 | `code/08_aggregate.R` | Read Tax-Simulator output; build revenue / income / inequality / decomp / ATR tables; microsim xlsx. |
 | `code/09_tables_figures.R` | Layer macro CIT onto microsim totals; build publishable grid; CBO-anchored rev/GDP; publishable xlsx. |
@@ -186,28 +187,36 @@ AI-Fiscal **consumes** Tax-Simulator; it doesn't fork it. The
 contract:
 
 1. **Counterfactual data.** Orchestrator writes a `tax_units_<year>.csv`
-   per scenario into a sibling scenario folder under the pinned
-   Tax-Data vintage. Every other baseline file (other-year tax-units,
-   factor_ledger, dependencies, etc.) is **symlinked** into the
-   scenario folder so Tax-Simulator's parser finds them. See
-   `write_counterfactual_scenario()` in
-   [`code/06_build_counterfactual.R`](code/06_build_counterfactual.R).
-2. **Runscript.** A CSV at
-   `<TAX_SIMULATOR_DIR>/config/runscripts/private/ai_fiscal.csv`
-   lists `baseline` + 54 cells (18 × 3 flavors). The
-   `dep.Tax-Data.ID` column points each row at the matching
-   scenario folder.
+   per scenario into the run's scratch folder,
+   `$TAXSIM_LOCAL_ROOT/ai_fiscal/<run_id>/tax_data/<scenario_id>/`.
+   Every other baseline file (other-year tax-units, factor_ledger,
+   dependencies, etc.) is **symlinked** into the scenario folder so
+   Tax-Simulator's parser finds them. Tax-Simulator only reads inputs
+   from `<production root>/model_data/Tax-Data/v1/<vintage>/<ID>`, so the
+   shared vintage gets one run-specific link per scenario,
+   `aif-<run_id>--<scenario_id>` → scratch, removed when the run ends.
+   See `write_counterfactual_scenario()` in
+   [`code/06_build_counterfactual.R`](code/06_build_counterfactual.R)
+   and [`code/00_run_store.R`](code/00_run_store.R).
+2. **Runscript.** Written to the run's `inputs/runscript.csv` (with its
+   `_macro` / `_cell_params` sidecars) and copied for the run only to
+   `<TAX_SIMULATOR_DIR>/config/runscripts/private/ai_fiscal_<run_id>.csv`.
+   It lists `baseline` + 54 cells (18 × 3 flavors); `ID` is the
+   scenario ID and `dep.Tax-Data.ID` is the run-specific link name.
 3. **Invocation.**
    [`code/07_run_tax_sim.R`](code/07_run_tax_sim.R)::`run_tax_sim()`
    spawns a `callr::rscript_process` cwd'd to `TAX_SIMULATOR_DIR`,
-   running `src/main.R private/ai_fiscal NULL <user> 1 <vintage> 1 0 NULL 0 <multicore>`
+   running `src/main.R private/ai_fiscal_<run_id> NULL <user> 1 <stamp> 1 0 NULL 0 <multicore>`
    (the 7th arg, `stacked`, is `0`: the release sets `stacked <- FALSE`
    because LO/CO/both are parallel scenarios, not stacked estimates).
 4. **Output.** Lands at
-   `<output_roots.local>/model_data/Tax-Simulator/v<N>/<vintage>/<scenario_id>/...`.
-   `tax_sim_output_root()` computes the path by reading
-   `config/interfaces/{output_roots,interface_versions}.yaml` from
-   the Tax-Simulator tree.
+   `<output_roots.local>/model_data/Tax-Simulator/v<N>/<stamp>/<scenario_id>/...`
+   (`TAXSIM_LOCAL_ROOT` when `output_roots.yaml` has no `local:` key, as
+   in current Tax-Simulator). `tax_sim_output_root()` computes the path
+   by reading `config/interfaces/{output_roots,interface_versions}.yaml`
+   from the Tax-Simulator tree. Deleted after a successful local run
+   unless `--keep-intermediates`; the run's tables in
+   `results/runs/<run_id>/` are the permanent record.
 5. **Local-fork patches.** Three are required; see README §"Tax
    calculator (Tax-Simulator)". `B6` in `todo.md` is the long-term
    plan to upstream them.
@@ -274,7 +283,7 @@ pass on Linux and Mac.
   scenario.** The orchestrator defaults `years` to
   `(baseline_year - 1):baseline_year` to compensate; single-year runs
   produce empty `receipts.csv`. The orchestrator aborts at the input
-  check (`build_ai_fiscal_runs:159-165`) if the earlier-year file
+  check in `build_ai_fiscal_runs()` if the earlier-year file
   isn't present in the vintage.
 - **`revenue_to_gdp_<year>.csv` is the handoff to BLSMM.** 09
   produces it only when both `cell_params` and the CBO yaml are
@@ -296,11 +305,18 @@ pass on Linux and Mac.
 - **The scenario ID `baseline` is reserved by Tax-Simulator.** Don't
   use it as a cell ID. The runscript always includes one explicit
   `baseline` row pointing at the un-shocked Tax-Data baseline.
-- **Output volume.** A full release run produces several dozen figure
-  PNGs + publishable xlsx + ~10 CSVs per year, plus the Tax-Simulator
-  detail tree (large — multi-GB at full sample). The detail tree and
-  timestamp-vintaged xlsx are gitignored; only the canonical
-  `*_latest.xlsx` bundles and the figure suite are tracked.
+- **Output volume.** A full release run writes ~12 CSVs, two xlsx
+  bundles, and several dozen figure PNGs per year into
+  `results/runs/<run_id>/` (gitignored; tagged release runs are added
+  with `-f`), plus ~10 GB of counterfactual tax units and a ~23 GB
+  Tax-Simulator tree per year in scratch, deleted after success.
+  `results/aggregates/` and `results/figures/` hold the v1.0 outputs as
+  an archive and are no longer written.
+- **Settings.** `--setting legacy_v1_0_1` (the default) is
+  `config/scenario_params.yaml` unchanged; other settings are overlays
+  in `config/settings/`. Anything downstream of `02` that needs a
+  parameter must read the run's `inputs/params.yaml`, never the base
+  yaml, or it will silently report legacy values under another setting.
 
 ## Repo lineage
 

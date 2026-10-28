@@ -37,7 +37,8 @@ Every run produces:
    capital allocation alone) — so the revenue change can be split into
    labor, capital, and interaction components.
 2. The publishable workbook + figure suite + decomposition table.
-3. A timestamped log file at `logs/release_<timestamp>.log`.
+3. A run directory `results/runs/<setting>-<stamp>/` holding the run's
+   manifest, inputs, tables, workbooks, figures, and log.
 
 This is the v1.0 income-frame release. Future work will examine alternative
 assumptions regarding the realization of capital income, the treatment of
@@ -160,6 +161,7 @@ The pipeline reads these env vars (CLI flags override where noted):
 | `TAX_SIMULATOR_DIR` | `code/07_run_tax_sim.R` | Path to a Tax-Simulator working tree. Required. |
 | `BLSMM_DIR` | `code/15_blsmm_debt_gdp.R` | Path to a Budget Lab Small Macro Model clone. Optional — step skips with a warning when unset. |
 | `AI_FISCAL_SCRATCH_ROOT` | `code/08_aggregate.R` | Scratch root configured in your local Tax-Simulator `config/interfaces/output_roots.yaml`. Read only by the standalone aggregator entry point (`Rscript code/08_aggregate.R`); the orchestrator passes the resolved output root directly and doesn't require this var. |
+| `TAXSIM_LOCAL_ROOT` | `code/00_run_store.R`, `code/07_run_tax_sim.R` | Your scratch root. Each run keeps its counterfactual tax units under `$TAXSIM_LOCAL_ROOT/ai_fiscal/<run_id>/`; also the Tax-Simulator `local` output root when its `output_roots.yaml` has no `local:` key. Required. |
 | `MC_CORES` | `code/07_run_tax_sim.R` | Forwarded to the Tax-Simulator subprocess so the local-fork `mclapply` patch can read it. Set explicitly under SLURM. |
 
 ## Layout
@@ -172,8 +174,9 @@ data/
   external/    # published benchmark inputs (DFA, SOI); see its README
   matched/     # local working area (gitignored)
 results/
-  aggregates/  # output: deliverable CSVs + XLSX bundles
-  figures/     # output: PNG figure suite + figure_data xlsx
+  runs/        # output: one directory per run (gitignored)
+  aggregates/  # v1.0 deliverable bundles (archive)
+  figures/     # v1.0 figure suite (archive)
 docs/       # methodology
 tests/      # testthat suite (Rscript tests/testthat.R)
   fixtures/synthetic_tax_data/  # 10k-row schema-equivalent fake PUF
@@ -190,7 +193,8 @@ tests/      # testthat suite (Rscript tests/testthat.R)
 | `03_shock_labor.R` | **Step A** — labor-income redistribution (S0 / S2 / S3). |
 | `04_allocate_capital.R` | **Step B** — CIT wedge + across-units allocation (all_assets) + within-unit map + R1 retirement cascade. |
 | `05_realization.R` | **Step C** — V1 mechanical realization. |
-| `06_build_counterfactual.R` | Build the counterfactual tax-units dataset; write to `<Tax-Data vintage>/<scenario_id>/`. |
+| `00_run_store.R` | Run directory, manifest, scratch placement of counterfactual files, Tax-Data links, cleanup. |
+| `06_build_counterfactual.R` | Build the counterfactual tax-units dataset; write it to the run's scratch folder (linked into the Tax-Data vintage for the run). |
 | `07_run_tax_sim.R` | Invoke Tax-Simulator via `callr` in a clean R subprocess. |
 | `08_aggregate.R` | Revenue + income-totals + inequality deltas + decomp + microsim `.xlsx` bundle. |
 | `09_tables_figures.R` | Layer macro CIT onto microsim totals; assemble publishable grid + decile panel + `.xlsx` bundle. |
@@ -211,8 +215,18 @@ Rscript code/00_ai_fiscal_sim.R
 
 That builds all 18 cells, runs Tax-Simulator in three flavors per
 cell (both / labor-only / capital-only), aggregates the output, and
-emits the publishable workbook + figure suite. Output streams to the
-terminal *and* to `logs/release_<timestamp>.log`.
+emits the publishable workbook + figure suite into
+`results/runs/<setting>-<stamp>/`. Output streams to the terminal *and*
+to that directory's `run.log`.
+
+**Where files go.** The counterfactual tax-unit files (about 195 MB per
+scenario) are written to `$TAXSIM_LOCAL_ROOT/ai_fiscal/<run_id>/`, not into
+the shared Tax-Data vintage. Tax-Simulator only reads inputs from the
+vintage, so for the duration of the run the vintage holds one symlink per
+scenario, `aif-<run_id>--<scenario_id>`, pointing into scratch. The links
+are removed when the run ends. After a successful run the scratch files
+and the Tax-Simulator output tree are deleted (they are reproducible from
+the manifest); after a failure they are kept for debugging.
 
 ### CLI flags (overrides for plumbing only)
 
@@ -220,12 +234,12 @@ terminal *and* to `logs/release_<timestamp>.log`.
 |---|---|
 | `--data-dir PATH` | Tax-Data root. Default: `data/tax_data`. Pass `tests/fixtures/synthetic_tax_data` for a no-PUF smoke. |
 | `--years YYYY:YYYY` | Year range. Default: `(baseline_year - 1):baseline_year`. |
-| `--runscript-path PATH` | Where to write the Tax-Simulator runscript. |
-| `--vintage YYYYMMDDHHMM` | Override the Tax-Simulator output vintage stamp. |
+| `--vintage YYYYMMDDHHMM` | Override the run stamp (also the Tax-Simulator output vintage). |
+| `--setting NAME` | Parameter setting: `legacy_v1_0_1` (default; `config/scenario_params.yaml` unchanged) or an overlay in `config/settings/`. |
 | `--multicore none\|scenario\|year` | Tax-Simulator parallelization. |
-| `--overwrite` | Overwrite existing counterfactual scenario folders. |
+| `--keep-intermediates` | Keep the scratch counterfactual files and Tax-Simulator output after a successful run. |
 | `--publish` | Write the Tax-Simulator output tree to the **shared** (`production`) root for a final publication run. Default (flag absent): a testing/experimentation run, written to the **scratch** (`local`) root. |
-| `--log PATH` | Override the default log path. |
+| `--log PATH` | Override the default log path (`<run dir>/run.log`). |
 
 There are no flags for the scenario axes (variant / labor /
 realization / retirement / asset base) — the 18-cell grid is fixed.
@@ -235,14 +249,29 @@ testing/experimentation and Tax-Simulator's `model_data/Tax-Simulator/`
 output tree is written under the `local` (scratch) root of the
 Tax-Simulator `config/interfaces/output_roots.yaml`. Pass `--publish`
 for a final publication run to write under the `production` (shared)
-root instead. The pre-flight banner names the exact destination the run
-will populate. Only the Tax-Simulator output tree moves — the AI-Fiscal
-deliverables under `results/` are written to the repo either way.
+root instead; that tree is never deleted by cleanup. The pre-flight
+banner names the exact destination the run will populate. Only the
+Tax-Simulator output tree moves — the AI-Fiscal deliverables are written
+to the run directory either way.
 `run_release.sbatch` passes `--publish`.
 
 ### Outputs
 
-All artifacts land in `results/aggregates/`. Per year (default 2030):
+Each run writes `results/runs/<setting>-<stamp>/`:
+
+- `manifest.yaml`: setting, status, start and finish times, AI-Fiscal and
+  Tax-Simulator revisions (and whether Tax-Simulator was patched), Tax-Data
+  vintage, years, argv.
+- `inputs/`: the merged parameters (`params.yaml`, the setting applied),
+  copies of the retirement calibration and asset map, the runscript and its
+  `_macro` / `_cell_params` sidecars, and the Tax-Simulator `src/` diff.
+- `tables/`: the files below.
+- `figures/`: the figure suite.
+- `run.log`.
+
+The table and workbook layouts are those of v1.0; they are redesigned
+for the ten-year window in Version 1.2 (`docs/v1_2_plan.md`, workstream E).
+Per year (default 2030), in `tables/`:
 
 | File | Source | Contents |
 |---|---|---|
@@ -257,15 +286,15 @@ All artifacts land in `results/aggregates/`. Per year (default 2030):
 | `revenue_to_gdp_<year>.csv` | 09 | Per-scenario federal revenue and GDP; CBO-anchored rev/GDP |
 | `ai_fiscal_<year>_<vintage>.xlsx` + `ai_fiscal_<year>_latest.xlsx` | 08 | Microsim bundle |
 | `ai_fiscal_publishable_<year>_<vintage>.xlsx` + `ai_fiscal_publishable_<year>_latest.xlsx` | 09 | Publishable bundle |
-| `results/figures/<year>/*.{png,pdf}` | 10 | Publishable figure suite |
-| `blsmm_debt_to_gdp_<year>.csv` + `blsmm_debt_to_gdp` xlsx sheet + `results/figures/<year>/blsmm_debt_to_gdp_<year>_{fixed,reallocate}.{png,pdf}` | 15 | Optional — per-scenario 2030 debt/GDP from BLSMM; produced only if `BLSMM_DIR` is set |
+| `figures/*.{png,pdf}` | 10 | Publishable figure suite |
+| `blsmm_debt_to_gdp_<year>.csv` + `blsmm_debt_to_gdp` xlsx sheet + `figures/blsmm_debt_to_gdp_<year>_{fixed,reallocate}.{png,pdf}` | 15 | Optional — per-scenario 2030 debt/GDP from BLSMM; produced only if `BLSMM_DIR` is set |
 | `results/figures/<year>/paper_figure_data_<year>.xlsx` + `A1_gdp_growth_<year>` / `A2_labor_share_<year>` PNGs | `paper_figure_data.R` | Paper-only exhibit workbook (draft order) + the two FRED-sourced appendix context charts |
 
 Both `.xlsx` bundles are self-documenting. The `variable_list` sheet
 describes every column on every data sheet; the `scenario_guide`
 sheet documents the axis codes; the `cell_params` sheet carries the
 per-cell macro / shock parameters; the `parameter_index` sheet is
-auto-generated from `config/scenario_params.yaml`.
+auto-generated from the run's merged parameters (`inputs/params.yaml`).
 
 Identity checks: `Rscript tests/testthat.R`. The GitHub Actions
 workflow runs this suite on every push against the synthetic fixture.

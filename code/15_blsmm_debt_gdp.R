@@ -117,7 +117,8 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
                                     agg_dir   = "results/aggregates",
                                     runscript_path = NULL,
                                     blsmm_dir = NULL,
-                                    horizon_start_year = 2025) {
+                                    horizon_start_year = 2025,
+                                    params_yaml = "config/scenario_params.yaml") {
   blsmm_dir <- .resolve_blsmm_dir(blsmm_dir)
   if (is.null(blsmm_dir)) return(invisible(NULL))
 
@@ -140,7 +141,7 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
 
   cli::cli_inform("BLSMM debt/GDP step: BLSMM_DIR = {.path {blsmm_dir}}")
   ai_fiscal_root <- getwd()
-  r_ai_annual_by_variant <- .load_karger_r_ai_annual()
+  r_ai_annual_by_variant <- .load_karger_r_ai_annual(params_yaml)
   .source_blsmm(blsmm_dir)
 
   # Switch into BLSMM for the runs (its read.csv calls use relative paths
@@ -339,7 +340,8 @@ assemble_blsmm_figures <- function(year       = NULL,
                                    agg_dir    = "results/aggregates",
                                    fig_dir    = NULL,
                                    runscript_path = NULL,
-                                   results_df = NULL) {
+                                   results_df = NULL,
+                                   params_yaml = "config/scenario_params.yaml") {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     cli::cli_warn("ggplot2 not available; skipping BLSMM figures.")
     return(invisible(NULL))
@@ -379,7 +381,7 @@ assemble_blsmm_figures <- function(year       = NULL,
   scen_df$labor    <- factor(scen_df$labor,
                              levels = names(.AXIS_LABOR),
                              labels = unname(.AXIS_LABOR))
-  r_ai_pct  <- .load_karger_r_ai_annual() * 100
+  r_ai_pct  <- .load_karger_r_ai_annual(params_yaml) * 100
   variant_g <- setNames(r_ai_pct[names(.AXIS_VARIANTS)],
                         unname(.AXIS_VARIANTS))
 
@@ -446,17 +448,20 @@ run_blsmm_step <- function(year      = NULL,
                            agg_dir   = "results/aggregates",
                            fig_dir   = NULL,
                            runscript_path = NULL,
-                           blsmm_dir = NULL) {
+                           blsmm_dir = NULL,
+                           params_yaml = "config/scenario_params.yaml") {
   tryCatch({
     res <- assemble_blsmm_debt_gdp(
       year = year, agg_dir = agg_dir,
       runscript_path = runscript_path,
-      blsmm_dir = blsmm_dir
+      blsmm_dir = blsmm_dir,
+      params_yaml = params_yaml
     )
     if (is.null(res)) return(invisible(NULL))
     assemble_blsmm_figures(
       year = year, agg_dir = agg_dir, fig_dir = fig_dir,
-      runscript_path = runscript_path, results_df = res
+      runscript_path = runscript_path, results_df = res,
+      params_yaml = params_yaml
     )
     invisible(res)
   }, error = function(e) {

@@ -27,6 +27,8 @@ data/temp/
 results/aggregates/*
 !results/aggregates/*_latest.xlsx
 !results/aggregates/.gitkeep
+# Run store (code/00_run_store.R); tagged release runs are added with -f.
+results/runs/
 
 # results/figures/: publishable PNG/PDF figure suite from 10_figures.R.
 # Figures are deliverables — track them.

@@ -12,12 +12,14 @@ suppressPackageStartupMessages({
 # directory, so we temporarily switch back while sourcing.
 withr::with_dir(here::here(), {
   source("code/00_utils.R")
+  source("code/00_run_store.R")
   source("code/01_load_data.R")
   source("code/02_params.R")
   source("code/03_shock_labor.R")
   source("code/04_allocate_capital.R")
   source("code/05_realization.R")
   source("code/06_build_counterfactual.R")
+  source("code/07_run_tax_sim.R")
   source("code/08_aggregate.R")
   source("code/09_tables_figures.R")  # .parse_scenario_axes tests
 })

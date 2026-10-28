@@ -313,10 +313,13 @@ tax_data_vintage <- function(symlink = "data/tax_data") {
 # overridden year are mirrored as symlinks so the Tax-Simulator parser
 # (which reads tax_units_2017.csv to seed sample IDs and may read other
 # years if `years` spans them) sees an otherwise-identical Tax-Data ID.
-# Returns the absolute scenario directory path.
+# `scenario_root` is where the folder is created; the orchestrator puts it
+# in the run's scratch directory and links it into the vintage
+# (00_run_store.R). Returns the absolute scenario directory path.
 write_counterfactual_scenario <- function(dt_cf, year, scenario_id,
                                           vintage_paths = tax_data_vintage(),
-                                          overwrite     = FALSE) {
+                                          overwrite     = FALSE,
+                                          scenario_root = vintage_paths$path) {
   baseline_dir <- file.path(vintage_paths$path, "baseline")
   if (!dir.exists(baseline_dir)) {
     cli::cli_abort(c(
@@ -325,7 +328,7 @@ write_counterfactual_scenario <- function(dt_cf, year, scenario_id,
       i = "Confirm the pinned vintage has a {.path baseline/} subfolder."
     ))
   }
-  scenario_dir <- file.path(vintage_paths$path, scenario_id)
+  scenario_dir <- file.path(scenario_root, scenario_id)
   override_csv <- sprintf("tax_units_%d.csv", year)
 
   if (dir.exists(scenario_dir)) {

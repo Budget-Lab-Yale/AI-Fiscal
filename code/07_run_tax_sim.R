@@ -53,10 +53,13 @@ tax_sim_output_root <- function(vintage,
     file.path(ts_root, "config", "interfaces", "interface_versions.yaml")
   )
   base <- if (isTRUE(local)) roots$local else roots$production
+  # Tax-Simulator after 256f03ea9 dropped the `local:` key and reads the
+  # per-user scratch root from TAXSIM_LOCAL_ROOT instead.
+  if (isTRUE(local) && is.null(base)) base <- Sys.getenv("TAXSIM_LOCAL_ROOT", unset = "")
   if (is.null(base) || !nzchar(base)) {
     cli::cli_abort(c(
-      "output_roots.yaml is missing the {.field {if (local) 'local' else 'production'}} key.",
-      i = "Inspect {.path {file.path(ts_root, 'config/interfaces/output_roots.yaml')}}."
+      "No {.field {if (local) 'local' else 'production'}} output root for Tax-Simulator.",
+      i = "Inspect {.path {file.path(ts_root, 'config/interfaces/output_roots.yaml')}}{if (local) ' and TAXSIM_LOCAL_ROOT' else ''}."
     ))
   }
   ver <- vers[["Tax-Simulator"]]$version

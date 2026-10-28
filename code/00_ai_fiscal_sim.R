@@ -4,13 +4,20 @@
 # Usage:
 #   Rscript code/00_ai_fiscal_sim.R [--data-dir PATH]
 #                                   [--years 2029:2030]
-#                                   [--runscript-path PATH]
 #                                   [--vintage YYYYMMDDHHMM]
 #                                   [--multicore none|scenario|year]
 #                                   [--setting legacy_v1_0_1|<name>]
-#                                   [--overwrite]
+#                                   [--keep-intermediates]
 #                                   [--publish]
 #                                   [--log PATH]
+#
+# Every run writes to results/runs/<setting>-<stamp>/ (manifest, inputs,
+# tables, figures, run.log) and keeps its counterfactual tax units in
+# $TAXSIM_LOCAL_ROOT/ai_fiscal/<run_id>/, linked into the Tax-Data vintage
+# for the run only (code/00_run_store.R). <stamp> is --vintage or the
+# current time, and is also the Tax-Simulator output vintage. After a
+# successful run the scratch files and the Tax-Simulator output tree are
+# deleted unless --keep-intermediates; after a failure they are kept.
 #
 # `--publish` selects the output destination. By default (flag absent) the
 # run is treated as testing/experimentation and Tax-Simulator writes under
@@ -33,7 +40,7 @@
 #   * Deliverables       : 08 (microsim bundle) + 09 (publishable
 #                          workbook + decile panel + grid) + 10
 #                          (publishable figure suite).
-#   * Log file           : tee'd to logs/release_<timestamp>.log unless
+#   * Log file           : tee'd to results/runs/<run_id>/run.log unless
 #                          --log overrides.
 #
 # `--setting NAME` selects a named parameter setting: `legacy_v1_0_1`
@@ -49,6 +56,7 @@ suppressPackageStartupMessages({
 })
 
 source("code/00_utils.R")
+source("code/00_run_store.R")
 source("code/01_load_data.R")
 source("code/02_params.R")
 source("code/03_shock_labor.R")
@@ -73,12 +81,6 @@ release_specs <- function() {
     stringsAsFactors = FALSE
   )
   lapply(seq_len(nrow(grid)), function(i) as.list(grid[i, ]))
-}
-
-# Default destination for the Tax-Simulator runscript.
-default_runscript_path <- function() {
-  file.path(tax_sim_root(),
-            "config", "runscripts", "private", "ai_fiscal.csv")
 }
 
 # Per-variant macro summary CSV: one row per (variant, share_mode).
@@ -146,38 +148,23 @@ default_runscript_path <- function() {
   fp
 }
 
-# Build counterfactual folders + runscript for the 18-cell release grid.
+# Build the run's counterfactual folders (in scratch, linked into the
+# Tax-Data vintage) and its runscript (in the run's inputs/) for the
+# 18-cell release grid. `run` comes from new_run() (00_run_store.R).
 # Returns the runscript path written.
-build_ai_fiscal_runs <- function(specs,
-                                 runscript_path  = default_runscript_path(),
+build_ai_fiscal_runs <- function(specs, run,
                                  params_yaml     = "config/scenario_params.yaml",
-                                 setting         = .LEGACY_SETTING,
                                  data_dir        = "data/tax_data",
                                  vintage_paths   = NULL,
-                                 years           = NULL,
-                                 overwrite       = FALSE) {
-
-  force(runscript_path)
-  # Sibling artifacts (_macro.csv, _cell_params.csv) are derived by
-  # replacing the `.csv` suffix. A path without it would make that
-  # substitution a no-op and overwrite the runscript itself.
-  if (!grepl("\\.csv$", runscript_path)) {
-    cli::cli_abort(c(
-      "Runscript path must end in {.code .csv}.",
-      x = "Got {.path {runscript_path}}.",
-      i = "Sibling summaries are written by replacing the {.code .csv} suffix; without it they would clobber the runscript."
-    ))
-  }
+                                 years           = NULL) {
+  runscript_path <- run$runscript
+  setting        <- run$setting
   if (is.null(vintage_paths)) vintage_paths <- tax_data_vintage(symlink = data_dir)
   force(vintage_paths)
 
   params0 <- load_params(params_yaml, setting = setting)
   cli::cli_inform("Parameter setting: {.val {setting}}")
-  if (!identical(setting, .LEGACY_SETTING)) {
-    # Until the run manifest lands (v1_2_plan.md E1), 08 and 09 rebuild
-    # parameter_index / key_parameters by re-reading the base yaml.
-    cli::cli_warn("The parameter_index and key_parameters sheets show base-yaml values, not setting {.val {setting}}.")
-  }
+  write_run_inputs(run, params0$raw)
   year    <- params0$raw$baseline_year
   # Default years starts one year before baseline_year. Tax-Simulator's
   # FY-adjustment drops the earliest year of each scenario, so a single-
@@ -278,14 +265,16 @@ build_ai_fiscal_runs <- function(specs,
       scenario_dir <- write_counterfactual_scenario(
         dt_cf, year, sid,
         vintage_paths = vintage_paths,
-        overwrite     = overwrite
+        scenario_root = run$tax_data
       )
       write_factor_channels(dt_split, dt_a, pv$step_b,
                             year = year, scenario_dir = scenario_dir,
                             flavor = flavor)
+      link_id <- link_scenario_into_vintage(run, sid, scenario_dir,
+                                            vintage_paths)
       rows[[length(rows) + 1L]] <- runscript_row(
         sid,
-        tax_data_id      = sid,
+        tax_data_id      = link_id,
         tax_data_vintage = vintage_paths$vintage,
         years            = years_str
       )
@@ -300,9 +289,9 @@ build_ai_fiscal_runs <- function(specs,
 # Minimal flag parser. Supports `--flag value`, `--flag=value`, and bare
 # boolean `--flag`. Unknown flags abort.
 .parse_cli_args <- function(argv) {
-  known_value <- c("data-dir", "years", "runscript-path",
-                   "vintage", "multicore", "log", "setting")
-  known_bool  <- c("overwrite", "publish")
+  known_value <- c("data-dir", "years", "vintage", "multicore", "log",
+                   "setting")
+  known_bool  <- c("publish", "keep-intermediates")
   out <- list()
   i <- 1L
   while (i <= length(argv)) {
@@ -330,8 +319,8 @@ build_ai_fiscal_runs <- function(specs,
         }
         nxt <- argv[i + 1L]
         if (startsWith(nxt, "--")) {
-          # Guard the common typo `--years --overwrite`, which would
-          # otherwise silently set years = "--overwrite".
+          # Guard the common typo `--years --publish`, which would
+          # otherwise silently set years = "--publish".
           cli::cli_abort(c(
             "Flag {.val --{flag}} requires a value but is followed by another flag ({.val {nxt}}).",
             i = "Use {.code --{flag} <value>} or {.code --{flag}=<value>}."
@@ -347,18 +336,13 @@ build_ai_fiscal_runs <- function(specs,
   out
 }
 
-.default_log_path <- function() {
-  file.path("logs",
-            sprintf("release_%s.log", format(Sys.time(), "%Y%m%d_%H%M%S")))
-}
-
 # Print a pre-flight banner with the resolved versions / paths the run
 # depends on, before any heavy work, so a misconfigured environment is
 # obvious up front rather than partway into the Tax-Simulator run. Every
 # lookup is non-fatal: an unresolved value prints a marker and the run
 # proceeds to abort at the natural point with the proper error message.
 # `.git_short_rev` is provided by 00_utils.R (sourced first).
-.print_preflight <- function(data_dir, runscript_label, publish = FALSE) {
+.print_preflight <- function(data_dir, run, publish = FALSE) {
   safe <- function(expr) tryCatch(expr, error = function(e) "(unresolved)")
 
   ai_rev  <- safe(.git_short_rev(getwd()))
@@ -378,7 +362,7 @@ build_ai_fiscal_runs <- function(specs,
   dest_kind <- if (isTRUE(publish)) "publication (shared)" else "testing (scratch)"
   dest_base <- safe(yaml::read_yaml(
     file.path(tax_sim_root(), "config", "interfaces", "output_roots.yaml")
-  )[[dest_key]])
+  )[[dest_key]] %||% Sys.getenv("TAXSIM_LOCAL_ROOT", unset = "(unresolved)"))
   dest_s <- if (identical(dest_base, "(unresolved)")) dest_kind
             else sprintf("%s — %s", dest_kind, dest_base)
 
@@ -393,13 +377,19 @@ build_ai_fiscal_runs <- function(specs,
     "*" = "BLSMM dir:         {blsmm_s}",
     "*" = "MC_CORES:          {mc}",
     "*" = "Output dest:       {dest_s}",
-    "*" = "Runscript:         {runscript_label}"
+    "*" = "Setting:           {run$setting}",
+    "*" = "Run directory:     {run$dir}",
+    "*" = "Run scratch:       {run$scratch}"
   ))
 }
 
 .cli_main <- function(argv) {
-  flags    <- .parse_cli_args(argv)
-  log_file <- flags$log %||% .default_log_path()
+  flags   <- .parse_cli_args(argv)
+  setting <- flags$setting %||% .LEGACY_SETTING
+  # Fail on an unknown setting before creating any directories.
+  invisible(load_params(setting = setting))
+  run      <- new_run(setting, flags$vintage %||% new_vintage())
+  log_file <- flags$log %||% run$log
 
   log_dir <- dirname(log_file)
   if (nzchar(log_dir) && !dir.exists(log_dir)) {
@@ -424,56 +414,75 @@ build_ai_fiscal_runs <- function(specs,
     }
     flush(log_con)
   }
-  cli::cli_inform("Logging to {.path {log_file}}")
+  cli::cli_inform("Run {.val {run$id}}; logging to {.path {log_file}}")
   withCallingHandlers(
-    .cli_main_body(argv, flags, log_con = log_con),
+    .cli_main_body(argv, flags, run, log_con = log_con),
     message = log_handler,
     warning = log_handler,
     error   = err_handler
   )
 }
 
-.cli_main_body <- function(argv, flags, log_con) {
-  specs          <- release_specs()
-  data_dir       <- flags[["data-dir"]] %||% "data/tax_data"
-  runscript_flag <- flags[["runscript-path"]]
-  publish        <- isTRUE(flags$publish)
+.cli_main_body <- function(argv, flags, run, log_con) {
+  specs    <- release_specs()
+  data_dir <- flags[["data-dir"]] %||% "data/tax_data"
+  publish  <- isTRUE(flags$publish)
+  keep     <- isTRUE(flags[["keep-intermediates"]])
 
   # Banner first: shows whether TAX_SIMULATOR_DIR / data_dir resolve
-  # before runscript-path resolution (which aborts if Tax-Simulator
-  # is unreachable) or any counterfactual building begins.
-  .print_preflight(data_dir, runscript_flag %||% "(Tax-Simulator default)",
-                   publish = publish)
+  # before any counterfactual building begins.
+  .print_preflight(data_dir, run, publish = publish)
 
-  runscript_path <- runscript_flag %||% default_runscript_path()
+  ts_root       <- tax_sim_root()
+  vintage_paths <- tax_data_vintage(symlink = data_dir)
+  start_manifest(run, argv, vintage_paths, ts_root)
 
-  build_ai_fiscal_runs(
-    specs,
-    runscript_path = runscript_path,
-    setting        = flags$setting %||% .LEGACY_SETTING,
-    data_dir       = data_dir,
-    years          = flags$years,
-    overwrite      = isTRUE(flags$overwrite)
+  # Tax-Simulator only reads runscripts under its own config/runscripts/,
+  # so it gets a run-specific copy there (gitignored in Tax-Simulator);
+  # the canonical runscript stays in the run's inputs/.
+  ts_runscript <- file.path(ts_root, "config", "runscripts", "private",
+                            sprintf("ai_fiscal_%s.csv", run$id))
+  output_root  <- NULL
+  succeeded    <- FALSE
+  # Runs on success and failure alike: Tax-Data links and the runscript
+  # copy always go; scratch and the Tax-Simulator tree are deleted only
+  # after success, so a failed run can be debugged.
+  on.exit({
+    cleanup_run(run, vintage_paths, succeeded, keep = keep,
+                ts_runscript   = ts_runscript,
+                tax_sim_output = if (!publish) output_root)
+    write_manifest(run, list(
+      status             = if (succeeded) "succeeded" else "failed",
+      finished           = format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"),
+      intermediates_kept = keep || !succeeded
+    ))
+  }, add = TRUE)
+
+  runscript_path <- build_ai_fiscal_runs(
+    specs, run,
+    data_dir      = data_dir,
+    vintage_paths = vintage_paths,
+    years         = flags$years
   )
+  write_manifest(run, list(years = fread(runscript_path)$years[1]))
 
-  vintage    <- flags$vintage %||% new_vintage()
-  multicore  <- flags$multicore %||% "none"
-  # Decomp is always on; LO/CO/both are parallel scenarios, not stacked.
-  stacked    <- FALSE
-  # Output destination (resolved above from --publish): default is a testing
-  # run writing to the Tax-Simulator `local` (scratch) root; --publish steers
-  # a final publication run to the `production` (shared) root. run_tax_sim()'s
-  # `local` arg is TRUE for scratch, FALSE for production.
+  dir.create(dirname(ts_runscript), showWarnings = FALSE)
+  if (!isTRUE(file.copy(runscript_path, ts_runscript))) {
+    cli::cli_abort("Could not copy the runscript to {.path {ts_runscript}}.")
+  }
 
-  ts_root     <- tax_sim_root()
-  rs_name     <- runscript_name_from_path(runscript_path, ts_root = ts_root)
+  # Output destination: by default a testing run writing to the
+  # Tax-Simulator `local` (scratch) root; --publish steers a final
+  # publication run to the `production` (shared) root, which is never
+  # cleaned up. Decomp is always on; LO/CO/both are parallel scenarios,
+  # not stacked.
   output_root <- run_tax_sim(
-    runscript_name = rs_name,
-    vintage        = vintage,
+    runscript_name = runscript_name_from_path(ts_runscript, ts_root = ts_root),
+    vintage        = run$stamp,
     pct_sample     = 1,
     local          = !publish,
-    multicore      = multicore,
-    stacked        = stacked,
+    multicore      = flags$multicore %||% "none",
+    stacked        = FALSE,
     ts_root        = ts_root,
     log_con        = log_con
   )
@@ -481,19 +490,24 @@ build_ai_fiscal_runs <- function(specs,
   aggregate_tax_sim_output(
     output_root    = output_root,
     runscript_path = runscript_path,
-    argv           = argv
+    out_dir        = run$tables,
+    argv           = argv,
+    params_yaml    = run$params_yaml
   )
 
   assemble_deliverables(
     runscript_path = runscript_path,
-    out_dir        = "results/aggregates",
+    agg_dir        = run$tables,
+    out_dir        = run$tables,
     output_root    = output_root,
-    argv           = argv
+    argv           = argv,
+    params_yaml    = run$params_yaml
   )
 
   assemble_figures(
     runscript_path = runscript_path,
-    agg_dir        = "results/aggregates",
+    agg_dir        = run$tables,
+    out_dir        = run$figures,
     argv           = argv
   )
 
@@ -502,10 +516,13 @@ build_ai_fiscal_runs <- function(specs,
   # debt/GDP. Skips with a warning if BLSMM_DIR is unset or the BLSMM repo
   # isn't reachable, so the rest of the pipeline doesn't depend on it.
   run_blsmm_step(
-    agg_dir        = "results/aggregates",
-    runscript_path = runscript_path
+    agg_dir        = run$tables,
+    fig_dir        = run$figures,
+    runscript_path = runscript_path,
+    params_yaml    = run$params_yaml
   )
 
+  succeeded <- TRUE
   invisible(output_root)
 }
 
