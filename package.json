@@ -16,7 +16,7 @@
     "charts:pin-check": "node tools/charts.mjs pin-check"
   },
   "dependencies": {
-    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.18.0"
+    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.20.0"
   },
   "devDependencies": {
     "playwright": "^1.64.1"
