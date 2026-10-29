@@ -9,8 +9,10 @@
 #   3. Macro CIT wedge (acts upstream of household realizations):
 #        cbo_cit_baseline$ = cit_to_gdp_baseline_year * gdp_baseline_year_B$
 #        eta_corp          = cit_statutory * Y0^K$ * kappa_corp / cbo_cit_baseline$
-#        delta_R_CIT       = cit_statutory * kappa_corp * X / eta_corp
-#                          ≡ X * cbo_cit_baseline$ / Y0^K$           (algebraic)
+#        delta_R_CIT       = cit_statutory * kappa_corp * X / eta_corp * cit_scale
+#                          ≡ X * cbo_cit_baseline$ / Y0^K$ * cit_scale (algebraic)
+#      cit_scale = 1 - share_abroad (1 - abroad_rate / cit_statutory)
+#                  - share_interest  (C3 sensitivities; 1 in v1.0.1)
 #        X_to_units        = X                                       (no reduction)
 #      eta absorbs both the household-realized-vs-pre-realization wedge
 #      and the statutory-vs-effective gap.
@@ -45,8 +47,11 @@ source("code/00_utils.R")
 allocate_capital <- function(dt, params,
                              asset_map_path = "config/asset_to_income_map.csv") {
   macro <- compute_macro_targets(dt, params)
-  dt    <- allocate_across_units(dt, macro$X_to_units,
-                                 params$raw$capital_flow$allocation_base)
+  cf    <- params$raw$capital_flow
+  dt    <- allocate_across_units(dt, macro$X_to_units, cf$allocation_base,
+                                 cf$allocator,
+                                 list(top1 = cf$concentration_top1,
+                                      top01 = cf$concentration_top01))
   dt    <- allocate_within_unit(dt, params$raw$capital_flow$interest)
   out   <- map_to_income_types(dt, asset_map_path, params)
 
@@ -85,7 +90,12 @@ compute_macro_targets <- function(dt, params) {
   }
   eta_corp <- corp$cit_statutory * y0_k_dollar * corp$kappa_corp /
     cbo_cit_baseline_dollar
-  delta_R_CIT <- corp$cit_statutory * corp$kappa_corp * X / eta_corp
+  # Corporate-increment sensitivities (C3): a share booked abroad or as
+  # export income, taxed at abroad_rate, and a share paid out as
+  # deductible interest, untaxed at the corporate level. 1 in v1.0.1.
+  cit_scale   <- 1 - corp$share_abroad * (1 - corp$abroad_rate / corp$cit_statutory) -
+    corp$share_interest
+  delta_R_CIT <- corp$cit_statutory * corp$kappa_corp * X / eta_corp * cit_scale
   X_to_units  <- X
 
   # Capital share of proprietors' income on the national-accounts concept
@@ -122,7 +132,8 @@ compute_macro_targets <- function(dt, params) {
 
 # Step 4: distribute X_to_units across tax units in proportion to wealth
 # in the allocation base (all assets in v1.0.1).
-allocate_across_units <- function(dt, X_to_units, allocation_base = "all_assets") {
+allocate_across_units <- function(dt, X_to_units, allocation_base = "all_assets",
+                                  allocator = "proportional", concentration = NULL) {
   base_cols <- setdiff(.ASSET_BASE_ALL_ASSETS,
                        .ALLOCATION_BASE_EXCLUDED[[allocation_base]])
   missing   <- setdiff(base_cols, names(dt))
@@ -157,9 +168,45 @@ allocate_across_units <- function(dt, X_to_units, allocation_base = "all_assets"
       i = "Negative {.field pass_throughs} exceeding other holdings; inspect the vintage if this fires."
     ))
   }
-  dt[, X_i := X_to_units * A_base / total_base]
+  weight_i <- if (allocator == "concentrating") {
+    dt$A_base * .concentration_multiplier(dt, concentration)
+  } else {
+    dt$A_base
+  }
+  dt[, X_i := X_to_units * weight_i / sum(dt$weight * weight_i)]
   setattr(dt, "total_base", total_base)
   dt
+}
+
+# Net worth for ranking tax units (DFA groups by net worth): every SCF
+# asset column except DB pensions, less liabilities.
+.net_worth <- function(dt) {
+  rowSums(dt[, .ASSET_BASE_ALL_ASSETS, with = FALSE]) -
+    rowSums(dt[, .LIABILITY_COLS, with = FALSE])
+}
+
+# Concentrating allocator (C2). Per-unit multiplier on allocation-base
+# wealth: m_top01 for the top 0.1% of tax units by net worth, m_top1 for
+# the rest of the top 1%, 1 below. With B_g each group's weighted base
+# and targets T1 (top 1%) and T01 (top 0.1%) for its share of X:
+#   m_top01 = T01 / (1 - T1) * B_rest / B_top01
+#   m_top1  = (T1 - T01) / (1 - T1) * B_rest / B_top1
+.concentration_multiplier <- function(dt, concentration) {
+  t1  <- concentration$top1
+  t01 <- concentration$top01
+  nw  <- .net_worth(dt)
+  cut1  <- weighted_quantile(nw, dt$weight, 0.99)
+  cut01 <- weighted_quantile(nw, dt$weight, 0.999)
+  group <- fifelse(nw >= cut01, "top01", fifelse(nw >= cut1, "top1", "rest"))
+  base  <- vapply(c("top01", "top1", "rest"), function(g)
+    sum(dt$weight[group == g] * dt$A_base[group == g]), numeric(1))
+  if (any(base <= 0)) {
+    cli::cli_abort("Concentrating allocator: a net-worth group has no allocation-base wealth ({.val {names(base)[base <= 0]}}).")
+  }
+  m <- c(top01 = t01 / (1 - t1) * base[["rest"]] / base[["top01"]],
+         top1  = (t1 - t01) / (1 - t1) * base[["rest"]] / base[["top1"]],
+         rest  = 1)
+  unname(m[group])
 }
 
 # Step 5a: distribute X_i across income-bearing asset classes only. Units
@@ -201,9 +248,8 @@ allocate_within_unit <- function(dt, interest = "by_holdings") {
 # X_<type>.
 map_to_income_types <- function(dt, asset_map_path, params) {
   amap <- fread(asset_map_path)
-  pe <- lookup_shares(amap, "public_equity_taxable",
-                      required_types = c("qualified_dividend", "ltcg"),
-                      map_path = asset_map_path)
+  payout <- params$raw$capital_flow$payout
+  pe <- list(qualified_dividend = payout, ltcg = 1 - payout)
   pt <- lookup_shares(amap, "passthrough_equity",
                       required_types = "passthrough_ordinary",
                       map_path = asset_map_path)

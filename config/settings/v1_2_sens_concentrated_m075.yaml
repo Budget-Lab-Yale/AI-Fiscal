@@ -1,0 +1,10 @@
+# Version 1.2 sensitivity (docs/v1_2_plan.md C1-C2, decision 4): the
+# concentrating allocator paired with AI gains realized in-year at
+# 0.75 of the baseline rate (m_AI).
+inherits: v1_2_sens_concentrated
+
+capital_flow:
+  ai_gains_realized: 0.75
+  ai_gains_realized_status: choice
+  ai_gains_realized_source: "Decision 4: m_AI in {0.75, 0.5, 0.25}, paired with the concentrating allocator."
+  ai_gains_realized_rung: 3

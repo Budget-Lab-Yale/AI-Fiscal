@@ -220,7 +220,7 @@ build_ai_fiscal_runs <- function(specs, run,
                       setting    = setting)
     sb <- allocate_capital(dt_split, p,
                            asset_map_path = "config/asset_to_income_map.csv")
-    sb <- apply_realization(sb)
+    sb <- apply_realization(sb, p$raw$capital_flow$ai_gains_realized)
     list(params = p, step_b = sb)
   })
   names(per_variant) <- unique_keys
@@ -445,6 +445,16 @@ build_ai_fiscal_runs <- function(specs, run,
   # the canonical runscript stays in the run's inputs/.
   ts_runscript <- file.path(ts_root, "config", "runscripts", "private",
                             sprintf("ai_fiscal_%s.csv", run$id))
+  # The run's stamp names its Tax-Simulator output folder, which is not
+  # per-setting: two runs started in the same minute would write into, and
+  # on cleanup delete, the same folder.
+  ts_output <- tax_sim_output_root(run$stamp, local = !publish, ts_root = ts_root)
+  if (dir.exists(ts_output)) {
+    cli::cli_abort(c(
+      "Tax-Simulator output for vintage {.val {run$stamp}} already exists: {.path {ts_output}}.",
+      i = "Another run started in the same minute; rerun with a different {.arg --vintage}."
+    ))
+  }
   output_root  <- NULL
   succeeded    <- FALSE
   # Runs on success and failure alike: Tax-Data links and the runscript

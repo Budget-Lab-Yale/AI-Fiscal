@@ -329,7 +329,7 @@ v1.0.1, and the rung's revenue effect recorded.
 | 0 | Switch scaffolding, `legacy_v1_0_1` and `v1_2_reference` settings; output layer E1–E3; regression test against the run store; chart pipeline F0–F2 in parallel | laptop + CI, then server |
 | 1 | A1 baseline path, A2 nonfarm bridge (2030 only) — **DONE 2026-10-28** | laptop, then server |
 | 2 | B1 reconciliation, B2 corporate ratio, B3 rent and interest — **DONE 2026-10-28** | laptop, then server |
-| 3 | C1 payout and realization, C2 allocator, C3 sensitivities | laptop, then server |
+| 3 | C1 payout and realization, C2 allocator, C3 sensitivities — **DONE 2026-10-28** | laptop, then server |
 | 4 | A3 annual paths and A4 generic shock input (ten fiscal years); A5 early-evidence check | server |
 | 5 | B4 incidence table, register, outputs, figures; methodology doc and CHANGELOG | server + laptop |
 
@@ -570,6 +570,53 @@ B2 as documentation, B1 as an output table.
   a sensitivity that taxes only the withdrawal share in-year (`r_R` =
   4.9% of balances). D11 assigns retirement balances to Version 2, so
   any change here is a scope decision.
+
+**Rung 3 (2026-10-28).** C1–C3 as parameters, all at their v1.0.1 values
+in the base yaml and in the reference (decision 4); the sensitivities are
+settings that inherit the reference (`inherits:`, new in `02_params.R`).
+
+- *C1.* `capital_flow.payout` (0.30, moved from
+  `config/asset_to_income_map.csv`, whose public-equity rows now point to
+  it) and `capital_flow.ai_gains_realized` (`m_AI`, 1), which scales the
+  in-year AI gains in `05_realization.R`; the unrealized part reaches no
+  tax base.
+- *C2.* `capital_flow.allocator`: `proportional` (v1.0.1, reference) or
+  `concentrating`, which scales up the allocation-base wealth of the top
+  1% and top 0.1% of tax units by net worth so they receive
+  `concentration_top1` = 0.514 and `concentration_top01` = 0.258 of `X`
+  (the DFA 2025Q4 shares from decision 4, weighted by the vintage's equity
+  and pass-through holdings). Ranking is by net worth (all SCF assets
+  except DB pensions, less liabilities): top 1% above $15.7M, top 0.1%
+  above $77.6M in 2030. The proportional allocator already gives those
+  groups 46.3% and 19.1% of `X`, so the calibrated tilt is mild. The
+  vintage is more concentrated than the DFA: its top 1% hold 58% of
+  equities and 63% of pass-through equity, against the DFA's 50% and 53%.
+- *C3.* `corporate.share_abroad` (taxed at `abroad_rate` 0.14 rather than
+  0.21), `corporate.share_interest` (deductible interest, no corporate
+  tax; the lender side is not modeled), both 0. They scale the
+  off-microsim corporate change, so their effect is exact without a run.
+  Moderate reallocated (corporate change $28.9B): 25% abroad −$2.4B; 25%
+  as interest −$7.2B; both at 25% −$9.6B. Rapid ($64.2B): −$5.4B, −$16.0B,
+  −$21.4B.
+- *Paired sensitivities (decision 4)*, FY2030 revenue including the
+  corporate tax ($B), reallocated shares (jobs 31215042, 31215557,
+  31215716, 31215720; runs `v1_2_sens_concentrated*-20261028*`):
+
+  | Cell | Reference | Concentrating, `m_AI` = 1 | 0.75 | 0.5 | 0.25 |
+  |---|---|---|---|---|---|
+  | Moderate, proportional (headline) | 118.1 | 119.2 | 116.0 | 112.8 | 109.7 |
+  | Rapid, proportional | 222.3 | 224.7 | 217.8 | 210.7 | 203.7 |
+  | Slow, proportional | 4.1 | 4.3 | 3.7 | 3.0 | 2.4 |
+  | Moderate, fixed shares | 171.3 | 171.8 | 170.1 | 168.3 | 166.6 |
+
+  Concentration alone adds about $1B (higher rates at the top); each 0.25
+  step in `m_AI` takes about $3.2B off the headline and $7B off Rapid.
+  The pattern holds under the other labor rules. Layer 2 passes after
+  the rung (job 31215041).
+- *Run stamps.* Runs that start in the same minute share a stamp and so a
+  Tax-Simulator output folder (`<root>/<stamp>/`), which cleanup deletes.
+  The four sensitivity jobs were staggered by hand; the orchestrator now
+  aborts if the folder already exists.
 
 Full runs need the cluster; the laptop cannot reach it over ssh, so work moves
 between machines through pushes to this branch.

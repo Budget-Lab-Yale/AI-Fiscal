@@ -66,14 +66,16 @@ source("code/00_utils.R")
     sprintf("shock.variants.%s.%s", v, c("theta1_k", "r_ai_annual"))
   })),
   "labor_inequality.k",
-  "capital_flow.allocation_base",
-  "capital_flow.interest",
+  paste0("capital_flow.",
+         c("allocation_base", "interest", "allocator", "concentration_top1",
+           "concentration_top01", "payout", "ai_gains_realized")),
   paste0("passthrough.",
          c("wage_threshold_percentile", "wage_threshold_conditioning",
            "active_below_capital_share", "active_above_capital_share",
            "passive_capital_share")),
   paste0("corporate.",
-         c("kappa_corp", "cit_statutory"))
+         c("kappa_corp", "cit_statutory", "share_abroad", "abroad_rate",
+           "share_interest"))
 )
 
 # Walk a dotted path into a nested list. Returns list(missing = TRUE, value
@@ -151,14 +153,52 @@ source("code/00_utils.R")
   yaml::read_yaml(fp) %||% list()
 }
 
+# A setting's overlays, root first. An overlay may name another setting in
+# a top-level `inherits:` key (e.g. a sensitivity built on the reference),
+# whose keys it then changes.
+.read_setting_chain <- function(setting, path, seen = character()) {
+  if (setting %in% seen) {
+    cli::cli_abort("Settings inherit in a loop: {.val {c(seen, setting)}}.")
+  }
+  overlay <- .read_setting_overlay(setting, path)
+  parent  <- overlay$inherits
+  overlay$inherits <- NULL
+  if (is.null(parent)) return(list(overlay))
+  c(.read_setting_chain(parent, path, c(seen, setting)), list(overlay))
+}
+
 # Allowed values of the rung-1 switches; the first is the v1.0.1 value.
 .SWITCH_VALUES <- list(
   "cbo_baseline.growth_path" = c("flat", "annual"),
   "shock.share_baseline"     = c("survey_2025", "projected"),
   "shock.sector"             = c("whole_economy", "nonfarm_business"),
   "capital_flow.allocation_base" = c("all_assets", "ex_home_cash_nonfin"),
-  "capital_flow.interest"    = c("by_holdings", "baseline_path")
+  "capital_flow.interest"    = c("by_holdings", "baseline_path"),
+  "capital_flow.allocator"   = c("proportional", "concentrating")
 )
+
+# Rung-3 shares that must lie in [0, 1].
+.UNIT_INTERVAL_KEYS <- c(
+  "capital_flow.payout", "capital_flow.ai_gains_realized",
+  "capital_flow.concentration_top1", "capital_flow.concentration_top01",
+  "corporate.share_abroad", "corporate.abroad_rate", "corporate.share_interest"
+)
+
+.validate_shares <- function(raw) {
+  for (key in .UNIT_INTERVAL_KEYS) {
+    value <- .dotted_path(raw, key)$value
+    if (!is.numeric(value) || length(value) != 1L || is.na(value) || value < 0 || value > 1) {
+      cli::cli_abort("{.field {key}} must be a number in [0, 1]; got {.val {value}}.")
+    }
+  }
+  cf <- raw$capital_flow
+  if (cf$concentration_top01 >= cf$concentration_top1 || cf$concentration_top1 >= 1) {
+    cli::cli_abort("Concentration targets need 0 <= top01 < top1 < 1; got top01 = {.val {cf$concentration_top01}}, top1 = {.val {cf$concentration_top1}}.")
+  }
+  if (raw$corporate$share_abroad + raw$corporate$share_interest > 1) {
+    cli::cli_abort("{.field corporate.share_abroad} + {.field corporate.share_interest} exceeds 1.")
+  }
+}
 
 .validate_switches <- function(raw) {
   for (key in names(.SWITCH_VALUES)) {
@@ -254,8 +294,9 @@ load_params <- function(path = "config/scenario_params.yaml",
   raw <- yaml::read_yaml(path)
   .validate_required_keys(raw, path)
   if (!identical(setting, .LEGACY_SETTING)) {
-    raw <- .apply_setting_overlay(raw, .read_setting_overlay(setting, path),
-                                  setting)
+    for (overlay in .read_setting_chain(setting, path)) {
+      raw <- .apply_setting_overlay(raw, overlay, setting)
+    }
   }
 
   active <- variant %||% "M"
@@ -278,6 +319,7 @@ load_params <- function(path = "config/scenario_params.yaml",
     ))
   }
   .validate_switches(raw)
+  .validate_shares(raw)
   config_dir   <- dirname(path)
   cbo          <- raw$cbo_baseline
   uses_path    <- cbo$growth_path == "annual" ||

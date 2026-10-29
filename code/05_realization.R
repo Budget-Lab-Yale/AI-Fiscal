@@ -13,8 +13,14 @@ suppressPackageStartupMessages({
 
 source("code/00_utils.R")
 
-apply_realization <- function(step_b) {
-  step_b[, X_ltcg_V1 := X_ltcg_gross]
-  setattr(step_b, "realization", list(variant = "V1"))
+# capital_flow.ai_gains_realized (m_AI, Version 1.2 rung 3, C1) scales the
+# in-year gains below the mechanical V1 value: the AI gains flow is
+# realized at m_AI times the baseline rate already in the reported base.
+# The unrealized part is deferred past the year or stepped up at death and
+# reaches no tax base. m_AI = 1 is V1.
+apply_realization <- function(step_b, ai_gains_realized = 1) {
+  step_b[, X_ltcg_V1 := X_ltcg_gross * ai_gains_realized]
+  setattr(step_b, "realization", list(variant = "V1",
+                                      ai_gains_realized = ai_gains_realized))
   step_b
 }

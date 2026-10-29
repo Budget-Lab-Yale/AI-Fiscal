@@ -203,6 +203,36 @@ capital_flow:
   interest_status: choice
   interest_source: "docs/v1_2_plan.md B3 and decision 2. by_holdings reproduces v1.0.1."
 
+  # Across-unit allocator (rung 3, C2). proportional: X_i in proportion to
+  # the unit's allocation-base wealth (v1.0.1). concentrating: the same,
+  # with the top 1% and top 0.1% of tax units by net worth scaled up so
+  # they receive concentration_top1 and concentration_top01 of X.
+  allocator: proportional
+  allocator_status: choice
+  allocator_source: "docs/v1_2_plan.md C2 and decision 4: proportional is the reference; concentrating is a sensitivity paired with ai_gains_realized < 1."
+
+  concentration_top1: 0.514
+  concentration_top1_status: derived
+  concentration_top1_source: "Fed Distributional Financial Accounts 2025Q4: top 1% hold 50% of corporate equities and mutual funds and 53% of private businesses (decision 4), weighted by the vintage's 2030 equities ($46.8T) and pass-through holdings ($38.6T)."
+
+  concentration_top01: 0.258
+  concentration_top01_status: derived
+  concentration_top01_source: "Fed Distributional Financial Accounts 2025Q4: top 0.1% hold 24% of corporate equities and mutual funds and 28% of private businesses (decision 4), weighted as for concentration_top1."
+
+  # Dividend share of the public-equity part of X (rung 3, C1); the rest
+  # is long-term capital gains.
+  payout: 0.30
+  payout_status: preliminary
+  payout_source: "v1.0.1 value (formerly the public_equity_taxable rows of config/asset_to_income_map.csv). D7 (payout on a matched universe) is open."
+
+  # Share of the AI capital-gains flow realized in-year (rung 3, C1;
+  # m_AI). Relative to the baseline realization rate already in the
+  # reported base. Below 1, the rest is deferred past the year or stepped
+  # up at death.
+  ai_gains_realized: 1
+  ai_gains_realized_status: choice
+  ai_gains_realized_source: "docs/v1_2_plan.md C1 and decision 4: 1 (v1.0.1 and reference); sensitivities 0.75, 0.5, 0.25 with the concentrating allocator."
+
 corporate:
   kappa_corp: 0.50
   kappa_corp_status: preliminary
@@ -211,3 +241,19 @@ corporate:
   cit_statutory: 0.21
   cit_statutory_status: sourced
   cit_statutory_source: "TCJA federal C-corp rate (IRC §11)."
+
+  # Corporate-increment sensitivities (rung 3, C3); both 0 in v1.0.1 and
+  # the reference. They scale the corporate change delta_R_CIT by
+  #   1 - share_abroad * (1 - abroad_rate / cit_statutory) - share_interest.
+  # The lender side of deductible interest is not modeled.
+  share_abroad: 0
+  share_abroad_status: choice
+  share_abroad_source: "docs/v1_2_plan.md C3: share of the corporate increment booked abroad or as export income."
+
+  abroad_rate: 0.14
+  abroad_rate_status: sourced
+  abroad_rate_source: "Effective rate on NCTI (12.6-14%) and FDDEI (14%) income after the 2025 reconciliation act; upper end."
+
+  share_interest: 0
+  share_interest_status: choice
+  share_interest_source: "docs/v1_2_plan.md C3: share of the corporate increment paid out as deductible interest (no corporate tax)."

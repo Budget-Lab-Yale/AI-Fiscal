@@ -1,0 +1,10 @@
+# Version 1.2 sensitivity (docs/v1_2_plan.md C2, decision 4): the
+# reference with the concentrating allocator, AI gains fully realized
+# in-year. The anchor for the paired m_AI sensitivities, which inherit it.
+inherits: v1_2_reference
+
+capital_flow:
+  allocator: concentrating
+  allocator_status: choice
+  allocator_source: "Decision 4: concentrating allocator, top-1% and top-0.1% shares of X from the Fed DFA."
+  allocator_rung: 3

@@ -175,3 +175,32 @@ test_that("an unknown switch value aborts naming the choices", {
   yml <- .setting_fixture(list(shock = list(sector = "nonfarm")))
   expect_error(load_params(yml, setting = "trial"), "whole_economy")
 })
+
+test_that("a setting can inherit another setting's overlay", {
+  yml <- .setting_fixture(list(labor_inequality = list(k = 2)))
+  dir <- dirname(yml)
+  yaml::write_yaml(list(inherits = "trial", capital_flow = list(payout = 0.4)),
+                   file.path(dir, "settings", "child.yaml"))
+  p <- load_params(yml, variant = "M", setting = "child")
+  expect_equal(p$k_inequality, 2)
+  expect_equal(p$raw$capital_flow$payout, 0.4)
+  expect_null(p$raw$inherits)
+  yaml::write_yaml(list(inherits = "loop_b"), file.path(dir, "settings", "loop_a.yaml"))
+  yaml::write_yaml(list(inherits = "loop_a"), file.path(dir, "settings", "loop_b.yaml"))
+  expect_error(load_params(yml, setting = "loop_a"), "loop")
+})
+
+test_that("rung-3 shares outside [0, 1] abort", {
+  yml <- .setting_fixture(list(capital_flow = list(ai_gains_realized = 1.5)))
+  expect_error(load_params(yml, setting = "trial"), "ai_gains_realized")
+  yml <- .setting_fixture(list(corporate = list(share_abroad = 0.7, share_interest = 0.5)))
+  expect_error(load_params(yml, setting = "trial"), "exceeds 1")
+})
+
+test_that("the committed sensitivity settings load", {
+  for (s in sub("\\.yaml$", "", list.files(here::here("config", "settings"), "^v1_2_sens_"))) {
+    p <- load_params(.params_yaml, variant = "M", setting = s)
+    expect_identical(p$raw$capital_flow$allocator, "concentrating", info = s)
+    expect_identical(p$raw$shock$sector, "nonfarm_business", info = s)
+  }
+})

@@ -63,7 +63,7 @@ step_b    <- allocate_capital(
   copy(dt_baseline), params,
   asset_map_path = here::here("config", "asset_to_income_map.csv")
 )
-step_b    <- apply_realization(step_b)
+step_b    <- apply_realization(step_b, params$raw$capital_flow$ai_gains_realized)
 
 dt_cf <- build_counterfactual(
   dt_baseline, dt_step_a, step_b,

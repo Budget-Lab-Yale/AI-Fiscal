@@ -318,7 +318,8 @@ pass on Linux and Mac.
   an archive and are no longer written.
 - **Settings.** `--setting legacy_v1_0_1` (the default) is
   `config/scenario_params.yaml` unchanged; other settings are overlays
-  in `config/settings/`. Anything downstream of `02` that needs a
+  in `config/settings/`; an overlay may start with `inherits: <setting>`
+  (sensitivities inherit `v1_2_reference`). Anything downstream of `02` that needs a
   parameter must read the run's `inputs/params.yaml`, never the base
   yaml, or it will silently report legacy values under another setting.
 

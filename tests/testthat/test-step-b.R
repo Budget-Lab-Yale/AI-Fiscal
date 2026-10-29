@@ -69,3 +69,46 @@ test_that("capital_flow.allocation_base = ex_home_cash_nonfin drops those assets
   only_excluded <- sb_dt$A_base == 0
   expect_true(all(sb_dt$X_i[only_excluded] == 0))
 })
+
+# Rung 3 (docs/v1_2_plan.md C1-C3).
+test_that("the concentrating allocator hits its top-1% and top-0.1% targets", {
+  p <- params
+  p$raw$capital_flow$allocator <- "concentrating"
+  sb <- allocate_capital(copy(dt_baseline), p,
+                         asset_map_path = here::here("config", "asset_to_income_map.csv"))
+  nw <- .net_worth(dt_baseline)
+  top <- function(q) nw >= weighted_quantile(nw, dt_baseline$weight, q)
+  X <- sum(sb$weight * sb$X_i)
+  expect_equal(X, attr(sb, "macro")$X_to_units, tolerance = 1e-9)
+  expect_equal(sum((sb$weight * sb$X_i)[top(0.99)]) / X,
+               p$raw$capital_flow$concentration_top1, tolerance = 1e-9)
+  expect_equal(sum((sb$weight * sb$X_i)[top(0.999)]) / X,
+               p$raw$capital_flow$concentration_top01, tolerance = 1e-9)
+})
+
+test_that("payout splits the public-equity flow into dividends and gains", {
+  p <- params
+  p$raw$capital_flow$payout <- 0.5
+  sb <- allocate_capital(copy(dt_baseline), p,
+                         asset_map_path = here::here("config", "asset_to_income_map.csv"))
+  expect_equal(sb$X_qualified_div, sb$X_ltcg_gross)
+  expect_equal(sb$X_qualified_div + sb$X_ltcg_gross,
+               step_b$X_qualified_div + step_b$X_ltcg_gross)
+})
+
+test_that("ai_gains_realized scales in-year gains only", {
+  half <- apply_realization(copy(step_b), 0.5)
+  expect_equal(half$X_ltcg_V1, 0.5 * step_b$X_ltcg_gross)
+  expect_equal(half$X_qualified_div, step_b$X_qualified_div)
+})
+
+test_that("corporate sensitivities scale the corporate change", {
+  p <- params
+  p$raw$corporate$share_abroad   <- 0.25
+  p$raw$corporate$share_interest <- 0.10
+  m <- compute_macro_targets(dt_baseline, p)
+  corp <- p$raw$corporate
+  expect_equal(m$delta_R_CIT / macro$delta_R_CIT,
+               1 - 0.25 * (1 - corp$abroad_rate / corp$cit_statutory) - 0.10)
+  expect_equal(m$X, macro$X)
+})
