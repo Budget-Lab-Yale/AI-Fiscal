@@ -1,0 +1,9 @@
+# Corrected Version 1, step 1 of 4 (docs/v1_2_plan.md, corrected v1.0.1
+# deck): v1.0.1 with g_y measured against CBO's calendar-year real GDP
+# path rather than the Q4/Q4 2026 rate mixed with calendar-year rates.
+
+cbo_baseline:
+  growth_path: annual
+  growth_path_status: choice
+  growth_path_source: "Correction: CBO's 2.2% for 2026 is fourth quarter to fourth quarter; the calendar-year path matches Karger's annual-average rates."
+  growth_path_rung: v1fix

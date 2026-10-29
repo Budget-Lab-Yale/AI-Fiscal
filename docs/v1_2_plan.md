@@ -731,6 +731,37 @@ negative `X` scaled down in proportion.
   slice's size suggests because the AI-attributable balance builds up and
   its distributions grow over the window.
 
+**Corrected Version 1 (2026-10-29).** The release ends in two decks for an
+external audience: a corrected Version 1 (v1.0.1's design with the obvious
+errors fixed) and Version 1.2. The corrected Version 1 takes four fixes
+(John, 2026-10-29), run cumulatively so each has its own step in the
+bridge (settings `v1_0_1_fix1_growth`, `v1_0_1_fix2_fyblend`,
+`v1_0_1_fix3_residual`, `v1_0_1_corrected`, each inheriting the last):
+
+1. CBO's calendar-year real GDP path for `g_y` (A1's growth path);
+2. tax year 2029 shocked too, so FY2030 carries a full year's effect
+   (an annual window over tax years 2029-2030 reporting FY2030 only);
+3. the no-holdings residual spread over holders, not sent to retirement;
+4. the primary residence, cash, and other nonfinancial assets out of the
+   allocation base, and interest on its baseline path.
+
+The whole-economy shock, the 2025 labor share, and the single policy year
+stay at v1.0.1. FY2030 change in federal revenue including the corporate
+tax, $B, proportional labor rule (runs `v1_0_1_*-20261029*`, jobs
+31278732-31278735, 8-9 min, peak 96-105 GB):
+
+| Cell | v1.0.1 | + growth basis | + FY blend | + residual | Corrected |
+|---|---|---|---|---|---|
+| Moderate, reallocated (headline) | 113.3 | 104.8 | 116.5 | 115.5 | 114.7 |
+| Rapid, reallocated | 200.8 | 192.1 | 210.0 | 207.7 | 205.3 |
+| Slow, reallocated | 8.0 | -0.3 | -4.7 | -4.9 | -5.1 |
+| Moderate, fixed | 179.4 | 170.8 | 204.6 | 204.1 | 203.7 |
+
+The growth basis (-$8.5B) and the fiscal-year blend (+$11.7B) nearly
+offset for the headline. With fixed shares the blend dominates (+$24B
+net). Slow reallocated changes sign: its labor share already falls in tax
+year 2029 while its growth is barely above CBO's.
+
 Full runs need the cluster; the laptop cannot reach it over ssh, so work moves
 between machines through pushes to this branch.
 

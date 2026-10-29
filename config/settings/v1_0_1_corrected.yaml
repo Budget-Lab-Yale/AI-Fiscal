@@ -1,0 +1,18 @@
+# Corrected Version 1 (step 4 of 4): v1.0.1's design with the four fixes
+# agreed 2026-10-29 for the corrected Version 1 deck. This step leaves the
+# primary residence, cash, and other nonfinancial assets out of the
+# allocation base and keeps interest on its baseline path. Everything else
+# (whole-economy shock, 2025 labor share, single policy year 2030) stays at
+# v1.0.1.
+inherits: v1_0_1_fix3_residual
+
+capital_flow:
+  allocation_base: ex_home_cash_nonfin
+  allocation_base_status: choice
+  allocation_base_source: "Correction: the primary residence, cash, and vehicles earn none of the AI capital flow."
+  allocation_base_rung: v1fix
+
+  interest: baseline_path
+  interest_status: choice
+  interest_source: "Correction: interest stays on its baseline path."
+  interest_rung: v1fix

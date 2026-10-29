@@ -1,0 +1,10 @@
+# Corrected Version 1, step 3 of 4: units with no income-bearing holdings
+# receive none of X; their share is spread over units with such holdings
+# instead of defaulting to retirees' pension and IRA income.
+inherits: v1_0_1_fix2_fyblend
+
+capital_flow:
+  residual: spread
+  residual_status: choice
+  residual_source: "Correction: v1.0.1 converted the share of households with no financial assets into retirees' taxable distributions."
+  residual_rung: v1fix

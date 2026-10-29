@@ -62,6 +62,12 @@ build_window_totals <- function(tables_dir, window_years) {
 # Orchestrator entry: stack the per-year tables and write the window totals.
 write_annual_tables <- function(tables_dir, report_years, window_years) {
   written <- stack_annual_tables(tables_dir, report_years)
+  # A window that reports one fiscal year (e.g. tax years 2029-2030 for a
+  # full-year FY2030) has no multi-year total.
+  if (!length(window_years)) {
+    cli::cli_inform("Wrote {length(written)} by-year table{?s}; no window totals for a single fiscal year.")
+    return(invisible(written))
+  }
   totals  <- build_window_totals(tables_dir, window_years)
   fp <- file.path(tables_dir, "revenue_window_totals.csv")
   fwrite(totals, fp)

@@ -1,0 +1,20 @@
+# Corrected Version 1, step 2 of 4: also shock tax year 2029, so FY2030
+# (about 26% tax year 2029, 74% tax year 2030 in Tax-Simulator's
+# fiscal-year conversion) carries a full year's effect. v1.0.1 scored tax
+# year 2029 at baseline.
+inherits: v1_0_1_fix1_growth
+
+window: annual
+window_status: choice
+window_source: "Correction: FY2030 needs both tax years 2029 and 2030 shocked."
+window_rung: v1fix
+
+window_first_year: 2029
+window_first_year_status: choice
+window_first_year_source: "Tax year 2029 shocked on the 2025-2030 path; FY2030 is the only fiscal year reported."
+window_first_year_rung: v1fix
+
+window_last_year: 2030
+window_last_year_status: choice
+window_last_year_source: "baseline_year."
+window_last_year_rung: v1fix
