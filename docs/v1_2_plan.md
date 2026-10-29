@@ -613,6 +613,21 @@ settings that inherit the reference (`inherits:`, new in `02_params.R`).
   step in `m_AI` takes about $3.2B off the headline and $7B off Rapid.
   The pattern holds under the other labor rules. Layer 2 passes after
   the rung (job 31215041).
+- *Rerun on the ten-year window (2026-10-29)*, once the reference became
+  annual (rung 4), so the sensitivities compare with it. FY2027-2036
+  totals, $B, proportional labor rule (jobs 31278356-31278359, 32-35 min
+  each, peak 276-278 GB):
+
+  | Cell | Reference | Concentrating, `m_AI` = 1 | 0.75 | 0.5 | 0.25 |
+  |---|---|---|---|---|---|
+  | Moderate, reallocated | 1,259.8 | 1,269.0 | 1,238.7 | 1,208.6 | 1,178.6 |
+  | Rapid, reallocated | 2,364.0 | 2,384.9 | 2,318.7 | 2,252.0 | 2,184.7 |
+  | Slow, reallocated | -31.6 | -29.9 | -35.9 | -41.8 | -47.7 |
+  | Moderate, fixed | 1,982.1 | 1,987.0 | 1,970.4 | 1,953.9 | 1,937.6 |
+
+  Over the window the pairing moves the Moderate total by at most 6.4%
+  (`m_AI` = 0.25); concentration alone adds 0.7%. Small next to the
+  post-2030 rule (rung 4).
 - *Run stamps.* Runs that start in the same minute share a stamp and so a
   Tax-Simulator output folder (`<root>/<stamp>/`), which cleanup deletes.
   The four sensitivity jobs were staggered by hand; the orchestrator now
