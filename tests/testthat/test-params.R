@@ -240,3 +240,16 @@ test_that("post-2030 rules: hold the gap, continue growth, interpolate to 2050",
     expect_equal(at(rule, 2030)$g_y, g30$g_y, info = rule)
   }
 })
+
+test_that("the reference moves to Karger's 2050 values; holding the gap is a sensitivity", {
+  ref  <- load_params(.params_yaml, variant = "M", setting = "v1_2_reference", year = 2036)
+  hold <- load_params(.params_yaml, variant = "M", setting = "v1_2_sens_post2030_hold_gap", year = 2036)
+  expect_identical(ref$raw$shock$post_2030, "to_2050")
+  expect_identical(hold$raw$shock$post_2030, "hold_gap")
+  # The two agree through 2030 and differ only after it.
+  expect_equal(load_params(.params_yaml, variant = "M", setting = "v1_2_reference", year = 2030)$g_y,
+               load_params(.params_yaml, variant = "M", setting = "v1_2_sens_post2030_hold_gap",
+                           year = 2030)$g_y)
+  expect_gt(ref$g_y, hold$g_y)
+  expect_gt(ref$theta1_k, hold$theta1_k)
+})

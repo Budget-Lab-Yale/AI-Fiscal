@@ -653,9 +653,10 @@ negative `X` scaled down in proportion.
   AI growth rate is Karger's `r_ai_annual` against CBO's annual real GDP
   path (2030 unchanged) and the nonfarm-business labor share moves
   linearly from 0.555 (2025) to its 2030 value. After 2030,
-  `shock.post_2030`: `hold_gap` (reference: `g_y` and the share stay at
-  their 2030 values), `to_2050` (the growth rate moves linearly to
-  Karger's 2045-2050 rate in 2050, the share linearly to its 2050 value),
+  `shock.post_2030`: `hold_gap` (`g_y` and the share stay at their 2030
+  values; the reference until 2026-10-29), `to_2050` (the growth rate
+  moves linearly to Karger's 2045-2050 rate in 2050, the share linearly to
+  its 2050 value; the reference from 2026-10-29, see Decision 6),
   `continue_growth` (the 2025-2030 rate continues; share held). Karger's
   2050 inputs, Economists column medians from the online appendix
   (`https://www.nber.org/data-appendix/w35046`, dated 2026-04-01; Tables
@@ -782,7 +783,7 @@ between machines through pushes to this branch.
 
 ## Decisions
 
-Decisions 1–4 were settled by John on 2026-10-28; 5 is still open.
+Decisions 1–4 were settled by John on 2026-10-28 and 6 on 2026-10-29; 5 is still open.
 
 1. **A2 bridge method — SET.** The survey's labor-share change applies
    within nonfarm business only; other sectors stay at their baseline
@@ -823,3 +824,16 @@ Decisions 1–4 were settled by John on 2026-10-28; 5 is still open.
 5. **Release form — OPEN.** A new article for Version 1.2 or an update to the
    existing one. This determines the chart collection slug, which is
    permanent once published. Needed before figure step F5.
+6. **Post-2030 default — SET 2026-10-29: `to_2050`.** Karger's growth rate
+   and labor share are one joint prediction at each horizon, so after 2030
+   both move together, in straight lines from the 2030 pair to the 2050
+   pair (online appendix Tables 20 and 40). Holding the 2030 gap becomes the
+   sensitivity `v1_2_sens_post2030_hold_gap`; `continue_growth` moves growth without the
+   share, so it is reported only as an appendix sensitivity. Rules that split the two
+   forecasts are ruled out. FY2030 does not change; the Moderate FY2027-2036
+   total rises from $1.26T (hold the gap) to $2.31T, 87 percent of it from
+   FY2031-2036. The survey's growth is total growth compared with CBO's
+   path, so any non-AI difference from CBO compounds over the window (Slow's
+   2045-2050 growth, 2.0 percent, is above CBO's long-run 1.77 percent);
+   the release presents FY2030 first and the window as a range across the
+   post-2030 rules. Reruns: `docs/cluster_todo_2026-10-29.md`.

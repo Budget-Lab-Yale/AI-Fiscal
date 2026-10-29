@@ -34,6 +34,14 @@ shock:
   sector_source: "docs/v1_2_plan.md A2, decision 1 (SET 2026-10-28): share change and excess growth within nonfarm business only."
   sector_rung: 1
 
+  # After 2030 Karger's growth and labor share move together, as the joint
+  # prediction they are: both in straight lines to the survey's 2050 values.
+  # hold_gap (the 2030 pair held) is now a sensitivity (decided 2026-10-29).
+  post_2030: to_2050
+  post_2030_status: choice
+  post_2030_source: "Decided 2026-10-29 (John): the AI growth rate and the nonfarm-business labor share move jointly to Karger's 2050 values (online appendix Tables 20 and 40); holding the 2030 gap is a sensitivity."
+  post_2030_rung: 4
+
 capital_flow:
   allocation_base: ex_home_cash_nonfin
   allocation_base_status: choice

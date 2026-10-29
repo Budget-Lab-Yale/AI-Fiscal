@@ -1,0 +1,10 @@
+# Sensitivity: hold the 2030 gap after the survey's horizon (the Version 1.2
+# reference until 2026-10-29). g_y and the labor share stay at their 2030
+# values, so AI adds no growth after 2030. Was v1_2_sens_post2030_to_2050,
+# which the reference now matches.
+inherits: v1_2_reference
+shock:
+  post_2030: hold_gap
+  post_2030_status: choice
+  post_2030_source: "D13: post-2030 path is a three-way setting; hold_gap (the 2030 growth gap and labor share held) is a sensitivity since 2026-10-29."
+  post_2030_rung: 4

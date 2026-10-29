@@ -1,9 +1,0 @@
-# Version 1.2 sensitivity (docs/v1_2_plan.md A3, D13): the reference with
-# the post-2030 path set to to_2050 instead of holding the 2030 gap.
-inherits: v1_2_reference
-
-shock:
-  post_2030: to_2050
-  post_2030_status: choice
-  post_2030_source: "D13: post-2030 path is a three-way setting; to_2050 is a sensitivity."
-  post_2030_rung: 4

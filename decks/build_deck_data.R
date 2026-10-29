@@ -7,6 +7,11 @@
 # Usage (repo root, on the cluster where results/runs/ holds these runs):
 #   Rscript decks/build_deck_data.R
 # Writes decks/corrected_v1/data/*.csv and decks/v1_2/data/*.csv.
+#
+# 2026-10-29: the Version 1.2 reference moved to shock.post_2030 = to_2050
+# (docs/v1_2_plan.md, "Post-2030 default"). The runs marked NA below are the
+# reruns listed in docs/cluster_todo_2026-10-29.md; fill in their ids before
+# running this script.
 
 suppressPackageStartupMessages({
   library(data.table)
@@ -18,15 +23,22 @@ suppressPackageStartupMessages({
   fix2       = "v1_0_1_fix2_fyblend-202610290905",
   fix3       = "v1_0_1_fix3_residual-202610290909",
   corrected  = "v1_0_1_corrected-202610290913",
-  v12        = "v1_2_reference-202610282217",
-  to_2050    = "v1_2_sens_post2030_to_2050-202610282259",
-  continue   = "v1_2_sens_post2030_continue_growth-202610282303",
-  deferred   = "v1_2_sens_retirement_deferred-202610282254",
-  conc       = "v1_2_sens_concentrated-202610290845",
-  conc_m075  = "v1_2_sens_concentrated_m075-202610290849",
-  conc_m050  = "v1_2_sens_concentrated_m050-202610290853",
-  conc_m025  = "v1_2_sens_concentrated_m025-202610290857"
+  # Version 1.2 reference (to_2050). Before 2026-10-29 the reference was
+  # hold_gap: v1_2_reference-202610282217, now the hold_gap sensitivity's
+  # check run, and v1_2_sens_post2030_to_2050-202610282259 the reference's.
+  v12        = NA_character_,  # v1_2_reference-<stamp>
+  hold_gap   = NA_character_,  # v1_2_sens_post2030_hold_gap-<stamp>
+  continue   = "v1_2_sens_post2030_continue_growth-202610282303",  # sets post_2030 itself; unchanged
+  deferred   = NA_character_,  # v1_2_sens_retirement_deferred-<stamp>
+  conc       = NA_character_,  # v1_2_sens_concentrated-<stamp>
+  conc_m075  = NA_character_,  # v1_2_sens_concentrated_m075-<stamp>
+  conc_m050  = NA_character_,  # v1_2_sens_concentrated_m050-<stamp>
+  conc_m025  = NA_character_   # v1_2_sens_concentrated_m025-<stamp>
 )
+if (anyNA(unlist(.RUNS))) {
+  stop("Fill in the run ids for: ", paste(names(.RUNS)[is.na(unlist(.RUNS))], collapse = ", "),
+       " (docs/cluster_todo_2026-10-29.md).")
+}
 .POLICY_YEAR <- 2030L
 .VARIANT     <- c(S = "Slow", M = "Moderate", R = "Rapid")
 .SHARE_MODE  <- c(R = "Labor share falls", F = "Shares fixed")
@@ -144,7 +156,7 @@ v_tax <- melt(v_tot[labor == "S0" & share_mode == "R", c("scenario", unname(wide
 v_tax[, tax := names(wide_cols)[match(column, wide_cols)]][, column := NULL]
 write_slide(v_tax, "v1_2", "s14_window_by_tax")
 
-rules <- c(v12 = "Hold the 2030 gap", to_2050 = "Interpolate to 2050", continue = "Continue 2025-2030 growth")
+rules <- c(v12 = "Interpolate to 2050", hold_gap = "Hold the 2030 gap", continue = "Continue 2025-2030 growth")
 post <- rbindlist(lapply(names(rules), function(r) {
   label(run_file(r, "tables", "revenue_grid_wide_by_year.csv"))[
     labor == "S0", .(post_2030 = rules[[r]], year, scenario, shares, revenue_change_B = total_with_macro_cit)]
@@ -178,5 +190,29 @@ b1 <- rbindlist(list(
                                  revenue_change_B = total_with_macro_cit)]))
 write_slide(b1, "v1_2", "b1_bridge_fy2030")
 write_slide(tax_table(v_tot, c("window", "scenario", "shares", "labor_rule")), "v1_2", "b4_window_totals")
+
+# --- Added 2026-10-29: FY2030 detail for Version 1.2, and the published ---- #
+# report's decomposition (Figure 2) and tax rates by decile (Figure 7).
+
+# Revenue by labor-only, capital-only, and both shocks, per instrument.
+decomp_table <- function(d) {
+  gini_cut(d)[instrument %in% c("revenues_income_tax", "revenues_payroll_tax", "outlays_tax_credits", "total"),
+              .(scenario, shares, labor_rule, instrument, delta_labor, delta_capital, delta_both, interaction)]
+}
+# Tax and pre-tax income by decile, baseline and counterfactual ($B).
+atr_table <- function(d) {
+  gini_cut(d)[, .(scenario, shares, labor_rule, decile, pretax_base_d_B, pretax_cf_d_B, tax_base_d_B, tax_cf_d_B)]
+}
+
+write_slide(tax_table(v_year[year == .POLICY_YEAR], c("scenario", "shares", "labor_rule")),
+            "v1_2", "p1_fy2030_by_tax")
+write_slide(decomp_table(run_file("v12", "tables", "revenue_decomp_by_year.csv")[year == .POLICY_YEAR]),
+            "v1_2", "p1_fy2030_decomp")
+write_slide(atr_table(run_file("v12", "tables", "atr_decile_by_year.csv")[year == .POLICY_YEAR]),
+            "v1_2", "p1_fy2030_atr_decile")
+write_slide(decomp_table(run_file("corrected", "tables", sprintf("revenue_decomp_%d.csv", .POLICY_YEAR))),
+            "corrected_v1", "a4_revenue_decomp")
+write_slide(atr_table(run_file("corrected", "tables", sprintf("atr_decile_%d.csv", .POLICY_YEAR))),
+            "corrected_v1", "a5_atr_decile")
 
 cat("Wrote", length(list.files("decks", pattern = "\\.csv$", recursive = TRUE)), "chart data files.\n")

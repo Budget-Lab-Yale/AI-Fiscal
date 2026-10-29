@@ -111,7 +111,7 @@ shock:
   # year at or before 2030.
   post_2030: hold_gap
   post_2030_status: choice
-  post_2030_source: "docs/v1_2_plan.md A3; D13 (three-way setting SET 2026-10-05); hold_gap is the reference (2026-10-28)."
+  post_2030_source: "docs/v1_2_plan.md A3; D13 (three-way setting SET 2026-10-05); hold_gap is the legacy value; the v1_2_reference setting uses to_2050 (2026-10-29)."
 
   # What the survey's 2030 labor share is compared with (rung 1, A1).
   # survey_2025: the 2025 share above (v1.0.1). projected: the 2025 share
