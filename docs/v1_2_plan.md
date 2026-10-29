@@ -330,7 +330,7 @@ v1.0.1, and the rung's revenue effect recorded.
 | 1 | A1 baseline path, A2 nonfarm bridge (2030 only) — **DONE 2026-10-28** | laptop, then server |
 | 2 | B1 reconciliation, B2 corporate ratio, B3 rent and interest — **DONE 2026-10-28** | laptop, then server |
 | 3 | C1 payout and realization, C2 allocator, C3 sensitivities — **DONE 2026-10-28** | laptop, then server |
-| 4 | A3 annual paths and A4 generic shock input (ten fiscal years); A5 early-evidence check — **DONE 2026-10-28** (sensitivity runs pending) | server |
+| 4 | A3 annual paths and A4 generic shock input (ten fiscal years); A5 early-evidence check — **DONE 2026-10-28** | server |
 | 5 | B4 incidence table, register, outputs, figures; methodology doc and CHANGELOG | server + laptop |
 
 Rungs 1–3 stay single-year (2030) so each effect is comparable to the
@@ -714,6 +714,22 @@ negative `X` scaled down in proportion.
   small (Moderate +0.8, -1.9, +3.0; Rapid +12.0, -0.7, +8.5), so the
   observed deviations are mostly not AI. Signs agree for individual and
   payroll tax under Moderate and Rapid and disagree for the corporate tax.
+- *Sensitivities* (FY2027-2036 totals, $B, proportional labor rule; jobs
+  31237717-31237719, 29-33 min each, peak 278-281 GB):
+
+  | Cell | Reference (hold gap) | Deferred retirement | Post-2030 to 2050 | Post-2030 continue growth |
+  |---|---|---|---|---|
+  | Slow, reallocated | -31.6 | -61.4 | 131.5 | 307.9 |
+  | Moderate, reallocated | 1,259.8 | 1,111.9 | 2,313.1 | 2,525.2 |
+  | Rapid, reallocated | 2,364.0 | 2,029.7 | 4,328.7 | 4,765.8 |
+  | Moderate, fixed | 1,982.1 | 1,900.9 | 3,310.5 | 3,268.5 |
+
+  The post-2030 rule is the largest single choice in the window: holding
+  the 2030 gap puts Moderate's FY2036 change at $173B against $506B
+  (to 2050) and $571B (continue). Deferring the retirement slice lowers
+  the ten-year totals by 12% (Moderate) and 14% (Rapid), less than the
+  slice's size suggests because the AI-attributable balance builds up and
+  its distributions grow over the window.
 
 Full runs need the cluster; the laptop cannot reach it over ssh, so work moves
 between machines through pushes to this branch.
