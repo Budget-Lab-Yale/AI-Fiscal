@@ -27,6 +27,7 @@ build_macro_params_table <- function(per_variant, labor_scenarios) {
     k     <- p$k_inequality
     for (lbr in labor_scenarios) {
       rows[[length(rows) + 1L]] <- data.table(
+        year            = p$year,
         variant         = parts[1],
         share_mode      = parts[2],
         labor_scenario  = lbr,
@@ -51,21 +52,11 @@ build_macro_params_table <- function(per_variant, labor_scenarios) {
         cit_statutory   = m$cit_statutory,
         eta_corp        = m$eta_corp,
         delta_R_CIT_B   = m$delta_R_CIT / 1e9,
-        proprietors_capital_share = m$proprietors_capital_share
+        proprietors_capital_share = m$proprietors_capital_share,
+        cbo_gdp_fy_B    = p$cbo_anchor$gdp_fy_B,
+        cbo_rev_to_gdp  = p$cbo_anchor$rev_to_gdp
       )
     }
   }
   rbindlist(rows)
-}
-
-# Write the table as a sibling to the runscript at
-# <runscript>_cell_params.csv. 09_tables_figures.R reads this back to
-# embed it as a sheet in the publishable workbook.
-write_macro_params_table <- function(per_variant, labor_scenarios,
-                                     runscript_path) {
-  tbl <- build_macro_params_table(per_variant, labor_scenarios)
-  fp  <- sub("\\.csv$", "_cell_params.csv", runscript_path)
-  fwrite(tbl, fp)
-  cli::cli_inform("Wrote per-cell macro-params {.path {fp}} ({nrow(tbl)} rows)")
-  fp
 }

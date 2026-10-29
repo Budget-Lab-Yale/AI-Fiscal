@@ -330,7 +330,7 @@ v1.0.1, and the rung's revenue effect recorded.
 | 1 | A1 baseline path, A2 nonfarm bridge (2030 only) — **DONE 2026-10-28** | laptop, then server |
 | 2 | B1 reconciliation, B2 corporate ratio, B3 rent and interest — **DONE 2026-10-28** | laptop, then server |
 | 3 | C1 payout and realization, C2 allocator, C3 sensitivities — **DONE 2026-10-28** | laptop, then server |
-| 4 | A3 annual paths and A4 generic shock input (ten fiscal years); A5 early-evidence check | server |
+| 4 | A3 annual paths and A4 generic shock input (ten fiscal years); A5 early-evidence check — **DONE 2026-10-28** (sensitivity runs pending) | server |
 | 5 | B4 incidence table, register, outputs, figures; methodology doc and CHANGELOG | server + laptop |
 
 Rungs 1–3 stay single-year (2030) so each effect is comparable to the
@@ -617,6 +617,103 @@ settings that inherit the reference (`inherits:`, new in `02_params.R`).
   Tax-Simulator output folder (`<root>/<stamp>/`), which cleanup deletes.
   The four sensitivity jobs were staggered by hand; the orchestrator now
   aborts if the folder already exists.
+
+**Rung 4 (2026-10-28).** The ten-year window, annual shock paths, the
+retirement step, and the early-evidence check. Decisions (John,
+2026-10-28): 2025-2030 paths as below; post-2030 reference holds the 2030
+gap; Tax-Simulator pin unchanged (`256f03ea9`, current law as of
+2026-07, after the 2025 reconciliation act); retirement fix folded in;
+negative `X` scaled down in proportion.
+
+- *Window.* New top-level `window`: `single_year` (v1.0.1) or `annual`
+  (reference) over tax years `window_first_year`-`window_last_year`
+  (2025-2036). Tax-Simulator runs the whole range; its fiscal-year
+  adjustment drops 2025, so tables cover FY2026 (the nowcast year, A5) and
+  FY2027-2036 (the window). `08` and `09` run once per fiscal year as
+  before (`<table>_<year>.csv`); `code/17_annual_tables.R` stacks them into
+  `<table>_by_year.csv` and sums `revenue_grid_wide` over FY2027-2036 in
+  `revenue_window_totals.csv`. The figure suite, BLSMM step, and website
+  figures stay a view of `baseline_year` (2030) until F5.
+- *Shock paths (A3, A4).* `load_params()` takes a `year`. Through 2030 the
+  AI growth rate is Karger's `r_ai_annual` against CBO's annual real GDP
+  path (2030 unchanged) and the nonfarm-business labor share moves
+  linearly from 0.555 (2025) to its 2030 value. After 2030,
+  `shock.post_2030`: `hold_gap` (reference: `g_y` and the share stay at
+  their 2030 values), `to_2050` (the growth rate moves linearly to
+  Karger's 2045-2050 rate in 2050, the share linearly to its 2050 value),
+  `continue_growth` (the 2025-2030 rate continues; share held). Karger's
+  2050 inputs, Economists column medians from the online appendix
+  (`https://www.nber.org/data-appendix/w35046`, dated 2026-04-01; Tables
+  19 and 39 match the 2030 inputs): Table 20, 2045-2050 GDP growth
+  2.0 / 2.8 / 3.5%; Table 40, 2050 labor share 52.0 / 50.0 / 45.0%
+  (Slow / Moderate / Rapid).
+- *Slow starts below the baseline.* Karger's Slow growth (2.0%) is below
+  CBO's 2026 calendar-year growth (2.36%), so Slow's `g_y` is negative in
+  2026-2028 (-0.36% in 2026) and `X` with it (-$7.7B reallocated, -$14.8B
+  fixed in 2026). A negative `X` cannot follow wealth (it gave tens of
+  thousands of units negative dividends and pension income, which
+  crashed Tax-Simulator): `allocate_negative_flow()` scales every unit's
+  income in the channels `X` reaches by one rate, `X` over their weighted
+  total (-0.13% and -0.26% in 2026).
+- *CBO anchors by year.* `config/calibration/cbo_2026_02_budget_path.csv`
+  (CBO February 2026 Table 1-1, FY2025-2036: GDP, revenues by source) gives
+  each year's corporate receipts / GDP, revenue / GDP, and GDP; the
+  single-year window keeps the yaml scalars (identical for 2030).
+  `_macro.csv` and `_cell_params.csv` carry a `year` column; readers use
+  `read_runscript_sidecar()` to take one year.
+- *Capital-only dedupe.* Capital-only files do not depend on the labor
+  rule: the first is written and the others are directory links to it in
+  scratch (12 fewer files per year).
+- *Retirement step.* `capital_flow.residual`: `retirement` (v1.0.1) or
+  `spread` (reference: units with no income-bearing holdings receive none
+  of `X`; their share is spread over units with such holdings).
+  `capital_flow.retirement_flow`: `distributed` (v1.0.1, reference) or
+  `deferred` (sensitivity `v1_2_sens_retirement_deferred`): the slice
+  accrues to an AI-attributable balance and `r_R` (4.9%) of the balance,
+  carried across years, is distributed and taxed each year.
+- *The fiscal-year blend.* Tax-Simulator's FY2030 individual income tax is
+  about 26% tax year 2029 and 74% tax year 2030. Single-year runs,
+  v1.0.1 included, score tax year 2029 at baseline, so their "FY2030"
+  carried only about three-quarters of a year's effect. In the annual
+  run the Moderate headline for FY2030 is $133.8B against $118.1B in the
+  rung-3 reference; most of the difference is this blend (individual
+  income tax 85.2 against 72.8, payroll 18.2 against 14.8; corporate is
+  computed by fiscal year and unchanged at 28.9). It is its own step in
+  the bridge table.
+- *Run.* `v1_2_reference-202610282217` (job 31233677): 31 min on 12 cores,
+  peak memory 281 GB (16 cores at 192 GB ran out of memory; request 340
+  GB), about 233 GB of scratch (96 GB counterfactual files, 137 GB
+  Tax-Simulator output), deleted after the run. The pipeline's figure step
+  failed on an unfiltered macro read (fixed); figures, BLSMM, and charts
+  were finished from the run's tables (`output/rung4/finish_run.R`,
+  recorded in its manifest). Layer 2 passes after the rung (job
+  31223058).
+- *Results, reference* ($B, change in federal revenue including the
+  corporate tax, reallocated shares, proportional labor rule):
+
+  | Preset | FY2026 | FY2027 | FY2030 | FY2036 | FY2027-2036 |
+  |---|---|---|---|---|---|
+  | Slow | -18.1 | -20.8 | 1.1 | 1.5 | -31.6 |
+  | Moderate | 1.7 | 24.1 | 133.8 | 173.3 | 1,259.8 |
+  | Rapid | 19.8 | 64.7 | 249.6 | 317.1 | 2,364.0 |
+
+  Fixed shares, FY2027-2036: Slow 200.4, Moderate 1,982.1, Rapid 4,121.7.
+  Under the compressive and expansive labor rules the Moderate totals are
+  1,016.5 and 1,516.8 (reallocated).
+- *Early evidence (A5).* `code/18_early_evidence.R <run dir>` writes
+  `early_evidence_inputs.csv` and `early_evidence_receipts.csv` from a
+  dated snapshot (`config/calibration/early_evidence_observed.csv`,
+  FRED and the Monthly Treasury Statement, retrieved 2026-10-28; CBO's
+  site blocks scripted downloads). First half of 2026 against the first
+  half of 2025: the nonfarm-business labor share index fell 3.2%, against
+  paths of -0.2% (Slow), -0.5% (Moderate), -1.3% (Rapid) and 0 in CBO's
+  baseline; real GDP grew 2.4%, against CBO's 2.36% and the paths' 2.0 /
+  2.6 / 3.3%. FY2026 receipts against CBO's February projection:
+  individual income tax +$94B (non-withheld +9.0% on FY2025, withheld
+  +5.6%), payroll -$14B, corporate -$23B; the model's FY2026 changes are
+  small (Moderate +0.8, -1.9, +3.0; Rapid +12.0, -0.7, +8.5), so the
+  observed deviations are mostly not AI. Signs agree for individual and
+  payroll tax under Moderate and Rapid and disagree for the corporate tax.
 
 Full runs need the cluster; the laptop cannot reach it over ssh, so work moves
 between machines through pushes to this branch.

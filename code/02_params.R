@@ -55,19 +55,23 @@ source("code/00_utils.R")
 # Required parameters. Each entry is a dot-separated path into the yaml.
 # Variant-specific keys are expanded for S/M/R (Slow / Moderate / Rapid).
 .REQUIRED_PARAM_KEYS <- c(
-  "baseline_year",
+  "baseline_year", "window", "window_first_year", "window_last_year",
   paste0("cbo_baseline.",
          c("horizon_start_year", "g_2026", "g_2027plus",
            "gdp_baseline_year_B", "rev_to_gdp_baseline_year",
-           "cit_to_gdp_baseline_year", "growth_path", "path_file")),
+           "cit_to_gdp_baseline_year", "growth_path", "path_file",
+           "budget_path_file")),
   paste0("shock.",
-         c("baseline_labor_share", "share_baseline", "sector", "sector_file")),
+         c("baseline_labor_share", "share_baseline", "sector", "sector_file",
+           "post_2030")),
   unlist(lapply(c("S", "M", "R"), function(v) {
-    sprintf("shock.variants.%s.%s", v, c("theta1_k", "r_ai_annual"))
+    sprintf("shock.variants.%s.%s", v,
+            c("theta1_k", "r_ai_annual", "theta1_k_2050", "r_ai_annual_2050"))
   })),
   "labor_inequality.k",
   paste0("capital_flow.",
-         c("allocation_base", "interest", "allocator", "concentration_top1",
+         c("allocation_base", "interest", "residual", "retirement_flow",
+           "allocator", "concentration_top1",
            "concentration_top01", "payout", "ai_gains_realized")),
   paste0("passthrough.",
          c("wage_threshold_percentile", "wage_threshold_conditioning",
@@ -174,7 +178,11 @@ source("code/00_utils.R")
   "shock.sector"             = c("whole_economy", "nonfarm_business"),
   "capital_flow.allocation_base" = c("all_assets", "ex_home_cash_nonfin"),
   "capital_flow.interest"    = c("by_holdings", "baseline_path"),
-  "capital_flow.allocator"   = c("proportional", "concentrating")
+  "capital_flow.allocator"   = c("proportional", "concentrating"),
+  "window"                   = c("single_year", "annual"),
+  "capital_flow.residual"    = c("retirement", "spread"),
+  "capital_flow.retirement_flow" = c("distributed", "deferred"),
+  "shock.post_2030"          = c("hold_gap", "to_2050", "continue_growth")
 )
 
 # Rung-3 shares that must lie in [0, 1].
@@ -251,6 +259,67 @@ source("code/00_utils.R")
        labor_other = comp_other / gdp_other)
 }
 
+# Years of the survey's horizon and long-run forecast (Karger 2026: 2025 to
+# 2030, and the five years to 2050).
+.KARGER_YEAR      <- 2030L
+.KARGER_LONG_YEAR <- 2050L
+
+# The tax year a parameter set is for: baseline_year for a single-year
+# window, any year of the window for an annual one.
+.validate_year <- function(raw, year, start_year) {
+  year <- as.integer(year)
+  if (raw$window == "single_year") {
+    if (!identical(as.integer(year), as.integer(raw$baseline_year))) {
+      cli::cli_abort("A single-year window scores only baseline_year ({.val {raw$baseline_year}}); got {.val {year}}.")
+    }
+    if (year - start_year < 1) {
+      cli::cli_abort(c(
+        "Karger horizon must be at least 1 year.",
+        x = "baseline_year ({.val {year}}) <= cbo_baseline.horizon_start_year ({.val {start_year}})."
+      ))
+    }
+    return(year)
+  }
+  if (raw$cbo_baseline$growth_path != "annual") {
+    cli::cli_abort("An annual window needs {.field cbo_baseline.growth_path} = {.val annual}.")
+  }
+  if (year < raw$window_first_year || year > raw$window_last_year || year < start_year) {
+    cli::cli_abort("Year {.val {year}} is outside the window {.val {raw$window_first_year}}-{.val {raw$window_last_year}}.")
+  }
+  year
+}
+
+# AI GDP level in `year` relative to start_year (A3). Through 2030 the AI
+# growth rate is r_ai_annual (Karger Table 19). After 2030 by
+# shock.post_2030: continue_growth keeps r_ai_annual; to_2050 moves the
+# annual rate linearly from r_ai_annual in 2030 to r_ai_annual_2050 in
+# 2050. (hold_gap is handled in load_params: g_y stays at its 2030 value.)
+.ai_gdp_index <- function(v, post_2030, year, start_year) {
+  r <- v$r_ai_annual
+  if (year <= .KARGER_YEAR || post_2030 == "continue_growth") {
+    return((1 + r)^(year - start_year))
+  }
+  at_2030 <- (1 + r)^(.KARGER_YEAR - start_year)
+  steps <- seq(.KARGER_YEAR + 1L, year)
+  rates <- r + (v$r_ai_annual_2050 - r) * (steps - .KARGER_YEAR) /
+    (.KARGER_LONG_YEAR - .KARGER_YEAR)
+  at_2030 * prod(1 + rates)
+}
+
+# Post-shock capital share in nonfarm business in `year` (A3): linear from
+# the survey's 2025 share to its 2030 value, then by shock.post_2030
+# (to_2050: linear to 1 - theta1_k_2050 in 2050; otherwise held).
+.ai_capital_share <- function(v, post_2030, year, start_year, theta0_k_survey) {
+  if (year == .KARGER_YEAR) return(v$theta1_k)
+  if (year < .KARGER_YEAR) {
+    return(theta0_k_survey + (v$theta1_k - theta0_k_survey) *
+             (year - start_year) / (.KARGER_YEAR - start_year))
+  }
+  if (post_2030 != "to_2050") return(v$theta1_k)
+  v$theta1_k + (v$theta1_k_2050 - v$theta1_k) * (year - .KARGER_YEAR) /
+    (.KARGER_LONG_YEAR - .KARGER_YEAR)
+}
+
 .RETIREMENT_CAL_KEYS <- c("r_R", "s_P", "s_I", "tau_P", "tau_I")
 
 # Load the R1 retirement cascade calibration — see Table 2 of
@@ -277,7 +346,7 @@ load_retirement_calibration <- function(path = "config/retirement_calibration.ya
 
 load_params <- function(path = "config/scenario_params.yaml",
                         variant = NULL, share_mode = "R",
-                        setting = .LEGACY_SETTING) {
+                        setting = .LEGACY_SETTING, year = NULL) {
   if (!file.exists(path)) {
     cli::cli_abort(c(
       "Parameter config not found.",
@@ -308,18 +377,16 @@ load_params <- function(path = "config/scenario_params.yaml",
   }
   v <- raw$shock$variants[[active]]
 
-  baseline_year <- raw$baseline_year
-  start_year    <- raw$cbo_baseline$horizon_start_year
-  horizon       <- baseline_year - start_year
-  if (horizon < 1) {
-    cli::cli_abort(c(
-      "Karger horizon must be at least 1 year.",
-      x = "baseline_year ({.val {baseline_year}}) <= cbo_baseline.horizon_start_year ({.val {start_year}}).",
-      i = "Set baseline_year > horizon_start_year in {.path {path}}."
-    ))
-  }
   .validate_switches(raw)
   .validate_shares(raw)
+  start_year <- raw$cbo_baseline$horizon_start_year
+  # Default year: baseline_year, or the window's first year when an annual
+  # window does not contain it.
+  in_window  <- raw$window == "single_year" ||
+    (raw$baseline_year >= raw$window_first_year && raw$baseline_year <= raw$window_last_year)
+  year       <- .validate_year(raw, year %||% if (in_window) raw$baseline_year else raw$window_first_year,
+                               start_year)
+  horizon    <- year - start_year
   config_dir   <- dirname(path)
   cbo          <- raw$cbo_baseline
   uses_path    <- cbo$growth_path == "annual" ||
@@ -345,19 +412,24 @@ load_params <- function(path = "config/scenario_params.yaml",
     g_2027plus <- cbo$g_2027plus
     cum_base   <- (1 + g_2026) * (1 + g_2027plus)^(horizon - 1)
   } else {
-    cum_base <- .path_ratio(cbo_path, "real_gdp_B2017", start_year, baseline_year)
+    cum_base <- .path_ratio(cbo_path, "real_gdp_B2017", start_year, year)
   }
   if (!is.numeric(v$r_ai_annual) || is.na(v$r_ai_annual) || v$r_ai_annual <= -1) {
     cli::cli_abort(
       "Variant {.val {active}}: {.field r_ai_annual} must be a number > -1 (got {.val {v$r_ai_annual}})."
     )
   }
-  g_y        <- (1 + v$r_ai_annual)^horizon / cum_base - 1
+  g_y <- if (year > .KARGER_YEAR && raw$shock$post_2030 == "hold_gap") {
+    .ai_gdp_index(v, "hold_gap", .KARGER_YEAR, start_year) /
+      .path_ratio(cbo_path, "real_gdp_B2017", start_year, .KARGER_YEAR) - 1
+  } else {
+    .ai_gdp_index(v, raw$shock$post_2030, year, start_year) / cum_base - 1
+  }
 
   theta0_l <- raw$shock$baseline_labor_share
   if (raw$shock$share_baseline == "projected") {
     comp_share <- cbo_path$comp_paid_B / cbo_path$gdp_B
-    theta0_l   <- theta0_l + comp_share[match(baseline_year, cbo_path$year)] -
+    theta0_l   <- theta0_l + comp_share[match(year, cbo_path$year)] -
                              comp_share[match(start_year, cbo_path$year)]
   }
   if (!is.numeric(theta0_l) || is.na(theta0_l) || theta0_l <= 0 || theta0_l >= 1) {
@@ -369,7 +441,9 @@ load_params <- function(path = "config/scenario_params.yaml",
   # Under share_mode = "F" we pin the post-shock capital share to baseline
   # (theta1_k := theta0_k) so the labor-capital split is preserved while g_y
   # is unchanged. g_k and g_l both collapse to g_y (whole-economy shock).
-  theta1_k <- if (share_mode == "F") theta0_k else v$theta1_k
+  theta1_k <- if (share_mode == "F") theta0_k else
+    .ai_capital_share(v, raw$shock$post_2030, year, start_year,
+                      1 - raw$shock$baseline_labor_share)
   if (!is.numeric(theta1_k) || is.na(theta1_k) || theta1_k <= 0 || theta1_k >= 1) {
     cli::cli_abort(
       "Variant {.val {active}}: post-shock capital share {.field theta1_k} must be strictly inside (0, 1); got {.val {theta1_k}}. A typo like {.val 46.2} instead of {.val 0.462} would otherwise sail through."
@@ -387,14 +461,30 @@ load_params <- function(path = "config/scenario_params.yaml",
     shares        <- .nipa_sector_shares(.read_receipt(config_dir, raw$shock$sector_file))
     labor_other   <- shares$labor_other
     nfb_gva_share <- shares$gva_share *
-      .path_ratio(cbo_path, "real_gva_nfb_B2017", start_year, baseline_year) /
-      .path_ratio(cbo_path, "real_gdp_B2017", start_year, baseline_year)
+      .path_ratio(cbo_path, "real_gva_nfb_B2017", start_year, year) /
+      .path_ratio(cbo_path, "real_gdp_B2017", start_year, year)
     labor0 <- theta0_l * nfb_gva_share + labor_other * (1 - nfb_gva_share)
     labor1 <- theta1_l * (nfb_gva_share + g_y) + labor_other * (1 - nfb_gva_share)
     theta0_l_economy <- labor0
     theta1_l_economy <- labor1 / (1 + g_y)
     g_l <- labor1 / labor0 - 1
     g_k <- (1 + g_y - labor1) / (1 - labor0) - 1
+  }
+
+  # CBO anchors for the year (GDP, revenue / GDP, corporate receipts /
+  # GDP): the yaml's baseline-year scalars for a single-year window, the
+  # fiscal year of the CBO budget path for an annual one.
+  cbo_anchor <- if (raw$window == "single_year") {
+    list(gdp_fy_B   = cbo$gdp_baseline_year_B,
+         rev_to_gdp = cbo$rev_to_gdp_baseline_year,
+         cit_to_gdp = cbo$cit_to_gdp_baseline_year)
+  } else {
+    budget <- .read_receipt(config_dir, cbo$budget_path_file)
+    fy_row <- budget[budget$fy == year]
+    if (nrow(fy_row) != 1L) cli::cli_abort("CBO budget path has no fiscal year {.val {year}}.")
+    list(gdp_fy_B   = fy_row$gdp_fy_B,
+         rev_to_gdp = fy_row$revenues_B / fy_row$gdp_fy_B,
+         cit_to_gdp = fy_row$corporate_B / fy_row$gdp_fy_B)
   }
 
   k_inequality <- raw$labor_inequality$k
@@ -407,6 +497,7 @@ load_params <- function(path = "config/scenario_params.yaml",
     setting        = setting,
     active_variant = active,
     share_mode     = share_mode,
+    year           = year,
     theta0_l = theta0_l, theta0_k = theta0_k,
     theta1_l = theta1_l, theta1_k = theta1_k,
     g_y = g_y,
@@ -418,6 +509,7 @@ load_params <- function(path = "config/scenario_params.yaml",
     labor_other      = labor_other,
     theta0_l_economy = theta0_l_economy,
     theta1_l_economy = theta1_l_economy,
+    cbo_anchor       = cbo_anchor,
     k_inequality   = k_inequality,
     retirement_cal = retirement_cal
   )

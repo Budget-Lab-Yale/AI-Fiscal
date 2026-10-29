@@ -112,3 +112,55 @@ test_that("corporate sensitivities scale the corporate change", {
                1 - 0.25 * (1 - corp$abroad_rate / corp$cit_statutory) - 0.10)
   expect_equal(m$X, macro$X)
 })
+
+# Rung 4: the retirement step.
+test_that("capital_flow.residual = spread gives units without holdings none of X", {
+  p <- params
+  p$raw$capital_flow$residual <- "spread"
+  sb_dt <- allocate_across_units(copy(dt_baseline), macro$X_to_units)
+  sb_dt <- allocate_within_unit(sb_dt, "by_holdings", "spread")
+  expect_true(all(sb_dt$X_i[sb_dt$A_inc <= 0] == 0))
+  expect_lt(abs(sum(sb_dt$weight * sb_dt$X_i) / macro$X_to_units - 1), 1e-9)
+  slices <- sb_dt$X_public_equity_taxable + sb_dt$X_fixed_income +
+    sb_dt$X_passthrough_equity + sb_dt$X_retirement_dc_ira
+  expect_equal(slices, sb_dt$X_i)
+})
+
+test_that("a deferred retirement flow distributes r_R of the balance", {
+  p <- params
+  p$raw$capital_flow$retirement_flow <- "deferred"
+  r_R <- p$retirement_cal$r_R
+  sb1 <- allocate_capital(copy(dt_baseline), p,
+                          asset_map_path = here::here("config", "asset_to_income_map.csv"))
+  m1  <- attr(sb1, "macro")
+  expect_equal(m1$retirement_D, r_R * m1$retirement_F)
+  expect_equal(m1$retirement_balance, (1 - r_R) * m1$retirement_F)
+  expect_equal(sum(sb1$weight * (sb1$X_pens_gross + sb1$X_ira_gross)), m1$retirement_D)
+  sb2 <- allocate_capital(copy(dt_baseline), p,
+                          asset_map_path = here::here("config", "asset_to_income_map.csv"),
+                          retirement_balance = m1$retirement_balance)
+  m2  <- attr(sb2, "macro")
+  expect_equal(m2$retirement_D, r_R * (m1$retirement_balance + m2$retirement_F))
+  expect_identical(attr(step_b, "macro")$retirement_D, attr(step_b, "macro")$retirement_F)
+})
+
+test_that("a negative X scales capital income down in proportion", {
+  p <- params
+  p$g_k <- -0.005
+  sb <- allocate_capital(copy(dt_baseline), p,
+                         asset_map_path = here::here("config", "asset_to_income_map.csv"))
+  m  <- attr(sb, "macro")
+  expect_lt(m$X_to_units, 0)
+  inc_cols <- c("X_qualified_div", "X_taxable_int", "X_tax_exempt_int",
+                "X_ltcg_gross", "X_passthrough_ordinary", "X_pens_gross", "X_ira_gross")
+  total <- sum(vapply(inc_cols, function(col) sum(sb$weight * sb[[col]]), numeric(1)))
+  expect_equal(total, m$X_to_units, tolerance = 1e-9)
+  expect_equal(sum(sb$weight * sb$X_i), m$X_to_units, tolerance = 1e-9)
+  b <- dt_baseline[match(sb$id, dt_baseline$id)]
+  expect_true(all(b$div_pref + sb$X_qualified_div >= pmin(b$div_pref, 0)))
+  expect_true(all(b$txbl_pens_dist + sb$X_pens_txbl >= pmin(b$txbl_pens_dist, 0)))
+  expect_true(all(b$txbl_ira_dist + sb$X_ira_txbl >= pmin(b$txbl_ira_dist, 0)))
+  expect_true(all(sb$X_qualified_div[b$div_pref <= 0] == 0))
+  expect_lt(m$negative_flow_rate, 0)
+  expect_gt(m$negative_flow_rate, -1)
+})

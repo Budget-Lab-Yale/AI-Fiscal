@@ -138,7 +138,7 @@ source("code/14_reconciliation.R")
 # scenario-indexed table with macro CIT delta per cell. Unparseable
 # scenario IDs (e.g. legacy runs) get NA macro fields and are dropped
 # from the deliverable.
-.load_macro_per_scenario <- function(runscript_path) {
+.load_macro_per_scenario <- function(runscript_path, year) {
   macro_path <- sub("\\.csv$", "_macro.csv", runscript_path)
   if (!file.exists(macro_path)) {
     cli::cli_abort(c(
@@ -146,7 +146,7 @@ source("code/14_reconciliation.R")
       i = "Re-run {.run Rscript code/00_ai_fiscal_sim.R} to regenerate."
     ))
   }
-  macro <- fread(macro_path)
+  macro <- read_runscript_sidecar(runscript_path, "macro", year)
   # Convert raw-dollar macro columns to $ billions so the join with the
   # microsim deltas (which 08 emits in $B, mirroring Tax-Simulator's
   # receipts.csv units) lines up. Only the columns 09 actually consumes
@@ -942,7 +942,7 @@ write_publishable_excel_bundle <- function(out_dir, year,
 
   cell_params_fp <- sub("\\.csv$", "_cell_params.csv", runscript_path)
   if (file.exists(cell_params_fp)) {
-    cell_params_tbl <- fread(cell_params_fp)
+    cell_params_tbl <- read_runscript_sidecar(runscript_path, "cell_params", year)
     ctx$add_sheet("cell_params", cell_params_tbl)
     # Pull the yaml so the key_parameters sheet can surface r_ai_annual
     # alongside the derived bumps, and label the year-dependent rows from
@@ -1041,7 +1041,7 @@ assemble_deliverables <- function(
 
   rev_long    <- fread(rev_fp)
   shares_long <- fread(shares_fp)
-  macro_per_scn <- .load_macro_per_scenario(runscript_path)
+  macro_per_scn <- .load_macro_per_scenario(runscript_path, year)
 
   decomp_fp <- file.path(agg_dir, sprintf("revenue_decomp_%d.csv", year))
   decomp <- if (file.exists(decomp_fp)) fread(decomp_fp) else NULL
@@ -1053,11 +1053,19 @@ assemble_deliverables <- function(
   cell_params_fp <- sub("\\.csv$", "_cell_params.csv", runscript_path)
   rev_gdp <- NULL
   if (file.exists(cell_params_fp)) {
-    cell_params <- fread(cell_params_fp)
-    if (file.exists(params_yaml)) {
-      cbo_y <- yaml::read_yaml(params_yaml)$cbo_baseline
-      gdp_B <- cbo_y$gdp_baseline_year_B
-      rev_share <- cbo_y$rev_to_gdp_baseline_year
+    cell_params <- read_runscript_sidecar(runscript_path, "cell_params", year)
+    # CBO anchors for the year: from cell_params (each year's fiscal-year
+    # GDP and revenue / GDP), or the yaml's baseline-year scalars for runs
+    # written before cell_params carried them.
+    anchors <- if ("cbo_gdp_fy_B" %in% names(cell_params)) {
+      list(gdp_baseline_year_B      = cell_params$cbo_gdp_fy_B[1],
+           rev_to_gdp_baseline_year = cell_params$cbo_rev_to_gdp[1])
+    } else if (file.exists(params_yaml)) {
+      yaml::read_yaml(params_yaml)$cbo_baseline
+    }
+    if (!is.null(anchors)) {
+      gdp_B <- anchors$gdp_baseline_year_B
+      rev_share <- anchors$rev_to_gdp_baseline_year
       if (is.numeric(gdp_B) && gdp_B > 0 &&
           is.numeric(rev_share) && rev_share > 0) {
         rev_gdp <- build_revenue_to_gdp(rev_out$long, cell_params,
@@ -1068,7 +1076,8 @@ assemble_deliverables <- function(
 
   recon <- NULL
   if (file.exists(cell_params_fp) && file.exists(params_yaml)) {
-    recon <- .build_reconciliation_for_run(fread(cell_params_fp), params_yaml, year)
+    recon <- .build_reconciliation_for_run(
+      read_runscript_sidecar(runscript_path, "cell_params", year), params_yaml, year)
   }
 
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)

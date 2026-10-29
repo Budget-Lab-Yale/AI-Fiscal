@@ -1,13 +1,15 @@
 #!/bin/bash
 #SBATCH --job-name=aif-setting-full
 #SBATCH --partition=day
-#SBATCH --time=04:00:00
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=128G
+#SBATCH --time=08:00:00
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=340G
 
 # A full pipeline run under a named setting (docs/v1_2_plan.md), output to
 # scratch (no --publish), for recording a rung's revenue effect against the
-# legacy run. Resources as for layer 3 (legacy_full.sbatch: peak 99 GB).
+# legacy run. Sized for an annual window (tax years 2025-2036: peak 281 GB on
+# 12 cores; 16 cores at 192 GB ran out of memory). A single-year setting
+# needs far less (layer 3: 16 cores, peak 99 GB).
 # Submit from the repo root:
 #   SETTING=v1_2_reference TAX_SIMULATOR_DIR=<path> BLSMM_DIR=<path> \
 #     sbatch --output=<log dir>/%x-%j.out tests/server/setting_full.sbatch

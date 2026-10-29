@@ -316,10 +316,14 @@ tax_data_vintage <- function(symlink = "data/tax_data") {
 # `scenario_root` is where the folder is created; the orchestrator puts it
 # in the run's scratch directory and links it into the vintage
 # (00_run_store.R). Returns the absolute scenario directory path.
+# add_year = TRUE adds one more year to a scenario folder written for an
+# earlier year of the same run: that year's baseline link is replaced by
+# the counterfactual file.
 write_counterfactual_scenario <- function(dt_cf, year, scenario_id,
                                           vintage_paths = tax_data_vintage(),
                                           overwrite     = FALSE,
-                                          scenario_root = vintage_paths$path) {
+                                          scenario_root = vintage_paths$path,
+                                          add_year      = FALSE) {
   baseline_dir <- file.path(vintage_paths$path, "baseline")
   if (!dir.exists(baseline_dir)) {
     cli::cli_abort(c(
@@ -330,6 +334,16 @@ write_counterfactual_scenario <- function(dt_cf, year, scenario_id,
   }
   scenario_dir <- file.path(scenario_root, scenario_id)
   override_csv <- sprintf("tax_units_%d.csv", year)
+
+  if (add_year) {
+    if (!dir.exists(scenario_dir)) {
+      cli::cli_abort("Cannot add {.val {year}} to {.path {scenario_dir}}: the folder does not exist.")
+    }
+    fp <- file.path(scenario_dir, override_csv)
+    unlink(fp)   # the baseline link for this year
+    fwrite(dt_cf, fp)
+    return(scenario_dir)
+  }
 
   if (dir.exists(scenario_dir)) {
     if (!overwrite) {

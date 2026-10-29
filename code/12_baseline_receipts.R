@@ -13,6 +13,14 @@
 #     income lines and real-GDP index in 2026; the survey's base year is
 #     2025, so the receipt reads the workbook.
 #
+#   config/calibration/cbo_2026_02_budget_path.csv
+#     CBO February 2026 baseline, fiscal years 2025-2036: GDP, total
+#     revenues, and revenues by source (individual income, payroll,
+#     corporate income taxes). Source: Table 1-1 of CBO's
+#     Budget-Projections.xlsx (CBO_Budget_Proj v3 20260211). The annual
+#     window's CBO anchors (rung 4, A3) and the FY2026 receipts comparison
+#     (A5).
+#
 #   config/calibration/nipa_sector_gva_2025.csv
 #     BEA NIPA, 2025: gross value added by sector (Table 1.3.5),
 #     compensation of employees in each sector outside nonfarm business
@@ -20,7 +28,8 @@
 #     from BEA's public annual flat file.
 #
 # Usage (from repo root):
-#   Rscript code/12_baseline_receipts.R <path to CBO Economic-Projections.xlsx> [BEA download dir]
+#   Rscript code/12_baseline_receipts.R <CBO Economic-Projections.xlsx> \
+#     <CBO Budget-Projections.xlsx> [BEA download dir]
 
 suppressPackageStartupMessages({
   library(data.table)
@@ -82,6 +91,30 @@ build_cbo_baseline_path <- function(workbook) {
   out
 }
 
+.BUDGET_SHEET <- "Table 1-1"
+.BUDGET_ROWS  <- c(individual_B = "Individual income taxes", payroll_B = "Payroll taxes",
+                   corporate_B = "Corporate income taxes", revenues_B = "Total",
+                   gdp_fy_B = "GDP")
+
+# Table 1-1 in billions: the first block of rows. "Total" appears again for
+# outlays, so each label's first match is taken.
+build_cbo_budget_path <- function(workbook) {
+  sheet <- as.data.frame(read_excel(workbook, .BUDGET_SHEET, col_names = FALSE,
+                                    .name_repair = "minimal"))
+  year_row <- which(vapply(seq_len(nrow(sheet)), function(i)
+    all(c("2025", "2036") %in% as.character(unlist(sheet[i, ]))), logical(1)))[1]
+  years <- suppressWarnings(as.integer(unlist(sheet[year_row, ])))
+  cols  <- match(.PATH_YEARS, years)
+  if (anyNA(cols)) cli::cli_abort("{.path {workbook}} lacks fiscal years {.val {.PATH_YEARS[is.na(cols)]}}.")
+  out <- data.table(fy = .PATH_YEARS)
+  for (name in names(.BUDGET_ROWS)) {
+    row <- which(sheet[[1]] == .BUDGET_ROWS[[name]])[1]
+    if (is.na(row)) cli::cli_abort("No {.val {.BUDGET_ROWS[[name]]}} row in {.path {workbook}}.")
+    out[[name]] <- as.numeric(unlist(sheet[row, cols]))
+  }
+  out
+}
+
 build_nipa_sector_gva <- function(bea_dir) {
   fp <- file.path(bea_dir, basename(.BEA_URL))
   if (!file.exists(fp)) {
@@ -101,12 +134,15 @@ build_nipa_sector_gva <- function(bea_dir) {
 
 if (!interactive() && sys.nframe() == 0L) {
   args <- commandArgs(trailingOnly = TRUE)
-  if (!length(args) %in% 1:2) {
-    stop("Usage: Rscript code/12_baseline_receipts.R <CBO Economic-Projections.xlsx> [BEA download dir]")
+  if (!length(args) %in% 2:3) {
+    stop("Usage: Rscript code/12_baseline_receipts.R <CBO Economic-Projections.xlsx> <CBO Budget-Projections.xlsx> [BEA download dir]")
   }
-  bea_dir <- if (length(args) == 2L) args[[2]] else file.path("output", "bea")
+  bea_dir <- if (length(args) == 3L) args[[3]] else file.path("output", "bea")
   path <- build_cbo_baseline_path(args[[1]])
   fwrite(path, "config/calibration/cbo_2026_02_baseline_path.csv")
+  budget <- build_cbo_budget_path(args[[2]])
+  fwrite(budget, "config/calibration/cbo_2026_02_budget_path.csv")
+  print(budget)
   sector <- build_nipa_sector_gva(bea_dir)
   fwrite(sector, "config/calibration/nipa_sector_gva_2025.csv")
   print(path)

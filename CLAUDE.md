@@ -143,6 +143,8 @@ orchestrator (00_ai_fiscal_sim.R)
 | `code/14_reconciliation.R` | National-income reconciliation (Version 1.2 B1): GDP → labor, capital, rest of GDP, baseline and AI change, next to tax-unit income. Called by 09; writes `national_income_reconciliation_<year>.csv`. |
 | `code/15_blsmm_debt_gdp.R` | Optional BLSMM debt/GDP tie-in. Reads `revenue_to_gdp_<year>.csv`. |
 | `code/16_chart_data.R` | Website figure data per run (`config/charts.yaml` → `<run>/charts/<collection>/`); builders reuse `10_figures.R`'s `fig_*()` data via `.load_figure_inputs()`. Validates/renders via `tools/charts.mjs` when Node is present. |
+| `code/17_annual_tables.R` | Annual window (Version 1.2 A3): stacks each fiscal year's tables into `<table>_by_year.csv` and writes `revenue_window_totals.csv` (FY2027-2036). Called by the orchestrator. |
+| `code/18_early_evidence.R` | Standalone (Version 1.2 A5): `Rscript code/18_early_evidence.R <run dir> [--refresh]` compares observed 2026 labor share, GDP, and FY2026 receipts with each preset's path and nowcast. |
 | `tools/charts.mjs` | Chart-engine CLI wrapper (validate / render / png / pin-check) over a collection folder; `npm run charts:*`. |
 | `code/paper_figure_data.R` | Post-processor (not in the orchestrator). Assembles the policy draft's exhibits into `paper_figure_data_<year>.xlsx` in draft order, and regenerates the two appendix context charts (Fig A1 GDP growth, A2 labor share) from FRED — data sheets + PNGs. |
 | `code/make_synthetic_tax_units.R` | Regenerate the committed synthetic fixture from a real vintage. |
@@ -313,7 +315,10 @@ pass on Linux and Mac.
   bundles, and several dozen figure PNGs per year into
   `results/runs/<run_id>/` (gitignored; tagged release runs are added
   with `-f`), plus ~10 GB of counterfactual tax units and a ~23 GB
-  Tax-Simulator tree per year in scratch, deleted after success.
+  Tax-Simulator tree per year in scratch, deleted after success. An
+  annual-window run (tax years 2025-2036) needs about 233 GB of scratch,
+  31 min on 12 cores, and a 340 GB memory request (peak 281 GB; 16 cores
+  at 192 GB ran out of memory).
   `results/aggregates/` and `results/figures/` hold the v1.0 outputs as
   an archive and are no longer written.
 - **Settings.** `--setting legacy_v1_0_1` (the default) is

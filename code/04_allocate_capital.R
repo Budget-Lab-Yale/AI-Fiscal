@@ -44,20 +44,33 @@ source("code/00_utils.R")
 # receiving set is conditioned on positive y_k retirement income.
 .RETIREMENT_TXBL_DIST_COLS <- c("txbl_ira_dist", "txbl_pens_dist")
 
+# retirement_balance: the AI-attributable retirement balance carried from
+# the previous tax year of an annual run (capital_flow.retirement_flow =
+# deferred); 0 otherwise.
 allocate_capital <- function(dt, params,
-                             asset_map_path = "config/asset_to_income_map.csv") {
+                             asset_map_path = "config/asset_to_income_map.csv",
+                             retirement_balance = 0) {
   macro <- compute_macro_targets(dt, params)
   cf    <- params$raw$capital_flow
-  dt    <- allocate_across_units(dt, macro$X_to_units, cf$allocation_base,
+  if (macro$X_to_units < 0) {
+    # A shortfall against the baseline (e.g. Slow's first years, when
+    # Karger's growth is below CBO's): scaled down in proportion.
+    out <- allocate_negative_flow(dt, macro$X_to_units, params, retirement_balance)
+  } else {
+    dt  <- allocate_across_units(dt, macro$X_to_units, cf$allocation_base,
                                  cf$allocator,
                                  list(top1 = cf$concentration_top1,
                                       top01 = cf$concentration_top01))
-  dt    <- allocate_within_unit(dt, params$raw$capital_flow$interest)
-  out   <- map_to_income_types(dt, asset_map_path, params)
+    dt  <- allocate_within_unit(dt, cf$interest, cf$residual)
+    out <- map_to_income_types(dt, asset_map_path, params, retirement_balance)
+  }
 
   setattr(out, "macro", c(macro, list(
     total_base       = attr(dt, "total_base"),
     retirement_F     = attr(out, "retirement_F"),
+    retirement_D     = attr(out, "retirement_D"),
+    retirement_balance = attr(out, "retirement_balance"),
+    negative_flow_rate = attr(out, "negative_flow_rate"),
     sz_W_star       = attr(dt, "sz_W_star"),
     kappa_corp       = params$raw$corporate$kappa_corp,
     cit_statutory    = params$raw$corporate$cit_statutory
@@ -79,8 +92,8 @@ compute_macro_targets <- function(dt, params) {
   y1_dollar <- y1_k_dollar + y1_l_dollar
   X         <- y1_k_dollar - y0_k_dollar
 
-  cbo_cit_baseline_dollar <- cbo$cit_to_gdp_baseline_year *
-    cbo$gdp_baseline_year_B * 1e9
+  cbo_cit_baseline_dollar <- params$cbo_anchor$cit_to_gdp *
+    params$cbo_anchor$gdp_fy_B * 1e9
   if (cbo_cit_baseline_dollar <= 0) {
     cli::cli_abort(c(
       "CBO baseline CIT anchor is non-positive.",
@@ -129,6 +142,64 @@ compute_macro_targets <- function(dt, params) {
   all_assets          = character(),
   ex_home_cash_nonfin = c("primary_home", "cash", "other_nonfin")
 )
+
+# A negative X (capital income below the baseline path) cannot follow
+# wealth: subtracting it from holders by wealth would give units negative
+# dividends or pension income they never had. Instead every unit's income
+# in each channel X reaches is scaled by one rate s = X / (weighted total
+# of those incomes), so the aggregate is X and no item falls below zero
+# while |s| < 1. Channels: qualified dividends, interest (unless
+# capital_flow.interest = baseline_path), long-term gains, positive
+# pass-through profit, taxable pension and IRA distributions. A deferred
+# retirement flow applies to the retirement channel as in the cascade.
+allocate_negative_flow <- function(dt, X_to_units, params, retirement_balance = 0) {
+  pos <- function(x) pmax(x, 0)
+  cf  <- params$raw$capital_flow
+  interest_on <- cf$interest != "baseline_path"
+  base <- data.table(
+    div   = pos(dt$div_pref),
+    tint  = if (interest_on) pos(dt$txbl_int) else 0,
+    xint  = if (interest_on) pos(dt$exempt_int) else 0,
+    ltcg  = pos(dt$kg_lt),
+    pt    = pos(dt$scorp_active) + pos(dt$scorp_passive) +
+            pos(dt$part_active) + pos(dt$part_passive),
+    pens  = pos(pmin(dt$txbl_pens_dist, dt$gross_pens_dist)),
+    ira   = pos(dt$txbl_ira_dist)
+  )
+  total <- sum(dt$weight * rowSums(base))
+  rate  <- X_to_units / total
+  if (rate <= -1) {
+    cli::cli_abort("Negative capital flow {.val {X_to_units / 1e9}}B exceeds the income it scales ({.val {total / 1e9}}B).")
+  }
+  F_total <- sum(dt$weight * (base$pens + base$ira)) * rate
+  D_total <- F_total
+  balance_end <- 0
+  if (cf$retirement_flow == "deferred") {
+    available   <- retirement_balance + F_total
+    D_total     <- params$retirement_cal$r_R * available
+    balance_end <- available - D_total
+  }
+  ret_rate <- if (F_total != 0) rate * D_total / F_total else 0
+  out <- data.table(
+    id = dt$id, weight = dt$weight,
+    X_qualified_div        = rate * base$div,
+    X_taxable_int          = rate * base$tint,
+    X_tax_exempt_int       = rate * base$xint,
+    X_ltcg_gross           = rate * base$ltcg,
+    X_passthrough_ordinary = rate * base$pt,
+    X_pens_txbl            = ret_rate * base$pens,
+    X_ira_txbl             = ret_rate * base$ira
+  )
+  out[, `:=`(X_pens_gross = X_pens_txbl, X_ira_gross = X_ira_txbl)]
+  out[, X_i := X_qualified_div + X_taxable_int + X_tax_exempt_int + X_ltcg_gross +
+        X_passthrough_ordinary + rate * (base$pens + base$ira)]
+  setcolorder(out, c("id", "weight", "X_i"))
+  setattr(out, "retirement_F", F_total)
+  setattr(out, "retirement_D", D_total)
+  setattr(out, "retirement_balance", balance_end)
+  setattr(out, "negative_flow_rate", rate)
+  out
+}
 
 # Step 4: distribute X_to_units across tax units in proportion to wealth
 # in the allocation base (all assets in v1.0.1).
@@ -218,7 +289,13 @@ allocate_across_units <- function(dt, X_to_units, allocation_base = "all_assets"
 # interest = "baseline_path" (Version 1.2 rung 2, B3) keeps interest on its
 # baseline path: fixed income gets none of X_i, which is split over the
 # unit's other income-bearing classes instead.
-allocate_within_unit <- function(dt, interest = "by_holdings") {
+#
+# residual = "spread" (Version 1.2 rung 4) gives units with no
+# income-bearing holdings none of X: their X_i is spread over the units
+# that have such holdings, in proportion to those units' X_i, instead of
+# defaulting to retirement ("retirement", v1.0.1).
+allocate_within_unit <- function(dt, interest = "by_holdings",
+                                 residual = "retirement") {
   classes  <- names(.INCOME_BEARING_COLS)
   if (interest == "baseline_path") classes <- setdiff(classes, "fixed_income")
   inc_cols <- unname(.INCOME_BEARING_COLS[classes])
@@ -228,6 +305,14 @@ allocate_within_unit <- function(dt, interest = "by_holdings") {
   pos_mat <- as.matrix(dt[, ..inc_cols])
   pos_mat[pos_mat < 0] <- 0
   dt[, A_inc := rowSums(pos_mat)]
+  if (residual == "spread") {
+    holds <- dt$A_inc > 0
+    moved <- sum(dt$weight[!holds] * dt$X_i[!holds])
+    kept  <- sum(dt$weight[holds] * dt$X_i[holds])
+    # kept is 0 only when X is (the window's zero-shock first year).
+    scale <- if (kept != 0) 1 + moved / kept else 0
+    dt[, X_i := fifelse(A_inc > 0, X_i * scale, 0)]
+  }
   for (cls in classes) {
     col <- .INCOME_BEARING_COLS[[cls]]
     pos_col <- pos_mat[, col]
@@ -246,7 +331,7 @@ allocate_within_unit <- function(dt, interest = "by_holdings") {
 # the share table at `asset_map_path`. Retirement flow follows the R1
 # income-flow cascade. Returns a slim output table with id, weight, and
 # X_<type>.
-map_to_income_types <- function(dt, asset_map_path, params) {
+map_to_income_types <- function(dt, asset_map_path, params, retirement_balance = 0) {
   amap <- fread(asset_map_path)
   payout <- params$raw$capital_flow$payout
   pe <- list(qualified_dividend = payout, ltcg = 1 - payout)
@@ -266,7 +351,7 @@ map_to_income_types <- function(dt, asset_map_path, params) {
   dt[, X_passthrough_ordinary := X_passthrough_equity *
        pt$passthrough_ordinary]
 
-  apply_retirement_cascade_R1(dt, params)
+  apply_retirement_cascade_R1(dt, params, retirement_balance)
 
   out_cols <- c("id", "weight",
                 "X_i", "X_qualified_div", "X_taxable_int", "X_tax_exempt_int",
@@ -274,7 +359,9 @@ map_to_income_types <- function(dt, asset_map_path, params) {
                 "X_pens_gross", "X_pens_txbl",
                 "X_ira_gross",  "X_ira_txbl")
   out <- dt[, ..out_cols]
-  setattr(out, "retirement_F", attr(dt, "retirement_F"))
+  for (a in c("retirement_F", "retirement_D", "retirement_balance")) {
+    setattr(out, a, attr(dt, a))
+  }
   out
 }
 
@@ -286,7 +373,14 @@ map_to_income_types <- function(dt, asset_map_path, params) {
 # taxable pension or IRA distributions, weighted by SCF retirement
 # wealth. Split into the two y_k retirement components using the
 # baseline taxable composition.
-apply_retirement_cascade_R1 <- function(dt, params) {
+#
+# capital_flow.retirement_flow = deferred (Version 1.2 rung 4 sensitivity):
+# the slice accrues to an AI-attributable retirement balance instead, and
+# only the distribution rate r_R (retirement_calibration.yaml) of that
+# balance, carried over from earlier tax years, is distributed and taxed
+# in the year:
+#   D(t) = r_R * (B(t-1) + F(t)),   B(t) = B(t-1) + F(t) - D(t).
+apply_retirement_cascade_R1 <- function(dt, params, retirement_balance = 0) {
   cal <- params$retirement_cal
   needed <- c(.RETIREMENT_TXBL_DIST_COLS, "retirement")
   missing <- setdiff(needed, names(dt))
@@ -314,7 +408,15 @@ apply_retirement_cascade_R1 <- function(dt, params) {
       i = "Check the merged baseline for tax-unit retirement wealth and taxable distributions."
     ))
   }
-  dt[, F_i := fifelse(has_dist, F_total * ret_wealth / denom, 0)]
+  if (params$raw$capital_flow$retirement_flow == "deferred") {
+    available   <- retirement_balance + F_total
+    D_total     <- cal$r_R * available
+    balance_end <- available - D_total
+  } else {
+    D_total     <- F_total
+    balance_end <- 0
+  }
+  dt[, F_i := fifelse(has_dist, D_total * ret_wealth / denom, 0)]
 
   # Taxable-only pension/IRA split derived from calibration.
   T_P <- cal$s_P * cal$tau_P
@@ -338,6 +440,8 @@ apply_retirement_cascade_R1 <- function(dt, params) {
   dt[, F_i := NULL]
 
   setattr(dt, "retirement_F", F_total)
+  setattr(dt, "retirement_D", D_total)
+  setattr(dt, "retirement_balance", balance_end)
   invisible(dt)
 }
 

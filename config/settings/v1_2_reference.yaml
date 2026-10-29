@@ -14,6 +14,11 @@
 #
 # Rung 0 changed no keys.
 
+window: annual
+window_status: choice
+window_source: "Decision 3: tax years 2025-2036, reporting FY2026 (nowcast) and FY2027-2036."
+window_rung: 4
+
 cbo_baseline:
   growth_path: annual
   growth_path_status: choice
@@ -34,6 +39,11 @@ capital_flow:
   allocation_base_status: choice
   allocation_base_source: "Decided 2026-10-28: the primary residence, cash, and other nonfinancial assets (vehicles, OTHNFIN) earn none of the AI capital flow."
   allocation_base_rung: 2
+
+  residual: spread
+  residual_status: choice
+  residual_source: "Decided 2026-10-28: units with no income-bearing holdings receive none of X; their share is spread over units that have such holdings."
+  residual_rung: 4
 
   interest: baseline_path
   interest_status: choice

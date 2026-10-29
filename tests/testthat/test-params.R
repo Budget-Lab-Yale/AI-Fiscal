@@ -83,7 +83,8 @@ test_that("legacy_v1_0_1 reproduces the v1.0.1 derived parameters", {
   file.copy(.params_yaml, file.path(dir, "scenario_params.yaml"))
   file.copy(here::here("config", "retirement_calibration.yaml"), dir)
   file.copy(here::here("config", "calibration",
-                       c("cbo_2026_02_baseline_path.csv", "nipa_sector_gva_2025.csv")),
+                       c("cbo_2026_02_baseline_path.csv", "nipa_sector_gva_2025.csv",
+                         "cbo_2026_02_budget_path.csv")),
             file.path(dir, "calibration"))
   yaml::write_yaml(overlay, file.path(dir, "settings", "trial.yaml"))
   file.path(dir, "scenario_params.yaml")
@@ -198,9 +199,44 @@ test_that("rung-3 shares outside [0, 1] abort", {
 })
 
 test_that("the committed sensitivity settings load", {
-  for (s in sub("\\.yaml$", "", list.files(here::here("config", "settings"), "^v1_2_sens_"))) {
+  for (s in sub("\\.yaml$", "", list.files(here::here("config", "settings"), "^v1_2_sens_concentrated"))) {
     p <- load_params(.params_yaml, variant = "M", setting = s)
     expect_identical(p$raw$capital_flow$allocator, "concentrating", info = s)
     expect_identical(p$raw$shock$sector, "nonfarm_business", info = s)
+  }
+})
+
+test_that("the reference setting scores the annual window", {
+  p <- load_params(.params_yaml, variant = "M", setting = "v1_2_reference", year = 2027)
+  expect_identical(p$raw$window, "annual")
+  expect_identical(p$year, 2027L)
+  budget <- data.table::fread(here::here("config", "calibration", "cbo_2026_02_budget_path.csv"))
+  expect_equal(p$cbo_anchor$gdp_fy_B, budget[fy == 2027, gdp_fy_B])
+  expect_equal(p$cbo_anchor$cit_to_gdp, budget[fy == 2027, corporate_B / gdp_fy_B])
+  expect_equal(load_params(.params_yaml, variant = "M", setting = "v1_2_reference",
+                           year = 2025)$g_y, 0)
+  expect_error(load_params(.params_yaml, variant = "M", year = 2027), "single-year")
+})
+
+test_that("post-2030 rules: hold the gap, continue growth, interpolate to 2050", {
+  base <- list(inherits = "v1_2_reference")
+  at <- function(rule, year) {
+    yml <- .setting_fixture(list())
+    file.copy(here::here("config", "settings", "v1_2_reference.yaml"),
+              file.path(dirname(yml), "settings"))
+    yaml::write_yaml(c(base, list(shock = list(post_2030 = rule))),
+                     file.path(dirname(yml), "settings", "trial.yaml"))
+    load_params(yml, variant = "M", setting = "trial", year = year)
+  }
+  g30 <- at("hold_gap", 2030)
+  expect_equal(at("hold_gap", 2036)$g_y, g30$g_y)
+  expect_equal(at("hold_gap", 2036)$theta1_k, g30$theta1_k)
+  expect_gt(at("continue_growth", 2036)$g_y, g30$g_y)
+  expect_equal(at("continue_growth", 2036)$theta1_k, g30$theta1_k)
+  late <- at("to_2050", 2036)
+  v <- late$raw$shock$variants$M
+  expect_equal(late$theta1_k, v$theta1_k + (v$theta1_k_2050 - v$theta1_k) * 6 / 20)
+  for (rule in c("hold_gap", "continue_growth", "to_2050")) {
+    expect_equal(at(rule, 2030)$g_y, g30$g_y, info = rule)
   }
 })

@@ -1476,11 +1476,11 @@ fig_x_etr_scatter_per_realization <- function(tbl, realization_code, year,
   # (for shares / gini which only have scenario_id) plus a per-variant
   # g_y lookup (for the variant-scaling plot — .load_macro_per_scenario
   # drops g_y, so read it from the raw macro CSV).
-  macro_per_scn <- .load_macro_per_scenario(runscript_path)
+  macro_per_scn <- .load_macro_per_scenario(runscript_path, year)
   axes_per_scn  <- macro_per_scn[, .(scenario_id, variant, share_mode,
                                      labor, realization)]
 
-  macro_raw     <- fread(macro_csv)
+  macro_raw     <- read_runscript_sidecar(runscript_path, "macro", year)
   # g_y is invariant across share_mode for a given variant; drop the
   # share_mode column before deduplicating so the unique() call returns
   # one row per variant.

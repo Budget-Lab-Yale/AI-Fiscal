@@ -37,13 +37,16 @@ source("code/paper_figure_data.R")
 .chart_context <- function(run_dir) {
   inputs    <- file.path(run_dir, "inputs")
   runscript <- file.path(inputs, "runscript.csv")
-  year      <- .runscript_policy_year(runscript)
+  # The figures are a view of baseline_year (an annual window's runscript
+  # ends later).
+  year      <- yaml::read_yaml(file.path(inputs, "params.yaml"))$baseline_year %||%
+    .runscript_policy_year(runscript)
   ctx <- .load_figure_inputs(runscript, file.path(run_dir, "tables"), year)
   c(ctx, list(
     year        = year,
     tables      = file.path(run_dir, "tables"),
     params_yaml = file.path(inputs, "params.yaml"),
-    cell_params = fread(file.path(inputs, "runscript_cell_params.csv"))
+    cell_params = read_runscript_sidecar(runscript, "cell_params", year)
   ))
 }
 

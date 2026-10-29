@@ -929,7 +929,7 @@ build_atr_decile <- function(output_root, runscript_path, year,
   scenarios <- .both_scenarios(rs)
 
   macro_csv  <- sub("\\.csv$", "_macro.csv", runscript_path)
-  params_tbl <- if (file.exists(macro_csv)) fread(macro_csv) else
+  params_tbl <- if (file.exists(macro_csv)) read_runscript_sidecar(runscript_path, "macro", year) else
     data.table(note = sprintf("Macro summary not found at %s", macro_csv))
   if (publishable) params_tbl <- .friendly_parameters_sheet(params_tbl)
 

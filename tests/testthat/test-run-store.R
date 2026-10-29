@@ -144,7 +144,8 @@ test_that("build_ai_fiscal_runs writes to scratch, links into the vintage, and r
   }
   for (f in c("params.yaml", "runscript_macro.csv", "runscript_cell_params.csv",
               "retirement_calibration.yaml", "asset_to_income_map.csv",
-              "cbo_2026_02_baseline_path.csv", "nipa_sector_gva_2025.csv")) {
+              "cbo_2026_02_baseline_path.csv", "nipa_sector_gva_2025.csv",
+              "cbo_2026_02_budget_path.csv")) {
     expect_true(file.exists(file.path(run$inputs, f)), info = f)
   }
   expect_identical(yaml::read_yaml(run$params_yaml),
@@ -153,4 +154,58 @@ test_that("build_ai_fiscal_runs writes to scratch, links into the vintage, and r
   cleanup_run(run, sb$vintage, succeeded = TRUE)
   expect_setequal(list.files(sb$vintage$path), "baseline")
   expect_false(dir.exists(run$scratch))
+})
+
+test_that("an annual window writes every year and shares capital-only files", {
+  skip_on_os("windows")  # file.symlink needs developer mode there
+  sb <- .run_store_sandbox(); on.exit(unlink(sb$root, recursive = TRUE))
+  fixture <- here::here("tests", "fixtures", "synthetic_tax_data", "baseline",
+                        "tax_units_2030.csv")
+  years <- 2025:2027
+  for (yr in years) {
+    file.symlink(fixture, file.path(sb$vintage$path, "baseline",
+                                    sprintf("tax_units_%d.csv", yr)))
+  }
+  config <- file.path(sb$root, "config")
+  dir.create(file.path(config, "settings"), recursive = TRUE)
+  dir.create(file.path(config, "calibration"))
+  file.copy(here::here("config", c("scenario_params.yaml", "retirement_calibration.yaml")), config)
+  file.copy(Sys.glob(here::here("config", "calibration", "*.csv")), file.path(config, "calibration"))
+  yaml::write_yaml(list(window = "annual", window_last_year = 2027L,
+                        cbo_baseline = list(growth_path = "annual")),
+                   file.path(config, "settings", "annual_test.yaml"))
+  withr::with_dir(here::here(), suppressMessages({
+    source("code/00_ai_fiscal_sim.R")
+    run <- new_run("annual_test", "1", runs_dir = sb$runs, scratch = sb$scratch)
+    specs <- lapply(c("S0", "S2"), function(l)
+      list(variant = "M", share_mode = "R", labor_scenario = l, realization = "V1"))
+    rs_path <- suppressWarnings(build_ai_fiscal_runs(
+      specs, run, params_yaml = file.path(config, "scenario_params.yaml"),
+      data_dir = sb$vintage$path, vintage_paths = sb$vintage))
+  }))
+
+  rs <- data.table::fread(rs_path)
+  expect_true(all(rs$years == "2025:2027"))
+  for (sid in rs$ID[-1]) {
+    dir <- file.path(run$tax_data, sid)
+    for (yr in years) {
+      fp <- file.path(dir, sprintf("tax_units_%d.csv", yr))
+      expect_true(file.exists(fp), info = paste(sid, yr))
+      expect_true(is.na(Sys.readlink(fp)) || !nzchar(Sys.readlink(fp)), info = paste(sid, yr))
+      expect_true(file.exists(file.path(dir, sprintf("factor_channels_%d.csv", yr))))
+    }
+  }
+  expect_identical(Sys.readlink(file.path(run$tax_data, "ai_M_R_S2_V1_CO")),
+                   file.path(run$tax_data, "ai_M_R_S0_V1_CO"))
+  cell  <- data.table::fread(file.path(run$inputs, "runscript_cell_params.csv"))
+  macro <- data.table::fread(file.path(run$inputs, "runscript_macro.csv"))
+  expect_identical(sort(unique(cell$year)), years)
+  expect_equal(nrow(cell), length(years) * 2L)
+  expect_equal(nrow(macro), length(years))
+  expect_equal(macro[year == 2025, g_y], 0)
+  expect_true(all(diff(macro$g_y) > 0))
+  expect_equal(nrow(read_runscript_sidecar(rs_path, "cell_params", 2026)), 2L)
+
+  cleanup_run(run, sb$vintage, succeeded = TRUE)
+  expect_setequal(list.files(sb$vintage$path), "baseline")
 })

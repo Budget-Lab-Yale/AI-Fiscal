@@ -32,7 +32,8 @@
 .RUN_CONFIG_COPIES <- c("config/retirement_calibration.yaml",
                         "config/asset_to_income_map.csv",
                         "config/calibration/cbo_2026_02_baseline_path.csv",
-                        "config/calibration/nipa_sector_gva_2025.csv")
+                        "config/calibration/nipa_sector_gva_2025.csv",
+                        "config/calibration/cbo_2026_02_budget_path.csv")
 
 scratch_root <- function() {
   root <- Sys.getenv("TAXSIM_LOCAL_ROOT", unset = "")

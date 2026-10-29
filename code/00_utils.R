@@ -277,3 +277,18 @@ PAL_VARIANT <- c(Slow     = YBL_PALE,
                   width = w, height = h, dpi = 200, bg = "white")
   invisible(c(full = full_fp, clean = clean_fp))
 }
+
+# The orchestrator's per-cell sidecars, <runscript>_macro.csv and
+# <runscript>_cell_params.csv, carry a `year` column: an annual window
+# writes one set of rows per tax year. Returns the rows for `year`
+# (all rows from files written before the column existed).
+read_runscript_sidecar <- function(runscript_path, suffix, year) {
+  fp <- sub("\\.csv$", sprintf("_%s.csv", suffix), runscript_path)
+  out <- data.table::fread(fp)
+  if (!"year" %in% names(out)) return(out)
+  keep <- out$year == year   # outside [ ]: inside, `year` is the column
+  out  <- out[keep]
+  if (!nrow(out)) cli::cli_abort("{.path {fp}} has no rows for year {.val {year}}.")
+  out
+}
+

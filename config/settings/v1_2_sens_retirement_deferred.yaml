@@ -1,0 +1,11 @@
+# Version 1.2 sensitivity (docs/v1_2_plan.md rung 4, retirement step): the
+# reference with the retirement slice of X accruing to an AI-attributable
+# balance, of which the distribution rate r_R (4.9%) is distributed and
+# taxed each year, rather than taxed in full in the year.
+inherits: v1_2_reference
+
+capital_flow:
+  retirement_flow: deferred
+  retirement_flow_status: choice
+  retirement_flow_source: "Decided 2026-10-28: sensitivity taxing only the distributed share of the AI retirement balance."
+  retirement_flow_rung: 4

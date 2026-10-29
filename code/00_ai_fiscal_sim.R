@@ -72,6 +72,7 @@ source("code/10_figures.R")
 source("code/13_macro_params_table.R")
 source("code/15_blsmm_debt_gdp.R")
 source("code/16_chart_data.R")
+source("code/17_annual_tables.R")
 
 # Canonical 18-cell grid: 3 variants × 2 share modes × 3 labor scenarios
 # × V1 realization. The release pipeline does not accept overrides.
@@ -87,7 +88,7 @@ release_specs <- function() {
 }
 
 # Per-variant macro summary CSV: one row per (variant, share_mode).
-.write_macro_summary <- function(per_variant, runscript_path) {
+.macro_summary <- function(per_variant) {
   rows <- lapply(names(per_variant), function(key) {
     pv <- per_variant[[key]]
     m  <- attr(pv$step_b, "macro")
@@ -115,14 +116,18 @@ release_specs <- function() {
        income_types_B$X_tax_exempt_int_B +
        income_types_B$X_passthrough_ordinary_B +
        income_types_B$X_ltcg_gross_B)
-    income_types_B$X_retirement_realized_B   <- (m$retirement_F %||% 0) / 1e9
-    # Snap floating-point noise to zero — under R1 the realized aggregate
-    # equals the slice by construction.
+    # Distributed (taxed) in the year: the whole slice, or under a deferred
+    # retirement flow the distribution from the AI-attributable balance.
+    income_types_B$X_retirement_realized_B   <- (m$retirement_D %||% m$retirement_F %||% 0) / 1e9
+    income_types_B$X_retirement_balance_B    <- (m$retirement_balance %||% 0) / 1e9
+    # Snap floating-point noise to zero — with a distributed flow the
+    # realized aggregate equals the slice by construction.
     unreal <- income_types_B$X_retirement_slice_B - income_types_B$X_retirement_realized_B
     income_types_B$X_retirement_unrealized_B <-
       ifelse(abs(unreal) < 1e-5, 0, unreal)
 
     do.call(data.table, c(list(
+      year           = pv$params$year,
       variant        = pv$params$active_variant,
       share_mode     = pv$params$share_mode,
       theta1_k       = pv$params$theta1_k,
@@ -144,11 +149,7 @@ release_specs <- function() {
       delta_R_CIT    = m$delta_R_CIT
     ), income_types_B))
   })
-  out <- rbindlist(rows)
-  fp  <- sub("\\.csv$", "_macro.csv", runscript_path)
-  fwrite(out, fp)
-  cli::cli_inform("Wrote macro summary {.path {fp}}")
-  fp
+  rbindlist(rows)
 }
 
 # Build the run's counterfactual folders (in scratch, linked into the
@@ -168,11 +169,19 @@ build_ai_fiscal_runs <- function(specs, run,
   params0 <- load_params(params_yaml, setting = setting)
   cli::cli_inform("Parameter setting: {.val {setting}}")
   write_run_inputs(run, params0$raw)
-  year    <- params0$raw$baseline_year
-  # Default years starts one year before baseline_year. Tax-Simulator's
-  # FY-adjustment drops the earliest year of each scenario, so a single-
-  # year run produces an empty receipts.csv.
-  years_str <- years %||% sprintf("%d:%d", year - 1L, year)
+  # Tax years with a counterfactual file. A single-year window scores
+  # baseline_year and runs Tax-Simulator from the year before it, which its
+  # fiscal-year adjustment drops (a single-year range would give an empty
+  # receipts.csv). An annual window scores every year from its first year,
+  # which is likewise dropped and reported only as the zero-shock base.
+  raw <- params0$raw
+  scored_years <- if (raw$window == "annual") {
+    seq(raw$window_first_year, raw$window_last_year)
+  } else {
+    raw$baseline_year
+  }
+  years_str <- years %||% sprintf("%d:%d", min(scored_years) - (raw$window != "annual"),
+                                  max(scored_years))
 
   # Validate the range shape AND that it spans >= 2 years: Tax-Simulator's
   # FY adjustment drops the earliest year of each scenario, so a
@@ -200,43 +209,11 @@ build_ai_fiscal_runs <- function(specs, run,
     ))
   }
 
-  # 1. Load + SZ split once (variant-independent).
-  dt_split <- apply_passthrough_split(
-    load_tax_units(year, data_dir = data_dir),
-    params0
-  )
-  baseline_cache <- compute_baseline_cache(dt_split, params0)
-
-  # 2. Cache (params, step_b) per unique (variant, share_mode). share_mode
-  # changes theta1_k → (g_k, g_l, X, CIT wedge), so step_b must be recomputed.
   unique_keys <- unique(vapply(specs, function(s) {
     paste(s$variant, s$share_mode, sep = "|")
   }, character(1)))
-  per_variant <- lapply(unique_keys, function(key) {
-    parts <- strsplit(key, "|", fixed = TRUE)[[1]]
-    p  <- load_params(params_yaml,
-                      variant    = parts[1],
-                      share_mode = parts[2],
-                      setting    = setting)
-    sb <- allocate_capital(dt_split, p,
-                           asset_map_path = "config/asset_to_income_map.csv")
-    sb <- apply_realization(sb, p$raw$capital_flow$ai_gains_realized)
-    list(params = p, step_b = sb)
-  })
-  names(per_variant) <- unique_keys
-
-  .write_macro_summary(per_variant, runscript_path)
-
   labor_scenarios <- unique(vapply(specs, function(s) s$labor_scenario,
                                    character(1)))
-  write_macro_params_table(per_variant, labor_scenarios, runscript_path)
-
-  rows <- list(runscript_row(
-    "baseline",
-    tax_data_id      = "baseline",
-    tax_data_vintage = vintage_paths$vintage,
-    years            = years_str
-  ))
 
   # Decomposition is always on for the release pipeline. Suffix map is
   # the inverse of .FLAVOR_SUFFIX_MAP (axis registry, 00_utils.R) so the
@@ -248,44 +225,114 @@ build_ai_fiscal_runs <- function(specs, run,
   )
   flavors <- names(flavor_suffix)
 
-  for (spec in specs) {
-    sid_base <- ai_fiscal_scenario_id(spec$variant, spec$share_mode,
-                                      spec$labor_scenario,
-                                      spec$realization)
-    pv   <- per_variant[[paste(spec$variant, spec$share_mode, sep = "|")]]
-    # Step A is (variant, share_mode, labor) specific; identical across
-    # flavors of this cell, so compute once.
-    dt_a <- shock_labor(dt_split, pv$params,
-                        scenario = spec$labor_scenario)
-    for (flavor in flavors) {
-      sid <- paste0(sid_base, flavor_suffix[[flavor]])
-      cli::cli_inform("Building scenario {.val {sid}}")
-      dt_cf <- build_counterfactual(
-        dt_split, dt_a, pv$step_b,
-        params = pv$params,
-        flavor = flavor, baseline_cache = baseline_cache
-      )
-      scenario_dir <- write_counterfactual_scenario(
-        dt_cf, year, sid,
-        vintage_paths = vintage_paths,
-        scenario_root = run$tax_data
-      )
-      write_factor_channels(dt_split, dt_a, pv$step_b,
-                            year = year, scenario_dir = scenario_dir,
-                            flavor = flavor)
-      link_id <- link_scenario_into_vintage(run, sid, scenario_dir,
-                                            vintage_paths)
-      rows[[length(rows) + 1L]] <- runscript_row(
-        sid,
-        tax_data_id      = link_id,
-        tax_data_vintage = vintage_paths$vintage,
-        years            = years_str
-      )
+  rows <- list(runscript_row(
+    "baseline",
+    tax_data_id      = "baseline",
+    tax_data_vintage = vintage_paths$vintage,
+    years            = years_str
+  ))
+  macro_rows <- list()
+  cell_rows  <- list()
+  # AI-attributable retirement balance per (variant, share_mode), carried
+  # across tax years when capital_flow.retirement_flow = deferred.
+  retirement_balance <- list()
+
+  for (year in scored_years) {
+    first_year <- year == scored_years[1]
+    cli::cli_inform("Tax year {.val {year}}")
+    # 1. Load + SZ split once per year (variant-independent).
+    dt_split <- apply_passthrough_split(
+      load_tax_units(year, data_dir = data_dir),
+      params0
+    )
+    baseline_cache <- compute_baseline_cache(dt_split, params0)
+
+    # 2. (params, step_b) per unique (variant, share_mode) for this year.
+    # share_mode changes theta1_k -> (g_k, g_l, X, CIT wedge), so step_b
+    # must be recomputed.
+    per_variant <- list()
+    for (key in unique_keys) {
+      parts <- strsplit(key, "|", fixed = TRUE)[[1]]
+      p  <- load_params(params_yaml,
+                        variant    = parts[1],
+                        share_mode = parts[2],
+                        setting    = setting,
+                        year       = year)
+      sb <- allocate_capital(dt_split, p,
+                             asset_map_path = "config/asset_to_income_map.csv",
+                             retirement_balance = retirement_balance[[key]] %||% 0)
+      sb <- apply_realization(sb, p$raw$capital_flow$ai_gains_realized)
+      retirement_balance[[key]] <- attr(sb, "macro")$retirement_balance
+      per_variant[[key]] <- list(params = p, step_b = sb)
+    }
+    macro_rows[[length(macro_rows) + 1L]] <- .macro_summary(per_variant)
+    cell_rows[[length(cell_rows) + 1L]]   <-
+      build_macro_params_table(per_variant, labor_scenarios)
+
+    # Capital-only files depend on (variant, share_mode, realization) only,
+    # not the labor rule: the first one built is shared by the others
+    # through a directory link in scratch.
+    capital_only_dirs <- list()
+
+    for (spec in specs) {
+      sid_base <- ai_fiscal_scenario_id(spec$variant, spec$share_mode,
+                                        spec$labor_scenario,
+                                        spec$realization)
+      pv   <- per_variant[[paste(spec$variant, spec$share_mode, sep = "|")]]
+      # Step A is (variant, share_mode, labor) specific; identical across
+      # flavors of this cell, so compute once.
+      dt_a <- shock_labor(dt_split, pv$params,
+                          scenario = spec$labor_scenario)
+      for (flavor in flavors) {
+        sid <- paste0(sid_base, flavor_suffix[[flavor]])
+        co_key <- paste(spec$variant, spec$share_mode, spec$realization)
+        shared <- flavor == "capital_only" && !is.null(capital_only_dirs[[co_key]])
+        if (shared) {
+          scenario_dir <- file.path(run$tax_data, sid)
+          if (first_year) {
+            file.symlink(capital_only_dirs[[co_key]], scenario_dir)
+          }
+        } else {
+          cli::cli_inform("Building scenario {.val {sid}} ({year})")
+          dt_cf <- build_counterfactual(
+            dt_split, dt_a, pv$step_b,
+            params = pv$params,
+            flavor = flavor, baseline_cache = baseline_cache
+          )
+          scenario_dir <- write_counterfactual_scenario(
+            dt_cf, year, sid,
+            vintage_paths = vintage_paths,
+            scenario_root = run$tax_data,
+            add_year      = !first_year
+          )
+          write_factor_channels(dt_split, dt_a, pv$step_b,
+                                year = year, scenario_dir = scenario_dir,
+                                flavor = flavor)
+          if (flavor == "capital_only") capital_only_dirs[[co_key]] <- scenario_dir
+        }
+        if (first_year) {
+          link_id <- link_scenario_into_vintage(run, sid, scenario_dir,
+                                                vintage_paths)
+          rows[[length(rows) + 1L]] <- runscript_row(
+            sid,
+            tax_data_id      = link_id,
+            tax_data_vintage = vintage_paths$vintage,
+            years            = years_str
+          )
+        }
+      }
     }
   }
 
+  macro_fp <- sub("\\.csv$", "_macro.csv", runscript_path)
+  fwrite(rbindlist(macro_rows), macro_fp)
+  cli::cli_inform("Wrote macro summary {.path {macro_fp}}")
+  cell_fp <- sub("\\.csv$", "_cell_params.csv", runscript_path)
+  fwrite(rbindlist(cell_rows), cell_fp)
+  cli::cli_inform("Wrote per-cell macro-params {.path {cell_fp}}")
+
   write_runscript(rows, runscript_path)
-  cli::cli_inform("Wrote runscript {.path {runscript_path}} ({length(specs)} cells × 3 flavors)")
+  cli::cli_inform("Wrote runscript {.path {runscript_path}} ({length(specs)} cells × 3 flavors, tax years {years_str})")
   runscript_path
 }
 
@@ -500,24 +547,42 @@ build_ai_fiscal_runs <- function(specs, run,
     log_con        = log_con
   )
 
-  aggregate_tax_sim_output(
-    output_root    = output_root,
-    runscript_path = runscript_path,
-    out_dir        = run$tables,
-    argv           = argv,
-    params_yaml    = run$params_yaml
-  )
+  # Tables for each fiscal year reported: the policy year of a single-year
+  # window; every fiscal year after the first tax year of an annual one
+  # (Tax-Simulator's fiscal-year adjustment drops it), i.e. the FY2026
+  # nowcast year and the FY2027-2036 window.
+  raw <- yaml::read_yaml(run$params_yaml)
+  annual       <- raw$window == "annual"
+  report_years <- if (annual) seq(raw$window_first_year + 1L, raw$window_last_year) else raw$baseline_year
+  for (fy in report_years) {
+    aggregate_tax_sim_output(
+      year           = fy,
+      output_root    = output_root,
+      runscript_path = runscript_path,
+      out_dir        = run$tables,
+      argv           = argv,
+      params_yaml    = run$params_yaml
+    )
 
-  assemble_deliverables(
-    runscript_path = runscript_path,
-    agg_dir        = run$tables,
-    out_dir        = run$tables,
-    output_root    = output_root,
-    argv           = argv,
-    params_yaml    = run$params_yaml
-  )
+    assemble_deliverables(
+      year           = fy,
+      runscript_path = runscript_path,
+      agg_dir        = run$tables,
+      out_dir        = run$tables,
+      output_root    = output_root,
+      argv           = argv,
+      params_yaml    = run$params_yaml
+    )
+  }
+  if (annual) {
+    write_annual_tables(run$tables, report_years,
+                        window_years = setdiff(report_years, min(report_years)))
+  }
 
+  # The figure suite, BLSMM step, and website figures are single-year
+  # views of baseline_year until the Version 1.2 figure set (F5).
   assemble_figures(
+    year           = raw$baseline_year,
     runscript_path = runscript_path,
     agg_dir        = run$tables,
     out_dir        = run$figures,
@@ -529,6 +594,7 @@ build_ai_fiscal_runs <- function(specs, run,
   # debt/GDP. Skips with a warning if BLSMM_DIR is unset or the BLSMM repo
   # isn't reachable, so the rest of the pipeline doesn't depend on it.
   run_blsmm_step(
+    year           = raw$baseline_year,
     agg_dir        = run$tables,
     fig_dir        = run$figures,
     runscript_path = runscript_path,

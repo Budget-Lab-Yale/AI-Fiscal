@@ -24,6 +24,23 @@ baseline_year: 2030
 baseline_year_status: choice
 baseline_year_source: "Match Karger 5-yr horizon; microsim aged to 2030."
 
+# Tax years scored (rung 4, A3). single_year: baseline_year, with the year
+# before it for Tax-Simulator's fiscal-year adjustment (v1.0.1). annual:
+# window_first_year through window_last_year, every year scored; FY2026
+# (from tax years 2025-2026) is the nowcast year and FY2027-2036 the
+# budget window.
+window: single_year
+window_status: choice
+window_source: "docs/v1_2_plan.md A3 and decision 3: annual over tax years 2025-2036 for FY2027-2036 plus the FY2026 nowcast."
+
+window_first_year: 2025
+window_first_year_status: choice
+window_first_year_source: "Decision 3: the survey's base year, dropped by Tax-Simulator's fiscal-year adjustment."
+
+window_last_year: 2036
+window_last_year_status: choice
+window_last_year_source: "Decision 3: last year of CBO's February 2026 budget window."
+
 # ---------------------------------------------------------------------
 # CBO baseline real-GDP growth path (publication 62105: 2025 = 1.9%,
 # 2026 = 2.2%, 2027+ = 1.8% flat). The Tax-Simulator aging pipeline
@@ -63,6 +80,10 @@ cbo_baseline:
   growth_path_status: choice
   growth_path_source: "docs/v1_2_plan.md A1. flat reproduces v1.0.1; annual is the Version 1.2 reference."
 
+  budget_path_file: calibration/cbo_2026_02_budget_path.csv
+  budget_path_file_status: sourced
+  budget_path_file_source: "CBO February 2026 baseline, fiscal years 2025-2036: GDP and revenues by source (Budget-Projections.xlsx, Table 1-1). The CBO anchors for each year of an annual window (GDP, revenue / GDP, corporate receipts / GDP). Built by code/12_baseline_receipts.R. Relative to config/."
+
   path_file: calibration/cbo_2026_02_baseline_path.csv
   path_file_status: sourced
   path_file_source: "CBO February 2026 baseline, calendar years 2025-2036 (Economic-Projections.xlsx, sheet 2; the source of Macro-Projections vintage 2026071916). Built by code/12_baseline_receipts.R. Relative to config/."
@@ -80,6 +101,17 @@ shock:
   baseline_labor_share: 0.555
   baseline_labor_share_status: sourced
   baseline_labor_share_source: "Karger 2026 (NBER w35046) Sec. 3, 2025 nonfarm-business labor share baseline (55.48%), rounded."
+
+  # Years after the survey's 2030 horizon (rung 4, A3; D13). hold_gap: the
+  # 2030 GDP gap g_y and labor share stay at their 2030 values.
+  # to_2050: the AI growth rate moves linearly from r_ai_annual in 2030 to
+  # r_ai_annual_2050 in 2050, and the labor share linearly to
+  # 1 - theta1_k_2050. continue_growth: the AI growth rate stays at
+  # r_ai_annual; the share stays at its 2030 value. Ignored for a single
+  # year at or before 2030.
+  post_2030: hold_gap
+  post_2030_status: choice
+  post_2030_source: "docs/v1_2_plan.md A3; D13 (three-way setting SET 2026-10-05); hold_gap is the reference (2026-10-28)."
 
   # What the survey's 2030 labor share is compared with (rung 1, A1).
   # survey_2025: the 2025 share above (v1.0.1). projected: the 2025 share
@@ -110,6 +142,12 @@ shock:
       r_ai_annual: 0.020
       r_ai_annual_status: sourced
       r_ai_annual_source: "Karger 2026 (NBER w35046) Table 19, Slow scenario, Economists column, median 2030 annualized GDP growth rate."
+      theta1_k_2050: 0.480
+      theta1_k_2050_status: sourced
+      theta1_k_2050_source: "1 - Karger 2026 online appendix Table 40 (p. 132), 2050 nonfarm-business labor share for Slow, Economists column, median (52.0%). Used only when shock.post_2030 = to_2050."
+      r_ai_annual_2050: 0.020
+      r_ai_annual_2050_status: sourced
+      r_ai_annual_2050_source: "Karger 2026 online appendix Table 20 (p. 89), Slow, Economists column, median annualized GDP growth over the five years to 2050 (2.0%). Used only when shock.post_2030 = to_2050."
     M:                          # Moderate: 2030 labor 54.0%; AI GDP CAGR 2.6%/yr (Economists)
       theta1_k: 0.460
       theta1_k_status: sourced
@@ -117,6 +155,12 @@ shock:
       r_ai_annual: 0.026
       r_ai_annual_status: sourced
       r_ai_annual_source: "Karger 2026 (NBER w35046) Table 19, Moderate scenario, Economists column, median 2030 annualized GDP growth rate."
+      theta1_k_2050: 0.500
+      theta1_k_2050_status: sourced
+      theta1_k_2050_source: "1 - Karger 2026 online appendix Table 40 (p. 132), 2050 nonfarm-business labor share for Moderate, Economists column, median (50.0%). Used only when shock.post_2030 = to_2050."
+      r_ai_annual_2050: 0.028
+      r_ai_annual_2050_status: sourced
+      r_ai_annual_2050_source: "Karger 2026 online appendix Table 20 (p. 89), Moderate, Economists column, median annualized GDP growth over the five years to 2050 (2.8%). Used only when shock.post_2030 = to_2050."
     R:                          # Rapid:    2030 labor 52.0%; AI GDP CAGR 3.3%/yr (Economists)
       theta1_k: 0.480
       theta1_k_status: sourced
@@ -124,6 +168,12 @@ shock:
       r_ai_annual: 0.033
       r_ai_annual_status: sourced
       r_ai_annual_source: "Karger 2026 (NBER w35046) Table 19, Rapid scenario, Economists column, median 2030 annualized GDP growth rate."
+      theta1_k_2050: 0.550
+      theta1_k_2050_status: sourced
+      theta1_k_2050_source: "1 - Karger 2026 online appendix Table 40 (p. 132), 2050 nonfarm-business labor share for Rapid, Economists column, median (45.0%). Used only when shock.post_2030 = to_2050."
+      r_ai_annual_2050: 0.035
+      r_ai_annual_2050_status: sourced
+      r_ai_annual_2050_source: "Karger 2026 online appendix Table 20 (p. 89), Rapid, Economists column, median annualized GDP growth over the five years to 2050 (3.5%). Used only when shock.post_2030 = to_2050."
 
 # ---------------------------------------------------------------------
 # Magnitude of the S2/S3 dispersion shift, tied to the productivity
@@ -202,6 +252,22 @@ capital_flow:
   interest: by_holdings
   interest_status: choice
   interest_source: "docs/v1_2_plan.md B3 and decision 2. by_holdings reproduces v1.0.1."
+
+  # Units with none of the income-bearing holdings (equities, bonds,
+  # pass-throughs, retirement) under the allocation base (rung 4).
+  # retirement: their share of X defaults to retirement (v1.0.1). spread:
+  # it is spread over units that have such holdings.
+  residual: retirement
+  residual_status: choice
+  residual_source: "docs/v1_2_plan.md rung 4 (retirement step, decided 2026-10-28). retirement reproduces v1.0.1."
+
+  # Timing of the retirement slice of X (rung 4). distributed: taxed in
+  # full in the year as pension and IRA distributions (v1.0.1, reference).
+  # deferred: it accrues to an AI-attributable balance of which r_R
+  # (retirement_calibration.yaml) is distributed each year (sensitivity).
+  retirement_flow: distributed
+  retirement_flow_status: choice
+  retirement_flow_source: "docs/v1_2_plan.md rung 4 (retirement step, decided 2026-10-28)."
 
   # Across-unit allocator (rung 3, C2). proportional: X_i in proportion to
   # the unit's allocation-base wealth (v1.0.1). concentrating: the same,
