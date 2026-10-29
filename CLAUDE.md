@@ -358,8 +358,10 @@ public release.)
 - **Making a deck from model results:** start from the Budget Lab 16:9
   slide template (Template A, "Preferred") and put slide charts through the
   `slide-charts` skill of the `budget-lab-charts` repo (same engine as the
-  website figures here). Deck work lives in `output/decks/` (gitignored),
-  never in `charts/`. Slide titles come from the author, not an assistant.
+  website figures here). Outlines and per-slide chart data live in
+  `decks/` (tracked; rebuilt from runs by `decks/build_deck_data.R`, see
+  `decks/README.md`); slide working folders sit beside the deck, never in
+  `charts/`. Slide titles come from the author, not an assistant.
   The Version 1.2 release ends in two such decks (corrected Version 1 and
   Version 1.2; `docs/v1_2_plan.md`).
 - **Touching the synthetic fixture's structure:** update the
