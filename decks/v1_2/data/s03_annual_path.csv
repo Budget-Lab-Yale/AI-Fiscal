@@ -1,0 +1,67 @@
+year,scenario,shares,revenue_change_B,nowcast
+2026,Slow,Labor share falls,-18.0565010025222,TRUE
+2026,Slow,Shares fixed,-15.6502258902732,TRUE
+2026,Moderate,Labor share falls,1.66637298936215,TRUE
+2026,Moderate,Shares fixed,9.75030579633032,TRUE
+2026,Rapid,Labor share falls,19.8031207127383,TRUE
+2026,Rapid,Shares fixed,38.7811092297002,TRUE
+2027,Slow,Labor share falls,-20.7727911397201,FALSE
+2027,Slow,Shares fixed,-14.3036919821579,FALSE
+2027,Moderate,Labor share falls,24.1136632011384,FALSE
+2027,Moderate,Shares fixed,45.0643370926402,FALSE
+2027,Rapid,Labor share falls,64.7302814350358,FALSE
+2027,Rapid,Shares fixed,114.323575223185,FALSE
+2028,Slow,Labor share falls,-15.5966187163967,FALSE
+2028,Slow,Shares fixed,-4.1211768215208,FALSE
+2028,Moderate,Labor share falls,56.1240031533208,FALSE
+2028,Moderate,Shares fixed,91.6964002879928,FALSE
+2028,Rapid,Labor share falls,120.104966256935,FALSE
+2028,Rapid,Shares fixed,205.11622437019,FALSE
+2029,Slow,Labor share falls,-7.23895438666539,FALSE
+2029,Slow,Shares fixed,9.78245733720356,FALSE
+2029,Moderate,Labor share falls,93.8988809786742,FALSE
+2029,Moderate,Shares fixed,146.361739481882,FALSE
+2029,Rapid,Labor share falls,182.880367441474,FALSE
+2029,Rapid,Shares fixed,309.484816066153,FALSE
+2030,Slow,Labor share falls,1.08781646857255,FALSE
+2030,Slow,Shares fixed,23.9514365021268,FALSE
+2030,Moderate,Labor share falls,133.847359274234,FALSE
+2030,Moderate,Shares fixed,204.871834880273,FALSE
+2030,Rapid,Labor share falls,249.560049131112,FALSE
+2030,Rapid,Shares fixed,422.600573215255,FALSE
+2031,Slow,Labor share falls,2.18935090347854,FALSE
+2031,Slow,Shares fixed,27.8289766481622,FALSE
+2031,Moderate,Labor share falls,144.795377410677,FALSE
+2031,Moderate,Shares fixed,224.686325695325,FALSE
+2031,Rapid,Labor share falls,266.818049106592,FALSE
+2031,Rapid,Shares fixed,461.79337314445,FALSE
+2032,Slow,Labor share falls,2.0344926658178,FALSE
+2032,Slow,Shares fixed,29.0039038321402,FALSE
+2032,Moderate,Labor share falls,150.179749017925,FALSE
+2032,Moderate,Shares fixed,234.148050709481,FALSE
+2032,Rapid,Labor share falls,276.237040364174,FALSE
+2032,Rapid,Shares fixed,481.108539413229,FALSE
+2033,Slow,Labor share falls,1.90660430751208,FALSE
+2033,Slow,Shares fixed,30.1986847706975,FALSE
+2033,Moderate,Labor share falls,155.640829918522,FALSE
+2033,Moderate,Shares fixed,243.667655439766,FALSE
+2033,Rapid,Labor share falls,285.857519551182,FALSE
+2033,Rapid,Shares fixed,500.622550723782,FALSE
+2034,Slow,Labor share falls,1.74844215610338,FALSE
+2034,Slow,Shares fixed,31.4091640551116,FALSE
+2034,Moderate,Labor share falls,161.093113834882,FALSE
+2034,Moderate,Shares fixed,253.36846961911,FALSE
+2034,Rapid,Labor share falls,295.410497894712,FALSE
+2034,Rapid,Shares fixed,520.614665641766,FALSE
+2035,Slow,Labor share falls,1.57301039721676,FALSE
+2035,Slow,Shares fixed,32.6590187434583,FALSE
+2035,Moderate,Labor share falls,166.778342471781,FALSE
+2035,Moderate,Shares fixed,263.574557466887,FALSE
+2035,Rapid,Labor share falls,305.35117690545,FALSE
+2035,Rapid,Shares fixed,541.610191062652,FALSE
+2036,Slow,Labor share falls,1.50345532471726,FALSE
+2036,Slow,Shares fixed,34.0396602437449,FALSE
+2036,Moderate,Labor share falls,173.344648914603,FALSE
+2036,Moderate,Shares fixed,274.69925405639,FALSE
+2036,Rapid,Labor share falls,317.081364551541,FALSE
+2036,Rapid,Shares fixed,564.447102993435,FALSE

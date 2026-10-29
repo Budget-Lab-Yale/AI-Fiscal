@@ -1,0 +1,10 @@
+scenario,labor_rule,revenue_change_B
+Slow,Proportional,-31.5651920193638
+Slow,Compressive,-55.8226896162802
+Slow,Expansive,-7.0968081999423
+Moderate,Proportional,1259.81596817576
+Moderate,Compressive,1016.45732952305
+Moderate,Expansive,1516.81343632896
+Rapid,Proportional,2364.03131263821
+Rapid,Compressive,1869.99225656986
+Rapid,Expansive,2917.36919238207

@@ -1,0 +1,91 @@
+step,step_order,scenario,shares,labor_rule,revenue_change_B
+v1.0.1,1,Slow,Labor share falls,Proportional,8.01534691145987
+v1.0.1,1,Slow,Labor share falls,Compressive,4.58412840335275
+v1.0.1,1,Slow,Labor share falls,Expansive,11.4820508794297
+v1.0.1,1,Slow,Shares fixed,Proportional,29.4720839888619
+v1.0.1,1,Slow,Shares fixed,Compressive,26.0297648710552
+v1.0.1,1,Slow,Shares fixed,Expansive,32.9517848956689
+v1.0.1,1,Moderate,Labor share falls,Proportional,113.264608019879
+v1.0.1,1,Moderate,Labor share falls,Compressive,92.9243243953035
+v1.0.1,1,Moderate,Labor share falls,Expansive,135.147923034591
+v1.0.1,1,Moderate,Shares fixed,Proportional,179.378215374913
+v1.0.1,1,Moderate,Shares fixed,Compressive,158.775240680112
+v1.0.1,1,Moderate,Shares fixed,Expansive,201.520959509256
+v1.0.1,1,Rapid,Labor share falls,Proportional,200.79414919708
+v1.0.1,1,Rapid,Labor share falls,Compressive,161.473628226743
+v1.0.1,1,Rapid,Labor share falls,Expansive,246.332156595892
+v1.0.1,1,Rapid,Shares fixed,Proportional,360.060089694361
+v1.0.1,1,Rapid,Shares fixed,Compressive,319.292138966943
+v1.0.1,1,Rapid,Shares fixed,Expansive,406.815517949216
+CBO calendar-year growth,2,Slow,Labor share falls,Proportional,-0.26078214953817
+CBO calendar-year growth,2,Slow,Labor share falls,Compressive,-2.72620490583776
+CBO calendar-year growth,2,Slow,Labor share falls,Expansive,2.22331879769387
+CBO calendar-year growth,2,Slow,Shares fixed,Proportional,21.1599491988939
+CBO calendar-year growth,2,Slow,Shares fixed,Compressive,18.6858195351836
+CBO calendar-year growth,2,Slow,Shares fixed,Expansive,23.6516367475436
+CBO calendar-year growth,2,Moderate,Labor share falls,Proportional,104.765715761055
+CBO calendar-year growth,2,Moderate,Labor share falls,Compressive,85.3809019792614
+CBO calendar-year growth,2,Moderate,Labor share falls,Expansive,125.546733523039
+CBO calendar-year growth,2,Moderate,Shares fixed,Proportional,170.758054476806
+CBO calendar-year growth,2,Moderate,Shares fixed,Compressive,151.127631526173
+CBO calendar-year growth,2,Moderate,Shares fixed,Expansive,191.790778700278
+CBO calendar-year growth,2,Rapid,Labor share falls,Proportional,192.106430061142
+CBO calendar-year growth,2,Rapid,Labor share falls,Compressive,153.731061801084
+CBO calendar-year growth,2,Rapid,Labor share falls,Expansive,236.393699944854
+CBO calendar-year growth,2,Rapid,Shares fixed,Proportional,351.081494258824
+CBO calendar-year growth,2,Rapid,Shares fixed,Compressive,311.303584997894
+CBO calendar-year growth,2,Rapid,Shares fixed,Expansive,396.546192898401
+Fiscal-year blend,3,Slow,Labor share falls,Proportional,-4.69917176040442
+Fiscal-year blend,3,Slow,Labor share falls,Compressive,-7.66680334069702
+Fiscal-year blend,3,Slow,Labor share falls,Expansive,-1.71091785569501
+Fiscal-year blend,3,Slow,Shares fixed,Proportional,23.9149585676744
+Fiscal-year blend,3,Slow,Shares fixed,Compressive,20.9367923925486
+Fiscal-year blend,3,Slow,Shares fixed,Expansive,26.9124226072766
+Fiscal-year blend,3,Moderate,Labor share falls,Proportional,116.458940029147
+Fiscal-year blend,3,Moderate,Labor share falls,Compressive,91.0259312921339
+Fiscal-year blend,3,Moderate,Labor share falls,Expansive,143.538485587491
+Fiscal-year blend,3,Moderate,Shares fixed,Proportional,204.575954115209
+Fiscal-year blend,3,Moderate,Shares fixed,Compressive,178.824001224909
+Fiscal-year blend,3,Moderate,Shares fixed,Expansive,231.989614924746
+Fiscal-year blend,3,Rapid,Labor share falls,Proportional,210.027762222906
+Fiscal-year blend,3,Rapid,Labor share falls,Compressive,159.315707131989
+Fiscal-year blend,3,Rapid,Labor share falls,Expansive,267.738139931389
+Fiscal-year blend,3,Rapid,Shares fixed,Proportional,422.072464992919
+Fiscal-year blend,3,Rapid,Shares fixed,Compressive,369.577132704474
+Fiscal-year blend,3,Rapid,Shares fixed,Expansive,481.365859903184
+Households with no financial assets,4,Slow,Labor share falls,Proportional,-4.89671387389102
+Households with no financial assets,4,Slow,Labor share falls,Compressive,-7.86461753910972
+Households with no financial assets,4,Slow,Labor share falls,Expansive,-1.90865230461827
+Households with no financial assets,4,Slow,Shares fixed,Proportional,23.8677484264811
+Households with no financial assets,4,Slow,Shares fixed,Compressive,20.8901591749466
+Households with no financial assets,4,Slow,Shares fixed,Expansive,26.8654167956159
+Households with no financial assets,4,Moderate,Labor share falls,Proportional,115.518408108168
+Households with no financial assets,4,Moderate,Labor share falls,Compressive,90.0869350621828
+Households with no financial assets,4,Moderate,Labor share falls,Expansive,142.602888887724
+Households with no financial assets,4,Moderate,Shares fixed,Proportional,204.128721133981
+Households with no financial assets,4,Moderate,Shares fixed,Compressive,178.376577645722
+Households with no financial assets,4,Moderate,Shares fixed,Expansive,231.54212764456
+Households with no financial assets,4,Rapid,Labor share falls,Proportional,207.712538313507
+Households with no financial assets,4,Rapid,Labor share falls,Compressive,156.993291998186
+Households with no financial assets,4,Rapid,Labor share falls,Expansive,265.423057357853
+Households with no financial assets,4,Rapid,Shares fixed,Proportional,421.107509540927
+Households with no financial assets,4,Rapid,Shares fixed,Compressive,368.610666756308
+Households with no financial assets,4,Rapid,Shares fixed,Expansive,480.409185756413
+Allocation base and interest,5,Slow,Labor share falls,Proportional,-5.08626337602372
+Allocation base and interest,5,Slow,Labor share falls,Compressive,-8.05424555055492
+Allocation base and interest,5,Slow,Labor share falls,Expansive,-2.09578065187201
+Allocation base and interest,5,Slow,Shares fixed,Proportional,23.8203318868948
+Allocation base and interest,5,Slow,Shares fixed,Compressive,20.8421428035101
+Allocation base and interest,5,Slow,Shares fixed,Expansive,26.8177206105386
+Allocation base and interest,5,Moderate,Labor share falls,Proportional,114.687276214513
+Allocation base and interest,5,Moderate,Labor share falls,Compressive,89.2524799537682
+Allocation base and interest,5,Moderate,Labor share falls,Expansive,141.79163926701
+Allocation base and interest,5,Moderate,Shares fixed,Proportional,203.720467152538
+Allocation base and interest,5,Moderate,Shares fixed,Compressive,177.96985723123
+Allocation base and interest,5,Moderate,Shares fixed,Expansive,231.1383751374
+Allocation base and interest,5,Rapid,Labor share falls,Proportional,205.330919770069
+Allocation base and interest,5,Rapid,Labor share falls,Compressive,154.538668610945
+Allocation base and interest,5,Rapid,Labor share falls,Expansive,263.174755425673
+Allocation base and interest,5,Rapid,Shares fixed,Proportional,420.219488458923
+Allocation base and interest,5,Rapid,Shares fixed,Compressive,367.693009853399
+Allocation base and interest,5,Rapid,Shares fixed,Expansive,479.569728547637

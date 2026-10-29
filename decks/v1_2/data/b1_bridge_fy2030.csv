@@ -1,0 +1,37 @@
+version,scenario,shares,labor_rule,revenue_change_B
+Corrected Version 1,Slow,Labor share falls,Proportional,-5.08626337602372
+Corrected Version 1,Slow,Labor share falls,Compressive,-8.05424555055492
+Corrected Version 1,Slow,Labor share falls,Expansive,-2.09578065187201
+Corrected Version 1,Slow,Shares fixed,Proportional,23.8203318868948
+Corrected Version 1,Slow,Shares fixed,Compressive,20.8421428035101
+Corrected Version 1,Slow,Shares fixed,Expansive,26.8177206105386
+Corrected Version 1,Moderate,Labor share falls,Proportional,114.687276214513
+Corrected Version 1,Moderate,Labor share falls,Compressive,89.2524799537682
+Corrected Version 1,Moderate,Labor share falls,Expansive,141.79163926701
+Corrected Version 1,Moderate,Shares fixed,Proportional,203.720467152538
+Corrected Version 1,Moderate,Shares fixed,Compressive,177.96985723123
+Corrected Version 1,Moderate,Shares fixed,Expansive,231.1383751374
+Corrected Version 1,Rapid,Labor share falls,Proportional,205.330919770069
+Corrected Version 1,Rapid,Labor share falls,Compressive,154.538668610945
+Corrected Version 1,Rapid,Labor share falls,Expansive,263.174755425673
+Corrected Version 1,Rapid,Shares fixed,Proportional,420.219488458923
+Corrected Version 1,Rapid,Shares fixed,Compressive,367.693009853399
+Corrected Version 1,Rapid,Shares fixed,Expansive,479.569728547637
+Version 1.2,Slow,Labor share falls,Proportional,1.08781646857255
+Version 1.2,Slow,Labor share falls,Compressive,-1.88305293595045
+Version 1.2,Slow,Labor share falls,Expansive,4.08029602897272
+Version 1.2,Slow,Shares fixed,Proportional,23.9514365021268
+Version 1.2,Slow,Shares fixed,Compressive,20.9732648543931
+Version 1.2,Slow,Shares fixed,Expansive,26.9486861169316
+Version 1.2,Moderate,Labor share falls,Proportional,133.847359274234
+Version 1.2,Moderate,Labor share falls,Compressive,108.347785498674
+Version 1.2,Moderate,Labor share falls,Expansive,161.02823223325
+Version 1.2,Moderate,Shares fixed,Proportional,204.871834880273
+Version 1.2,Moderate,Shares fixed,Compressive,179.116743815358
+Version 1.2,Moderate,Shares fixed,Expansive,232.294303850713
+Version 1.2,Rapid,Labor share falls,Proportional,249.560049131112
+Version 1.2,Rapid,Labor share falls,Compressive,198.404656208855
+Version 1.2,Rapid,Labor share falls,Expansive,307.742014904686
+Version 1.2,Rapid,Shares fixed,Proportional,422.600573215255
+Version 1.2,Rapid,Shares fixed,Compressive,370.054059910034
+Version 1.2,Rapid,Shares fixed,Expansive,481.967438173703

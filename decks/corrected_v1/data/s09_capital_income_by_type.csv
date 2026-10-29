@@ -1,0 +1,37 @@
+scenario,shares,amount_B,income_type
+Slow,Labor share falls,8.21123870692542,Dividends
+Moderate,Labor share falls,36.4830122499054,Dividends
+Rapid,Labor share falls,81.4614813298849,Dividends
+Slow,Shares fixed,2.24409097465787,Dividends
+Moderate,Shares fixed,18.0488252027187,Dividends
+Rapid,Shares fixed,36.9609108122884,Dividends
+Slow,Labor share falls,19.159556982826,Capital gains
+Moderate,Labor share falls,85.1270285831125,Capital gains
+Rapid,Labor share falls,190.076789769732,Capital gains
+Slow,Shares fixed,5.2362122742017,Capital gains
+Moderate,Shares fixed,42.1139254730103,Capital gains
+Rapid,Shares fixed,86.2421252286729,Capital gains
+Slow,Labor share falls,20.1926363333333,Business income
+Moderate,Labor share falls,89.7170603608876,Business income
+Rapid,Labor share falls,200.325690968118,Business income
+Slow,Shares fixed,5.51854775722982,Business income
+Moderate,Shares fixed,44.3846996257723,Business income
+Rapid,Shares fixed,90.8922827869857,Business income
+Slow,Labor share falls,22.4763323912434,Retirement distributions
+Moderate,Labor share falls,99.8636550744872,Retirement distributions
+Rapid,Labor share falls,222.981622725122,Retirement distributions
+Slow,Shares fixed,6.14267060827974,Retirement distributions
+Moderate,Shares fixed,49.4044088848142,Retirement distributions
+Rapid,Shares fixed,101.171789854244,Retirement distributions
+Slow,Labor share falls,0,Interest
+Moderate,Labor share falls,0,Interest
+Rapid,Labor share falls,0,Interest
+Slow,Shares fixed,0,Interest
+Moderate,Shares fixed,0,Interest
+Rapid,Shares fixed,0,Interest
+Slow,Labor share falls,0,Tax-exempt interest
+Moderate,Labor share falls,0,Tax-exempt interest
+Rapid,Labor share falls,0,Tax-exempt interest
+Slow,Shares fixed,0,Tax-exempt interest
+Moderate,Shares fixed,0,Tax-exempt interest
+Rapid,Shares fixed,0,Tax-exempt interest

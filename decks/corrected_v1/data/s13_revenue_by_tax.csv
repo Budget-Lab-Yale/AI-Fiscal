@@ -1,0 +1,10 @@
+scenario,revenue_change_B,tax
+Slow,-4.21196873703866,income_tax
+Moderate,72.1300061261,income_tax
+Rapid,128.091101229316,income_tax
+Slow,-7.69985848700821,payroll_tax
+Moderate,8.79263966978692,payroll_tax
+Rapid,3.27365245563465,payroll_tax
+Slow,7.41171536600428,corporate_tax
+Moderate,32.9306834378944,corporate_tax
+Rapid,73.5296262183872,corporate_tax

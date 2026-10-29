@@ -1,0 +1,85 @@
+year,variant,share_mode,group,component,baseline_B,change_B,share_of_gdp,scenario,shares
+2030,S,R,total,gdp,37742.5,160.159737781266,1,Slow,Labor share falls
+2030,S,R,labor,compensation,19223.8218582197,-53.6392136020581,0.509341507802071,Slow,Labor share falls
+2030,S,R,labor,proprietors_labor,2060.73447619921,-5.74995844016897,0.0545998403974091,Slow,Labor share falls
+2030,S,R,capital,corporate_profits,4295.84736868761,165.512285930934,0.113819894513814,Slow,Labor share falls
+2030,S,R,capital,proprietors_capital,406.039444348248,15.644065266857,0.0107581491514406,Slow,Labor share falls
+2030,S,R,capital,rental,1393.98276844664,0,0.0369340337403891,Slow,Labor share falls
+2030,S,R,capital,net_interest,1367.48952320272,0,0.0362320864596336,Slow,Labor share falls
+2030,S,R,capital,gov_enterprise_surplus,-52.8250581667158,0,-0.00139961735885847,Slow,Labor share falls
+2030,S,R,rest_of_gdp,depreciation,6182.68179050961,26.2361182845076,0.163812195549039,Slow,Labor share falls
+2030,S,R,rest_of_gdp,taxes_on_production_less_subsidies,2581.79200339377,10.9557959930931,0.0684054316326095,Slow,Labor share falls
+2030,S,R,rest_of_gdp,business_transfers,339.709860332484,1.44155374319563,0.00900072492104349,Slow,Labor share falls
+2030,S,R,rest_of_gdp,statistical_discrepancy,-56.7715892289928,-0.240909395094158,-0.00150418200249037,Slow,Labor share falls
+2030,S,R,tax_returns,labor_income,15586.3403299506,-43.4897412386999,0.412965233621265,Slow,Labor share falls
+2030,S,R,tax_returns,capital_income,4510.80208758196,57.7977702692119,0.119515190768549,Slow,Labor share falls
+2030,M,R,total,gdp,37742.5,1288.13632975289,1,Moderate,Labor share falls
+2030,M,R,labor,compensation,19223.8218582197,239.094493003468,0.509341507802071,Moderate,Labor share falls
+2030,M,R,labor,proprietors_labor,2060.73447619921,25.6301930196542,0.0545998403974091,Moderate,Labor share falls
+2030,M,R,capital,corporate_profits,4295.84736868761,652.914270963197,0.113819894513814,Moderate,Labor share falls
+2030,M,R,capital,proprietors_capital,406.039444348248,61.7128415039404,0.0107581491514406,Moderate,Labor share falls
+2030,M,R,capital,rental,1393.98276844664,0,0.0369340337403891,Moderate,Labor share falls
+2030,M,R,capital,net_interest,1367.48952320272,0,0.0362320864596336,Moderate,Labor share falls
+2030,M,R,capital,gov_enterprise_surplus,-52.8250581667158,0,-0.00139961735885847,Moderate,Labor share falls
+2030,M,R,rest_of_gdp,depreciation,6182.68179050961,211.012440343303,0.163812195549039,Moderate,Labor share falls
+2030,M,R,rest_of_gdp,taxes_on_production_less_subsidies,2581.79200339377,88.1155216383922,0.0684054316326095,Moderate,Labor share falls
+2030,M,R,rest_of_gdp,business_transfers,339.709860332484,11.5941607649084,0.00900072492104349,Moderate,Labor share falls
+2030,M,R,rest_of_gdp,statistical_discrepancy,-56.7715892289928,-1.9375914839683,-0.00150418200249037,Moderate,Labor share falls
+2030,M,R,tax_returns,labor_income,15586.3403299506,193.8536554518,0.412965233621265,Moderate,Labor share falls
+2030,M,R,tax_returns,capital_income,4510.80208758196,273.168611001212,0.119515190768549,Moderate,Labor share falls
+2030,R,R,total,gdp,37742.5,2637.88315656654,1,Rapid,Labor share falls
+2030,R,R,labor,compensation,19223.8218582197,324.784765465056,0.509341507802071,Rapid,Labor share falls
+2030,R,R,labor,proprietors_labor,2060.73447619921,34.8159262229087,0.0545998403974091,Rapid,Labor share falls
+2030,R,R,capital,corporate_profits,4295.84736868761,1503.80615297538,0.113819894513814,Rapid,Labor share falls
+2030,R,R,capital,proprietors_capital,406.039444348248,142.138340205542,0.0107581491514406,Rapid,Labor share falls
+2030,R,R,capital,rental,1393.98276844664,0,0.0369340337403891,Rapid,Labor share falls
+2030,R,R,capital,net_interest,1367.48952320272,0,0.0362320864596336,Rapid,Labor share falls
+2030,R,R,capital,gov_enterprise_surplus,-52.8250581667158,0,-0.00139961735885847,Rapid,Labor share falls
+2030,R,R,rest_of_gdp,depreciation,6182.68179050961,432.117431478994,0.163812195549039,Rapid,Labor share falls
+2030,R,R,rest_of_gdp,taxes_on_production_less_subsidies,2581.79200339377,180.445535921324,0.0684054316326095,Rapid,Labor share falls
+2030,R,R,rest_of_gdp,business_transfers,339.709860332484,23.7428606661093,0.00900072492104349,Rapid,Labor share falls
+2030,R,R,rest_of_gdp,statistical_discrepancy,-56.7715892289928,-3.96785636877987,-0.00150418200249037,Rapid,Labor share falls
+2030,R,R,tax_returns,labor_income,15586.3403299506,263.329837628398,0.412965233621265,Rapid,Labor share falls
+2030,R,R,tax_returns,capital_income,4510.80208758196,606.528210252567,0.119515190768549,Rapid,Labor share falls
+2030,S,F,total,gdp,37742.5,160.159737781266,1,Slow,Shares fixed
+2030,S,F,labor,compensation,19223.8218582197,82.4346467061269,0.509341507802071,Slow,Shares fixed
+2030,S,F,labor,proprietors_labor,2060.73447619921,8.83674015258222,0.0545998403974091,Slow,Shares fixed
+2030,S,F,capital,corporate_profits,4295.84736868761,27.8622762103248,0.113819894513814,Slow,Shares fixed
+2030,S,F,capital,proprietors_capital,406.039444348248,2.6335160865303,0.0107581491514406,Slow,Shares fixed
+2030,S,F,capital,rental,1393.98276844664,0,0.0369340337403891,Slow,Shares fixed
+2030,S,F,capital,net_interest,1367.48952320272,0,0.0362320864596336,Slow,Shares fixed
+2030,S,F,capital,gov_enterprise_surplus,-52.8250581667158,0,-0.00139961735885847,Slow,Shares fixed
+2030,S,F,rest_of_gdp,depreciation,6182.68179050961,26.2361182845076,0.163812195549039,Slow,Shares fixed
+2030,S,F,rest_of_gdp,taxes_on_production_less_subsidies,2581.79200339377,10.9557959930931,0.0684054316326095,Slow,Shares fixed
+2030,S,F,rest_of_gdp,business_transfers,339.709860332484,1.44155374319563,0.00900072492104349,Slow,Shares fixed
+2030,S,F,rest_of_gdp,statistical_discrepancy,-56.7715892289928,-0.240909395094158,-0.00150418200249037,Slow,Shares fixed
+2030,S,F,tax_returns,labor_income,15586.3403299506,66.8365774514987,0.412965233621265,Slow,Shares fixed
+2030,S,F,tax_returns,capital_income,4510.80208758196,18.896046500833,0.119515190768549,Slow,Shares fixed
+2030,M,F,total,gdp,37742.5,1288.13632975289,1,Moderate,Shares fixed
+2030,M,F,labor,compensation,19223.8218582197,663.007224684189,0.509341507802071,Moderate,Shares fixed
+2030,M,F,labor,proprietors_labor,2060.73447619921,71.0723318158337,0.0545998403974091,Moderate,Shares fixed
+2030,M,F,capital,corporate_profits,4295.84736868761,224.091339766974,0.113819894513814,Moderate,Shares fixed
+2030,M,F,capital,proprietors_capital,406.039444348248,21.1809022232636,0.0107581491514406,Moderate,Shares fixed
+2030,M,F,capital,rental,1393.98276844664,0,0.0369340337403891,Moderate,Shares fixed
+2030,M,F,capital,net_interest,1367.48952320272,0,0.0362320864596336,Moderate,Shares fixed
+2030,M,F,capital,gov_enterprise_surplus,-52.8250581667158,0,-0.00139961735885847,Moderate,Shares fixed
+2030,M,F,rest_of_gdp,depreciation,6182.68179050961,211.012440343303,0.163812195549039,Moderate,Shares fixed
+2030,M,F,rest_of_gdp,taxes_on_production_less_subsidies,2581.79200339377,88.1155216383922,0.0684054316326095,Moderate,Shares fixed
+2030,M,F,rest_of_gdp,business_transfers,339.709860332484,11.5941607649084,0.00900072492104349,Moderate,Shares fixed
+2030,M,F,rest_of_gdp,statistical_discrepancy,-56.7715892289928,-1.9375914839683,-0.00150418200249037,Moderate,Shares fixed
+2030,M,F,tax_returns,labor_income,15586.3403299506,537.554723579899,0.412965233621265,Moderate,Shares fixed
+2030,M,F,tax_returns,capital_income,4510.80208758196,151.977546439711,0.119515190768549,Moderate,Shares fixed
+2030,R,F,total,gdp,37742.5,2637.88315656654,1,Rapid,Shares fixed
+2030,R,F,labor,compensation,19223.8218582197,1357.7255374917,0.509341507802071,Rapid,Shares fixed
+2030,R,F,labor,proprietors_labor,2060.73447619921,145.543994579253,0.0545998403974091,Rapid,Shares fixed
+2030,R,F,capital,corporate_profits,4295.84736868761,458.900783286762,0.113819894513814,Rapid,Shares fixed
+2030,R,F,capital,proprietors_capital,406.039444348248,43.3748695111711,0.0107581491514406,Rapid,Shares fixed
+2030,R,F,capital,rental,1393.98276844664,0,0.0369340337403891,Rapid,Shares fixed
+2030,R,F,capital,net_interest,1367.48952320272,0,0.0362320864596336,Rapid,Shares fixed
+2030,R,F,capital,gov_enterprise_surplus,-52.8250581667158,0,-0.00139961735885847,Rapid,Shares fixed
+2030,R,F,rest_of_gdp,depreciation,6182.68179050961,432.117431478994,0.163812195549039,Rapid,Shares fixed
+2030,R,F,rest_of_gdp,taxes_on_production_less_subsidies,2581.79200339377,180.445535921324,0.0684054316326095,Rapid,Shares fixed
+2030,R,F,rest_of_gdp,business_transfers,339.709860332484,23.7428606661093,0.00900072492104349,Rapid,Shares fixed
+2030,R,F,rest_of_gdp,statistical_discrepancy,-56.7715892289928,-3.96785636877987,-0.00150418200249037,Rapid,Shares fixed
+2030,R,F,tax_returns,labor_income,15586.3403299506,1100.8202457392,0.412965233621265,Rapid,Shares fixed
+2030,R,F,tax_returns,capital_income,4510.80208758196,311.224053440468,0.119515190768549,Rapid,Shares fixed

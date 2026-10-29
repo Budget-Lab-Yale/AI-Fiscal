@@ -1,0 +1,13 @@
+scenario,shares,income_concept,gini_change
+Moderate,Shares fixed,aftertax,0.00080622335882552
+Moderate,Shares fixed,pretax,0.000864855874836756
+Moderate,Labor share falls,aftertax,0.00242818573323123
+Moderate,Labor share falls,pretax,0.00242941104764527
+Rapid,Shares fixed,aftertax,0.00159168284822753
+Rapid,Shares fixed,pretax,0.00172693420075287
+Rapid,Labor share falls,aftertax,0.0055870819654158
+Rapid,Labor share falls,pretax,0.00561296343244022
+Slow,Shares fixed,aftertax,0.000145501348311483
+Slow,Shares fixed,pretax,0.00014721475573376
+Slow,Labor share falls,aftertax,0.000670952993687912
+Slow,Labor share falls,pretax,0.00065337057266146
