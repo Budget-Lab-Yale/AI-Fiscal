@@ -355,6 +355,13 @@ public release.)
   register it in `assemble_figures()` via `.fig_entry()`. Reuse the
   shared palette / theme (`.fig_theme()`, `PAL_VARIANT`, etc.) so
   the new figure colors-match the suite.
+- **Making a deck from model results:** start from the Budget Lab 16:9
+  slide template (Template A, "Preferred") and put slide charts through the
+  `slide-charts` skill of the `budget-lab-charts` repo (same engine as the
+  website figures here). Deck work lives in `output/decks/` (gitignored),
+  never in `charts/`. Slide titles come from the author, not an assistant.
+  The Version 1.2 release ends in two such decks (corrected Version 1 and
+  Version 1.2; `docs/v1_2_plan.md`).
 - **Touching the synthetic fixture's structure:** update the
   generator (`code/make_synthetic_tax_units.R`), regenerate from a
   real vintage if available, **and** consider whether the existing
