@@ -764,7 +764,16 @@ bridge (settings `v1_0_1_fix1_growth`, `v1_0_1_fix2_fyblend`,
 The whole-economy shock, the 2025 labor share, and the single policy year
 stay at v1.0.1. FY2030 change in federal revenue including the corporate
 tax, $B, proportional labor rule (runs `v1_0_1_*-20261029*`, jobs
-31278732-31278735, 8-9 min, peak 96-105 GB):
+31278732-31278735, 8-9 min, peak 96-105 GB). Those ran from a dirty tree
+at `5c55f9d`; the clean-tree reruns at `805b23a` (2026-10-30, the deck's
+source) match them table for table under `tests/server/compare_run_tables.R`:
+`v1_0_1_fix1_growth-202610301147` (job 31411064, 13 of 13),
+`v1_0_1_fix2_fyblend-202610301150` (31411386, 25 of 25),
+`v1_0_1_fix3_residual-202610301232` (31413178, 25 of 25),
+`v1_0_1_corrected-202610301241` (31413179, 25 of 25). A first attempt at
+the last two (jobs 31411578, 31411668) failed when Tax-Simulator workers
+errored mid-run while four runs overlapped; run alone they passed. The
+workers' error was not logged.
 
 | Cell | v1.0.1 | + growth basis | + FY blend | + residual | Corrected |
 |---|---|---|---|---|---|

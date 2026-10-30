@@ -23,8 +23,8 @@ previous one is in the appendix only, linked from the methodology section's last
 
 ## Deck 1 — Corrected Version 1 (FY2030)
 
-Run: `results/runs/v1_0_1_corrected-202610290913`. Bridge from v1.0.1: the four
-`v1_0_1_fix*` runs.
+Run: `results/runs/v1_0_1_corrected-202610301241`. Bridge from v1.0.1: the four
+`v1_0_1_fix*` runs (clean-tree reruns of 2026-10-30, at `805b23a`).
 
 ### Main
 

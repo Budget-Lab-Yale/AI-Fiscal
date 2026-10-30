@@ -19,10 +19,12 @@ suppressPackageStartupMessages({
 
 .RUNS <- list(
   legacy     = "legacy_v1_0_1-202610281529",
-  fix1       = "v1_0_1_fix1_growth-202610290901",
-  fix2       = "v1_0_1_fix2_fyblend-202610290905",
-  fix3       = "v1_0_1_fix3_residual-202610290909",
-  corrected  = "v1_0_1_corrected-202610290913",
+  # Corrected Version 1: clean-tree reruns at 805b23a (2026-10-30). Each
+  # matches its 2026-10-29 run (dirty tree at 5c55f9d) table for table.
+  fix1       = "v1_0_1_fix1_growth-202610301147",
+  fix2       = "v1_0_1_fix2_fyblend-202610301150",
+  fix3       = "v1_0_1_fix3_residual-202610301232",
+  corrected  = "v1_0_1_corrected-202610301241",
   # Version 1.2 reference (to_2050) and its sensitivities, all at 083c164
   # (2026-10-29). Before then the reference was hold_gap:
   # v1_2_reference-202610282217, now the hold_gap sensitivity's check run, and
