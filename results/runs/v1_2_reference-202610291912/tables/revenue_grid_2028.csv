@@ -1,0 +1,235 @@
+scenario_id,variant,variant_label,share_mode,share_mode_label,labor,labor_label,realization,realization_label,instrument,baseline,counterfactual,delta,delta_R_CIT
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,macro_cit_delta,,,2.08911740862103,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,outlays_tax_credits,104.197061758136,104.734440171975,0.537378413838411,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_income_tax,2701.31238790329,2690.89518217433,-10.4172057289593,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_other,588.738,588.738,0,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1812.41164157247,-6.7311519822199,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_vat,0,0,0,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,total,5371.2211334445,5353.53539731948,-17.6857361250177,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,total_capital,,,3.28969136821615,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,total_interaction,,,-0.00290394995590759,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,total_labor,,,-20.9725235432779,2.08911740862103
+ai_S_R_S0_V1,S,Slow,R,Reallocate,S0,Proportional,V1,Mechanical,total_with_macro_cit,,,-15.5966187163967,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,macro_cit_delta,,,2.08911740862103,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,outlays_tax_credits,104.197061758136,104.784052874823,0.586991116686974,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_income_tax,2701.31238790329,2692.26068208424,-9.05170581905213,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_other,588.738,588.738,0,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1811.76815333267,-7.3746402220122,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_vat,0,0,0,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,total,5371.2211334445,5354.20779628675,-17.0133371577513,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,total_capital,,,3.28969136821615,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,total_interaction,,,-0.0015190630701909,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,total_labor,,,-20.3015094628972,2.08911740862103
+ai_S_R_S2_V1,S,Slow,R,Reallocate,S2,Compressive,V1,Mechanical,total_with_macro_cit,,,-14.9242197491303,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,macro_cit_delta,,,2.08911740862103,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,outlays_tax_credits,104.197061758136,104.684881414456,0.48781965632017,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_income_tax,2701.31238790329,2689.53332132354,-11.7790665797515,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_other,588.738,588.738,0,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1813.05379093386,-6.08900262083193,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_vat,0,0,0,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,total,5371.2211334445,5352.8652445876,-18.3558888569032,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,total_capital,,,3.28969136821615,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,total_interaction,,,-0.00206367457212764,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,total_labor,,,-21.6435165505472,2.08911740862103
+ai_S_R_S3_V1,S,Slow,R,Reallocate,S3,Expansive,V1,Mechanical,total_with_macro_cit,,,-16.2667714482822,2.08911740862103
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,macro_cit_delta,,,-0.124797095028091,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,outlays_tax_credits,104.197061758136,104.233030914309,0.0359691561730386,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_income_tax,2701.31238790329,2698.46215294839,-2.8502349548944,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_other,588.738,588.738,0,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1818.03261793926,-1.11017561542599,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_vat,0,0,0,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,total,5371.2211334445,5367.22475371801,-3.99637972649271,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,total_capital,,,-0.610839842703172,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,total_interaction,,,0.000206766860173957,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,total_labor,,,-3.38574665064971,-0.124797095028091
+ai_S_F_S0_V1,S,Slow,F,Fixed share,S0,Proportional,V1,Mechanical,total_with_macro_cit,,,-4.1211768215208,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,macro_cit_delta,,,-0.124797095028091,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,outlays_tax_credits,104.197061758136,104.282813029137,0.085751271000845,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_income_tax,2701.31238790329,2699.8317196395,-1.48066826378545,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_other,588.738,588.738,0,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1817.38696647219,-1.75582708249704,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_vat,0,0,0,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,total,5371.2211334445,5367.89888682722,-3.32224661728378,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,total_capital,,,-0.610839842703172,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,total_interaction,,,0.000160255370246887,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,total_labor,,,-2.71156702995086,-0.124797095028091
+ai_S_F_S2_V1,S,Slow,F,Fixed share,S2,Compressive,V1,Mechanical,total_with_macro_cit,,,-3.44704371231187,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,macro_cit_delta,,,-0.124797095028091,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,outlays_tax_credits,104.197061758136,104.183229156077,-0.013832602059253,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_income_tax,2701.31238790329,2697.09678383501,-4.21560406827757,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_other,588.738,588.738,0,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1818.67704522789,-0.465748326795392,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_vat,0,0,0,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,total,5371.2211334445,5366.55361365149,-4.66751979301353,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,total_capital,,,-0.610839842703172,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,total_interaction,,,0.000109584011624975,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,total_labor,,,-4.05678953432198,-0.124797095028091
+ai_S_F_S3_V1,S,Slow,F,Fixed share,S3,Expansive,V1,Mechanical,total_with_macro_cit,,,-4.79231688804162,-0.124797095028091
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,macro_cit_delta,,,14.2458307480575,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,outlays_tax_credits,104.197061758136,103.589086745277,-0.607975012859328,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_income_tax,2701.31238790329,2736.94808018374,35.6356922804475,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_other,588.738,588.738,0,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1824.77729866664,5.63450511195674,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_vat,0,0,0,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,total,5371.2211334445,5413.09930584976,41.8781724052633,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,total_capital,,,24.0868398462935,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,total_interaction,,,0.014148816299894,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,total_labor,,,17.7771837426699,14.2458307480575
+ai_M_R_S0_V1,M,Moderate,R,Reallocate,S0,Proportional,V1,Mechanical,total_with_macro_cit,,,56.1240031533208,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,macro_cit_delta,,,14.2458307480575,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,outlays_tax_credits,104.197061758136,100.565141736191,-3.63192002194526,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_income_tax,2701.31238790329,2708.55304879027,7.24066088698237,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_other,588.738,588.738,0,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1837.96406009973,18.8212665450467,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_vat,0,0,0,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,total,5371.2211334445,5400.91498089847,29.6938474539747,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,total_capital,,,24.0868398462935,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,total_interaction,,,-0.000469365438220848,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,total_labor,,,5.60747697311945,14.2458307480575
+ai_M_R_S2_V1,M,Moderate,R,Reallocate,S2,Compressive,V1,Mechanical,total_with_macro_cit,,,43.9396782020322,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,macro_cit_delta,,,14.2458307480575,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,outlays_tax_credits,104.197061758136,106.549797537514,2.35273577937811,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_income_tax,2701.31238790329,2765.94452190484,64.6321340015516,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_other,588.738,588.738,0,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1811.34406075094,-7.79873280374409,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_vat,0,0,0,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,total,5371.2211334445,5425.70179886293,54.4806654184295,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,total_capital,,,24.0868398462935,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,total_interaction,,,0.0279895663152274,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,total_labor,,,30.3658360058207,14.2458307480575
+ai_M_R_S3_V1,M,Moderate,R,Reallocate,S3,Expansive,V1,Mechanical,total_with_macro_cit,,,68.726496166487,14.2458307480575
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,macro_cit_delta,,,7.45087146841128,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,outlays_tax_credits,104.197061758136,102.06357144839,-2.13349030974632,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_income_tax,2701.31238790329,2760.65534776474,59.3429598614553,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_other,588.738,588.738,0,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1841.91187220307,22.7690786483793,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_vat,0,0,0,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,total,5371.2211334445,5455.46666226408,84.2455288195815,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,total_capital,,,12.41697845202,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,total_interaction,,,0.0237746389557287,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,total_labor,,,71.8047757286058,7.45087146841128
+ai_M_F_S0_V1,M,Moderate,F,Fixed share,S0,Proportional,V1,Mechanical,total_with_macro_cit,,,91.6964002879928,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,macro_cit_delta,,,7.45087146841128,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,outlays_tax_credits,104.197061758136,99.0173160333079,-5.17974572482819,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_income_tax,2701.31238790329,2731.98198877689,30.6696008735994,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_other,588.738,588.738,0,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1855.27259759923,36.1298040445479,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_vat,0,0,0,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,total,5371.2211334445,5443.20028408747,71.9791506429756,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,total_capital,,,12.41697845202,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,total_interaction,,,0.0177880586916217,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,total_labor,,,59.544384132264,7.45087146841128
+ai_M_F_S2_V1,M,Moderate,F,Fixed share,S2,Compressive,V1,Mechanical,total_with_macro_cit,,,79.4300221113869,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,macro_cit_delta,,,7.45087146841128,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,outlays_tax_credits,104.197061758136,105.057079891827,0.86001813369063,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_income_tax,2701.31238790329,2789.92211316678,88.609725263495,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_other,588.738,588.738,0,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1828.3073905623,9.16459700760925,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_vat,0,0,0,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,total,5371.2211334445,5468.13543758191,96.9143041374137,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,total_capital,,,12.41697845202,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,total_interaction,,,0.0274135334939274,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,total_labor,,,84.4699121518997,7.45087146841128
+ai_M_F_S3_V1,M,Moderate,F,Fixed share,S3,Expansive,V1,Mechanical,total_with_macro_cit,,,104.365175605825,7.45087146841128
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,macro_cit_delta,,,32.6791413504262,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,outlays_tax_credits,104.197061758136,103.163954265048,-1.03310749308781,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_income_tax,2701.31238790329,2777.75615963509,76.4437717317987,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_other,588.738,588.738,0,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1829.09173923631,9.94894568162226,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,revenues_vat,0,0,0,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,total,5371.2211334445,5458.64695835101,87.4258249065088,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,total_capital,,,56.0439198939275,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,total_interaction,,,0.0424237184233789,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,total_labor,,,31.3394812941579,32.6791413504262
+ai_R_R_S0_V1,R,Rapid,R,Reallocate,S0,Proportional,V1,Mechanical,total_with_macro_cit,,,120.104966256935,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,macro_cit_delta,,,32.6791413504262,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,outlays_tax_credits,104.197061758136,96.4594361469077,-7.73762561122844,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_income_tax,2701.31238790329,2714.87945398578,13.5670660824926,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_other,588.738,588.738,0,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1858.36270929943,39.2199157447406,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,revenues_vat,0,0,0,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,total,5371.2211334445,5431.74574088296,60.5246074384613,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,total_capital,,,56.0439198939275,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,total_interaction,,,-0.00757731955582131,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,total_labor,,,4.48826486408962,32.6791413504262
+ai_R_R_S2_V1,R,Rapid,R,Reallocate,S2,Compressive,V1,Mechanical,total_with_macro_cit,,,93.2037487888875,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,macro_cit_delta,,,32.6791413504262,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,outlays_tax_credits,104.197061758136,109.616634368972,5.41957261083556,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_income_tax,2701.31238790329,2843.562429767,142.250041863708,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_other,588.738,588.738,0,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1798.60541131628,-20.5373822384099,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,revenues_vat,0,0,0,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,total,5371.2211334445,5487.51422045896,116.293087014462,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,total_capital,,,56.0439198939275,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,total_interaction,,,0.0828731687952313,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,total_labor,,,60.1662939517391,32.6791413504262
+ai_R_R_S3_V1,R,Rapid,R,Reallocate,S3,Expansive,V1,Mechanical,total_with_macro_cit,,,148.972228364888,32.6791413504262
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,macro_cit_delta,,,16.4018315087489,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,outlays_tax_credits,104.197061758136,99.5465145632538,-4.65054719488234,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_income_tax,2701.31238790329,2834.63062844667,133.318240543384,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_other,588.738,588.738,0,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1869.88839867786,50.7456051231736,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,revenues_vat,0,0,0,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,total,5371.2211334445,5559.93552630594,188.714392861441,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,total_capital,,,27.8104809069509,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,total_interaction,,,0.129612475801878,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,total_labor,,,160.774299478688,16.4018315087489
+ai_R_F_S0_V1,R,Rapid,F,Fixed share,S0,Proportional,V1,Mechanical,total_with_macro_cit,,,205.11622437019,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,macro_cit_delta,,,16.4018315087489,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,outlays_tax_credits,104.197061758136,92.7203059133353,-11.4767558448008,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_income_tax,2701.31238790329,2770.29288522995,68.9804973266569,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_other,588.738,588.738,0,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1900.0791656145,80.9363720598151,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,revenues_vat,0,0,0,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,total,5371.2211334445,5532.61475867577,161.393625231273,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,total_capital,,,27.8104809069509,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,total_interaction,,,0.0882954260077895,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,total_labor,,,133.494848898315,16.4018315087489
+ai_R_F_S2_V1,R,Rapid,F,Fixed share,S2,Compressive,V1,Mechanical,total_with_macro_cit,,,177.795456740022,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,macro_cit_delta,,,16.4018315087489,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,outlays_tax_credits,104.197061758136,106.175338699177,1.97827694104134,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_corp_tax,330.364013744659,330.364013744659,0,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_estate_tax,35.861,35.861,0,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_income_tax,2701.31238790329,2901.93400095821,200.621613054926,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_other,588.738,588.738,0,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_payroll_tax,1819.14279355469,1838.49596624298,19.3531726882977,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,revenues_vat,0,0,0,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,total,5371.2211334445,5589.21764224668,217.996508802182,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,total_capital,,,27.8104809069509,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,total_interaction,,,0.159427257098287,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,total_labor,,,190.026600638133,16.4018315087489
+ai_R_F_S3_V1,R,Rapid,F,Fixed share,S3,Expansive,V1,Mechanical,total_with_macro_cit,,,234.398340310931,16.4018315087489

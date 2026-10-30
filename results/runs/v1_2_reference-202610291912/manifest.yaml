@@ -1,0 +1,15 @@
+run_id: v1_2_reference-202610291912
+setting: v1_2_reference
+status: succeeded
+started: 2026-10-29 19:12:19 EDT
+ai_fiscal_rev: 083c164a6476
+ai_fiscal_dirty: no
+tax_simulator_rev: 256f03ea9647
+tax_simulator_patched: yes
+tax_data_vintage: '2026050315'
+tax_simulator_vintage: '202610291912'
+r_version: R version 4.4.2 (2024-10-31)
+argv: --multicore scenario --setting v1_2_reference --vintage 202610291912
+years: 2025:2036
+finished: 2026-10-29 20:16:42 EDT
+intermediates_kept: no

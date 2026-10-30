@@ -1,0 +1,54 @@
+diff --git a/config/interfaces/interface_versions.yaml b/config/interfaces/interface_versions.yaml
+index e06358a36..4911bbf53 100644
+--- a/config/interfaces/interface_versions.yaml
++++ b/config/interfaces/interface_versions.yaml
+@@ -39,7 +39,9 @@ Off-Model-Estimates:
+ Wealth-Tax-Simulator:
+   type: model_data
+   version: 1
+-  default_vintage: '2025011312'
++  # AI-Fiscal local edit: 2025011312 was deleted from the shared filer
++  # (2026-10-24); src/ only checks this directory exists, never reads it.
++  default_vintage: '2025032414'
+   default_id: baseline
+ 
+ Cost-Recovery-Simulator:
+diff --git a/src/main.R b/src/main.R
+index 929338bff..19eb9350d 100644
+--- a/src/main.R
++++ b/src/main.R
+@@ -107,7 +107,7 @@ for (runscript_name in str_split_1(runscript_names, '____')) {
+     mc_out = mclapply(
+       X        = counterfactual_ids, 
+       FUN      = do_scenario, baseline_mtrs, 
+-      mc.cores = min(32, detectCores(logical = F))
++      mc.cores = as.integer(Sys.getenv('MC_CORES', min(32, detectCores(logical = F))))
+     )
+   } else {
+     walk(.x = counterfactual_ids, .f = ~ do_scenario(.x, baseline_mtrs))
+diff --git a/src/sim/run.R b/src/sim/run.R
+index 505db6966..62f13085c 100644
+--- a/src/sim/run.R
++++ b/src/sim/run.R
+@@ -87,10 +87,10 @@ do_scenario = function(ID, baseline_mtrs) {
+     build_distribution_tables(ID, baseline_id = 'baseline')
+     
+     # Time burden tables
+-    build_timeburden_table(ID)
++    # build_timeburden_table(ID)  # AI-Fiscal local patch 1 (Tax-Simulator #128)
+ 
+     # Horizontal equity
+-    build_horizontal_table(ID)
++    # build_horizontal_table(ID)  # AI-Fiscal local patch 2 (Tax-Simulator #129)
+   }
+   
+   # Return MTRs if running baseline
+@@ -143,7 +143,7 @@ run_sim = function(scenario_info, tax_law, baseline_mtrs,
+                      vat_price_offset     = vat_price_offset,
+                      excess_growth_offset = excess_growth_offset)
+       },
+-      mc.cores = min(32, detectCores(logical = F))
++      mc.cores = as.integer(Sys.getenv('MC_CORES', min(32, detectCores(logical = F))))
+     )
+   } else {
+ 

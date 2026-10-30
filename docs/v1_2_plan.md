@@ -837,3 +837,24 @@ Decisions 1–4 were settled by John on 2026-10-28 and 6 on 2026-10-29; 5 is sti
    2045-2050 growth, 2.0 percent, is above CBO's long-run 1.77 percent);
    the release presents FY2030 first and the window as a range across the
    post-2030 rules. Reruns: `docs/cluster_todo_2026-10-29.md`.
+   *Reruns done 2026-10-29* at `083c164`, clean tree, Tax-Simulator
+   `256f03ea9` (patched), Tax-Data `2026050315`, all `status: succeeded`:
+   `v1_2_reference-202610291912` (job 31322966),
+   `v1_2_sens_post2030_hold_gap-202610291917` (31323404),
+   `v1_2_sens_concentrated-202610291921` (31323462),
+   `_m075-202610291926` (31323471), `_m050-202610291931` (31323807),
+   `_m025-202610291935` (31324043),
+   `v1_2_sens_retirement_deferred-202610291939` (31324051). Reproduction
+   checks (`tests/server/compare_run_tables.R`, 1e-9): the new reference
+   against `v1_2_sens_post2030_to_2050-202610282259`, `LAYER3 PASS` 146 of
+   146; the new hold-gap sensitivity against `v1_2_reference-202610282217`,
+   146 of 146 shared tables match (the script reports `FAIL 2 of 148`
+   because the old run also carries the two `early_evidence_*` tables,
+   which `code/18_early_evidence.R` writes after the run; written for the
+   new reference on 2026-10-30, byte-identical to the old ones).
+   `continue_growth` was rerun as well (`-202610292151`, job 31344055) and
+   matches `-202610282303` 146 of 146; the deck uses the rerun so every
+   Version 1.2 run sits on one commit. Moderate (labor share falls,
+   proportional, with the macro corporate-tax layer): FY2030 $133.8B,
+   FY2027-2036 $2,313.0B (Slow $131.5B, Rapid $4,328.7B). Deck data rebuilt
+   from these runs; FY2026-2030 values unchanged.

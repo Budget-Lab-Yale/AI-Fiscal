@@ -59,75 +59,75 @@ year,scenario,shares,income_concept,gini_change
 2030,Slow,Shares fixed,pretax,0.000144770746709488
 2030,Slow,Labor share falls,aftertax,0.000544307040834746
 2030,Slow,Labor share falls,pretax,0.000532052468219746
-2031,Moderate,Shares fixed,aftertax,0.00081052196411413
-2031,Moderate,Shares fixed,pretax,0.000885394027351105
-2031,Moderate,Labor share falls,aftertax,0.00202772874439772
-2031,Moderate,Labor share falls,pretax,0.00205266242777269
-2031,Rapid,Shares fixed,aftertax,0.00160516730616034
-2031,Rapid,Shares fixed,pretax,0.00176373727224022
-2031,Rapid,Labor share falls,aftertax,0.00460448883586617
-2031,Rapid,Labor share falls,pretax,0.00465208271449646
-2031,Slow,Shares fixed,aftertax,0.000147731713245447
-2031,Slow,Shares fixed,pretax,0.000159011039635781
-2031,Slow,Labor share falls,aftertax,0.000537374629727028
-2031,Slow,Labor share falls,pretax,0.000524672657641223
-2032,Moderate,Shares fixed,aftertax,0.000824995828032304
-2032,Moderate,Shares fixed,pretax,0.00089916725395478
-2032,Moderate,Labor share falls,aftertax,0.00203580438440221
-2032,Moderate,Labor share falls,pretax,0.00203591520820123
-2032,Rapid,Shares fixed,aftertax,0.00166701447348838
-2032,Rapid,Shares fixed,pretax,0.00179990678678843
-2032,Rapid,Labor share falls,aftertax,0.00461339049328202
-2032,Rapid,Labor share falls,pretax,0.00463268979018527
-2032,Slow,Shares fixed,aftertax,0.000155244644398311
-2032,Slow,Shares fixed,pretax,0.000150901315310037
-2032,Slow,Labor share falls,aftertax,0.000528912318940145
-2032,Slow,Labor share falls,pretax,0.000515906551826095
-2033,Moderate,Shares fixed,aftertax,0.000839289533906884
-2033,Moderate,Shares fixed,pretax,0.000924882396746152
-2033,Moderate,Labor share falls,aftertax,0.00202647881398244
-2033,Moderate,Labor share falls,pretax,0.002055473249442
-2033,Rapid,Shares fixed,aftertax,0.0016816019748368
-2033,Rapid,Shares fixed,pretax,0.0018405333892505
-2033,Rapid,Labor share falls,aftertax,0.0046090838323396
-2033,Rapid,Labor share falls,pretax,0.00465449112412264
-2033,Slow,Shares fixed,aftertax,0.000148989066601768
-2033,Slow,Shares fixed,pretax,0.000154532304038502
-2033,Slow,Labor share falls,aftertax,0.000527324667202844
-2033,Slow,Labor share falls,pretax,0.000520063579499963
-2034,Moderate,Shares fixed,aftertax,0.000861076201225774
-2034,Moderate,Shares fixed,pretax,0.000945620613738041
-2034,Moderate,Labor share falls,aftertax,0.00204476682989285
-2034,Moderate,Labor share falls,pretax,0.00207180800768025
-2034,Rapid,Shares fixed,aftertax,0.00172055230197876
-2034,Rapid,Shares fixed,pretax,0.00187813875239262
-2034,Rapid,Labor share falls,aftertax,0.00463885286967014
-2034,Rapid,Labor share falls,pretax,0.00467730565788072
-2034,Slow,Shares fixed,aftertax,0.000162799375506228
-2034,Slow,Shares fixed,pretax,0.000172259134706865
-2034,Slow,Labor share falls,aftertax,0.000541274676937098
-2034,Slow,Labor share falls,pretax,0.000528051188774192
-2035,Moderate,Shares fixed,aftertax,0.000867132577207386
-2035,Moderate,Shares fixed,pretax,0.000943609947690716
-2035,Moderate,Labor share falls,aftertax,0.00205923269893471
-2035,Moderate,Labor share falls,pretax,0.00207339649377802
-2035,Rapid,Shares fixed,aftertax,0.00176022806914034
-2035,Rapid,Shares fixed,pretax,0.0019124914913573
-2035,Rapid,Labor share falls,aftertax,0.00467132269758164
-2035,Rapid,Labor share falls,pretax,0.00468473121838353
-2035,Slow,Shares fixed,aftertax,0.000158531328013245
-2035,Slow,Shares fixed,pretax,0.000158003505271065
-2035,Slow,Labor share falls,aftertax,0.000535444670547225
-2035,Slow,Labor share falls,pretax,0.000519688016459519
-2036,Moderate,Shares fixed,aftertax,0.000881410520239934
-2036,Moderate,Shares fixed,pretax,0.000962539432733278
-2036,Moderate,Labor share falls,aftertax,0.00206049441325096
-2036,Moderate,Labor share falls,pretax,0.00206976187938479
-2036,Rapid,Shares fixed,aftertax,0.0017823154475205
-2036,Rapid,Shares fixed,pretax,0.0019505636204421
-2036,Rapid,Labor share falls,aftertax,0.00468460540531157
-2036,Rapid,Labor share falls,pretax,0.00469952063958534
-2036,Slow,Shares fixed,aftertax,0.00015397421928931
-2036,Slow,Shares fixed,pretax,0.000163651120269503
-2036,Slow,Labor share falls,aftertax,0.000528744748561794
-2036,Slow,Labor share falls,pretax,0.000518020952928078
+2031,Moderate,Shares fixed,aftertax,0.000997246524419459
+2031,Moderate,Shares fixed,pretax,0.00109378123459158
+2031,Moderate,Labor share falls,aftertax,0.00238534880524
+2031,Moderate,Labor share falls,pretax,0.00242140465787999
+2031,Rapid,Shares fixed,aftertax,0.00198598708706776
+2031,Rapid,Shares fixed,pretax,0.00217162923134229
+2031,Rapid,Labor share falls,aftertax,0.00530885961912475
+2031,Rapid,Labor share falls,pretax,0.00537574489489701
+2031,Slow,Shares fixed,aftertax,0.000195202736390399
+2031,Slow,Shares fixed,pretax,0.000209822092141487
+2031,Slow,Labor share falls,aftertax,0.000704584049217361
+2031,Slow,Labor share falls,pretax,0.000691809485241612
+2032,Moderate,Shares fixed,aftertax,0.0012192215751865
+2032,Moderate,Shares fixed,pretax,0.00133154632911547
+2032,Moderate,Labor share falls,aftertax,0.00276945681446039
+2032,Moderate,Labor share falls,pretax,0.00280445217966419
+2032,Rapid,Shares fixed,aftertax,0.00244742752746896
+2032,Rapid,Shares fixed,pretax,0.00266341525106251
+2032,Rapid,Labor share falls,aftertax,0.00606093838242527
+2032,Rapid,Labor share falls,pretax,0.00613612019351673
+2032,Slow,Shares fixed,aftertax,0.000259694903889773
+2032,Slow,Shares fixed,pretax,0.000264986470105422
+2032,Slow,Labor share falls,aftertax,0.000867568008462771
+2032,Slow,Labor share falls,pretax,0.000854190968592627
+2033,Moderate,Shares fixed,aftertax,0.00145963212620925
+2033,Moderate,Shares fixed,pretax,0.00159420968042623
+2033,Moderate,Labor share falls,aftertax,0.00315078574218042
+2033,Moderate,Labor share falls,pretax,0.00321771212725341
+2033,Rapid,Shares fixed,aftertax,0.00287918661693054
+2033,Rapid,Shares fixed,pretax,0.00318229096965716
+2033,Rapid,Labor share falls,aftertax,0.00682835615865596
+2033,Rapid,Labor share falls,pretax,0.00693931304721673
+2033,Slow,Shares fixed,aftertax,0.000308944188489146
+2033,Slow,Shares fixed,pretax,0.000339199323947215
+2033,Slow,Labor share falls,aftertax,0.00103732292738945
+2033,Slow,Labor share falls,pretax,0.00102973960537134
+2034,Moderate,Shares fixed,aftertax,0.00170891800999118
+2034,Moderate,Shares fixed,pretax,0.00186521267900597
+2034,Moderate,Labor share falls,aftertax,0.00357877774523097
+2034,Moderate,Labor share falls,pretax,0.00365810303844627
+2034,Rapid,Shares fixed,aftertax,0.00336357843253543
+2034,Rapid,Shares fixed,pretax,0.0037070636374924
+2034,Rapid,Labor share falls,aftertax,0.00765924304709154
+2034,Rapid,Labor share falls,pretax,0.00776764350302517
+2034,Slow,Shares fixed,aftertax,0.000373487594292676
+2034,Slow,Shares fixed,pretax,0.000409041597638993
+2034,Slow,Labor share falls,aftertax,0.00122799641572646
+2034,Slow,Labor share falls,pretax,0.001213124974355
+2035,Moderate,Shares fixed,aftertax,0.00197755446956449
+2035,Moderate,Shares fixed,pretax,0.0021686774941243
+2035,Moderate,Labor share falls,aftertax,0.00400619843187422
+2035,Moderate,Labor share falls,pretax,0.00408670127585065
+2035,Rapid,Shares fixed,aftertax,0.00386469944633427
+2035,Rapid,Shares fixed,pretax,0.00423674406336305
+2035,Rapid,Labor share falls,aftertax,0.00850042523974648
+2035,Rapid,Labor share falls,pretax,0.00861380236345499
+2035,Slow,Shares fixed,aftertax,0.000433255929861653
+2035,Slow,Shares fixed,pretax,0.000456960605266232
+2035,Slow,Labor share falls,aftertax,0.0013983590001645
+2035,Slow,Labor share falls,pretax,0.0013797739382595
+2036,Moderate,Shares fixed,aftertax,0.00225307517176721
+2036,Moderate,Shares fixed,pretax,0.00248329669604563
+2036,Moderate,Labor share falls,aftertax,0.00445913116550734
+2036,Moderate,Labor share falls,pretax,0.00453327115904045
+2036,Rapid,Shares fixed,aftertax,0.00440882918618213
+2036,Rapid,Shares fixed,pretax,0.00482503322920347
+2036,Rapid,Labor share falls,aftertax,0.0093640588552808
+2036,Rapid,Labor share falls,pretax,0.0095255161030996
+2036,Slow,Shares fixed,aftertax,0.000492198986098091
+2036,Slow,Shares fixed,pretax,0.000533714514250772
+2036,Slow,Labor share falls,aftertax,0.00157215398516075
+2036,Slow,Labor share falls,pretax,0.00155524168123278

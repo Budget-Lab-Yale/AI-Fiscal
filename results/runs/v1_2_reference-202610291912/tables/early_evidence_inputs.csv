@@ -1,0 +1,11 @@
+quantity,source,value,note
+labor_share_change,observed,-0.0324007934468689,2026 Q1-2 vs the same quarters of 2025
+labor_share_change,cbo_baseline,0,CBO holds nonfarm-business factor shares constant
+real_gdp_growth,observed,0.0241427034388466,2026 Q1-2 vs the same quarters of 2025
+real_gdp_growth,cbo_baseline,0.0236463661808706,"CBO February 2026, calendar-year average"
+labor_share_change,path_S,-0.00180180180180178,Slow
+real_gdp_growth,path_S,0.02,Slow
+labor_share_change,path_M,-0.00540540540540546,Moderate
+real_gdp_growth,path_M,0.026,Moderate
+labor_share_change,path_R,-0.0126126126126126,Rapid
+real_gdp_growth,path_R,0.0329999999999999,Rapid

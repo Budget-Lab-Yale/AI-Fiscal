@@ -1,37 +1,37 @@
 sensitivity,order,scenario,shares,revenue_change_B
-Reference,1,Slow,Labor share falls,-31.5651920193638
-Reference,1,Slow,Shares fixed,200.448433328966
-Reference,1,Moderate,Labor share falls,1259.81596817576
-Reference,1,Moderate,Shares fixed,1982.13862472975
-Reference,1,Rapid,Labor share falls,2364.03131263821
-Reference,1,Rapid,Shares fixed,4121.7216118541
-Concentrated ownership,2,Slow,Labor share falls,-29.9000584351467
-Concentrated ownership,2,Slow,Shares fixed,200.920574437877
-Concentrated ownership,2,Moderate,Labor share falls,1268.95449336924
-Concentrated ownership,2,Moderate,Shares fixed,1986.95427539508
-Concentrated ownership,2,Rapid,Labor share falls,2384.92296756287
-Concentrated ownership,2,Rapid,Shares fixed,4132.22483698625
-"Concentrated, 75% of AI gains realized",3,Slow,Labor share falls,-35.8587198508501
-"Concentrated, 75% of AI gains realized",3,Slow,Shares fixed,199.269185781221
-"Concentrated, 75% of AI gains realized",3,Moderate,Labor share falls,1238.67123330205
-"Concentrated, 75% of AI gains realized",3,Moderate,Shares fixed,1970.36625055006
-"Concentrated, 75% of AI gains realized",3,Rapid,Labor share falls,2318.7284703081
-"Concentrated, 75% of AI gains realized",3,Rapid,Shares fixed,4097.45421332256
-"Concentrated, 50% realized",4,Slow,Labor share falls,-41.8027827652275
-"Concentrated, 50% realized",4,Slow,Shares fixed,197.623040616611
-"Concentrated, 50% realized",4,Moderate,Labor share falls,1208.59725099039
-"Concentrated, 50% realized",4,Moderate,Shares fixed,1953.90248626672
-"Concentrated, 50% realized",4,Rapid,Labor share falls,2252.03389902041
-"Concentrated, 50% realized",4,Rapid,Shares fixed,4063.02530979148
-"Concentrated, 25% realized",5,Slow,Labor share falls,-47.7188324034111
-"Concentrated, 25% realized",5,Slow,Shares fixed,195.980127234627
-"Concentrated, 25% realized",5,Moderate,Labor share falls,1178.60324127865
-"Concentrated, 25% realized",5,Moderate,Shares fixed,1937.63802813024
-"Concentrated, 25% realized",5,Rapid,Labor share falls,2184.69957332747
-"Concentrated, 25% realized",5,Rapid,Shares fixed,4028.87954574277
-Retirement income deferred,6,Slow,Labor share falls,-61.3991588336554
-Retirement income deferred,6,Slow,Shares fixed,191.691359760123
-Retirement income deferred,6,Moderate,Labor share falls,1111.94431445928
-Retirement income deferred,6,Moderate,Shares fixed,1900.91550164205
-Retirement income deferred,6,Rapid,Labor share falls,2029.72177374589
-Retirement income deferred,6,Rapid,Shares fixed,3951.89823149238
+Reference,1,Slow,Labor share falls,131.510317054779
+Reference,1,Slow,Shares fixed,541.625838956371
+Reference,1,Moderate,Labor share falls,2313.04577882458
+Reference,1,Moderate,Shares fixed,3310.46630706839
+Reference,1,Rapid,Labor share falls,4328.68905310588
+Reference,1,Rapid,Shares fixed,6666.64826280239
+Concentrated ownership,2,Slow,Labor share falls,135.175179033498
+Concentrated ownership,2,Slow,Shares fixed,542.923120178985
+Concentrated ownership,2,Moderate,Labor share falls,2327.5074970774
+Concentrated ownership,2,Moderate,Shares fixed,3318.94234617836
+Concentrated ownership,2,Rapid,Labor share falls,4360.34029162957
+Concentrated ownership,2,Rapid,Shares fixed,6683.34366535146
+"Concentrated, 75% of AI gains realized",3,Slow,Labor share falls,122.738151938575
+"Concentrated, 75% of AI gains realized",3,Slow,Shares fixed,538.370057903627
+"Concentrated, 75% of AI gains realized",3,Moderate,Labor share falls,2280.95806211477
+"Concentrated, 75% of AI gains realized",3,Moderate,Shares fixed,3290.84269142874
+"Concentrated, 75% of AI gains realized",3,Rapid,Labor share falls,4260.84253325781
+"Concentrated, 75% of AI gains realized",3,Rapid,Shares fixed,6627.73193529733
+"Concentrated, 50% realized",4,Slow,Labor share falls,110.355409552897
+"Concentrated, 50% realized",4,Slow,Shares fixed,533.830023869942
+"Concentrated, 50% realized",4,Moderate,Labor share falls,2234.26378356423
+"Concentrated, 50% realized",4,Moderate,Shares fixed,3262.78154277188
+"Concentrated, 50% realized",4,Rapid,Labor share falls,4162.11948502975
+"Concentrated, 50% realized",4,Rapid,Shares fixed,6571.98057423057
+"Concentrated, 25% realized",5,Slow,Labor share falls,98.0873236988642
+"Concentrated, 25% realized",5,Slow,Shares fixed,529.308624298752
+"Concentrated, 25% realized",5,Moderate,Labor share falls,2187.53244560575
+"Concentrated, 25% realized",5,Moderate,Shares fixed,3234.98408536421
+"Concentrated, 25% realized",5,Rapid,Labor share falls,4063.88351648654
+"Concentrated, 25% realized",5,Rapid,Shares fixed,6516.1733767716
+Retirement income deferred,6,Slow,Labor share falls,68.5996504873115
+Retirement income deferred,6,Slow,Shares fixed,517.817563073775
+Retirement income deferred,6,Moderate,Labor share falls,2076.5643359321
+Retirement income deferred,6,Moderate,Shares fixed,3169.24380640336
+Retirement income deferred,6,Rapid,Labor share falls,3812.90905589466
+Retirement income deferred,6,Rapid,Shares fixed,6379.77996864884

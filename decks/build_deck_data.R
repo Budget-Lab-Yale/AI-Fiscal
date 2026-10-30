@@ -23,17 +23,20 @@ suppressPackageStartupMessages({
   fix2       = "v1_0_1_fix2_fyblend-202610290905",
   fix3       = "v1_0_1_fix3_residual-202610290909",
   corrected  = "v1_0_1_corrected-202610290913",
-  # Version 1.2 reference (to_2050). Before 2026-10-29 the reference was
-  # hold_gap: v1_2_reference-202610282217, now the hold_gap sensitivity's
-  # check run, and v1_2_sens_post2030_to_2050-202610282259 the reference's.
-  v12        = NA_character_,  # v1_2_reference-<stamp>
-  hold_gap   = NA_character_,  # v1_2_sens_post2030_hold_gap-<stamp>
-  continue   = "v1_2_sens_post2030_continue_growth-202610282303",  # sets post_2030 itself; unchanged
-  deferred   = NA_character_,  # v1_2_sens_retirement_deferred-<stamp>
-  conc       = NA_character_,  # v1_2_sens_concentrated-<stamp>
-  conc_m075  = NA_character_,  # v1_2_sens_concentrated_m075-<stamp>
-  conc_m050  = NA_character_,  # v1_2_sens_concentrated_m050-<stamp>
-  conc_m025  = NA_character_   # v1_2_sens_concentrated_m025-<stamp>
+  # Version 1.2 reference (to_2050) and its sensitivities, all at 083c164
+  # (2026-10-29). Before then the reference was hold_gap:
+  # v1_2_reference-202610282217, now the hold_gap sensitivity's check run, and
+  # v1_2_sens_post2030_to_2050-202610282259 the reference's.
+  v12        = "v1_2_reference-202610291912",
+  hold_gap   = "v1_2_sens_post2030_hold_gap-202610291917",
+  # Sets post_2030 itself, so Decision 6 left it unchanged; this rerun
+  # matches v1_2_sens_post2030_continue_growth-202610282303 table for table.
+  continue   = "v1_2_sens_post2030_continue_growth-202610292151",
+  deferred   = "v1_2_sens_retirement_deferred-202610291939",
+  conc       = "v1_2_sens_concentrated-202610291921",
+  conc_m075  = "v1_2_sens_concentrated_m075-202610291926",
+  conc_m050  = "v1_2_sens_concentrated_m050-202610291931",
+  conc_m025  = "v1_2_sens_concentrated_m025-202610291935"
 )
 if (anyNA(unlist(.RUNS))) {
   stop("Fill in the run ids for: ", paste(names(.RUNS)[is.na(unlist(.RUNS))], collapse = ", "),
