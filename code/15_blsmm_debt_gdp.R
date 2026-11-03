@@ -79,6 +79,73 @@ source("code/10_figures.R")
   NULL
 }
 
+# Run git in the BLSMM clone; abort with git's own message on failure.
+.blsmm_git <- function(blsmm_dir, args) {
+  out <- suppressWarnings(system2(
+    "git", c("-C", shQuote(blsmm_dir), vapply(args, shQuote, "")),
+    stdout = TRUE, stderr = TRUE
+  ))
+  status <- attr(out, "status")
+  if (!is.null(status) && status != 0) {
+    cli::cli_abort(c(
+      "BLSMM pin check: {.code git {paste(args, collapse = ' ')}} failed in {.path {blsmm_dir}}.",
+      x = paste(out, collapse = "\n")
+    ))
+  }
+  out
+}
+
+# Confirm the BLSMM clone is at the pinned ref (config `blsmm_ref`, or the
+# BLSMM_REF env var when set) with no local edits to model code or data.
+# Returns the ref, its source, and the commit for the output records.
+.check_blsmm_pin <- function(blsmm_dir, yaml_path = "config/scenario_params.yaml") {
+  ref <- Sys.getenv("BLSMM_REF", unset = "")
+  ref_source <- "BLSMM_REF env var"
+  if (!nzchar(ref)) {
+    ref <- yaml::read_yaml(yaml_path)$blsmm_ref
+    ref_source <- sprintf("%s (blsmm_ref)", yaml_path)
+  }
+  if (is.null(ref) || !nzchar(ref)) {
+    cli::cli_abort("BLSMM pin check: {.field blsmm_ref} is missing from {.path {yaml_path}} and {.envvar BLSMM_REF} is unset.")
+  }
+  head_commit <- .blsmm_git(blsmm_dir, c("rev-parse", "HEAD"))
+  ref_commit  <- .blsmm_git(blsmm_dir, c("rev-parse", "--verify", paste0(ref, "^{commit}")))
+  if (!identical(head_commit, ref_commit)) {
+    cli::cli_abort(c(
+      "BLSMM pin check: {.path {blsmm_dir}} is at {head_commit}, but the pinned ref {.val {ref}} ({ref_source}) is {ref_commit}.",
+      i = "Run {.code git -C {blsmm_dir} checkout {ref}}, or set {.envvar BLSMM_REF} to run against another version on purpose."
+    ))
+  }
+  dirty <- .blsmm_git(blsmm_dir, c("status", "--porcelain", "--", "model", "data"))
+  if (length(dirty)) {
+    cli::cli_abort(c(
+      "BLSMM pin check: {.path {blsmm_dir}} has uncommitted changes under model/ or data/.",
+      x = paste(dirty, collapse = "\n")
+    ))
+  }
+  list(ref = ref, ref_source = ref_source, commit = head_commit)
+}
+
+# Add BLSMM version rows to an existing run_info sheet in place, so the
+# sheet keeps its position at the front of the workbook.
+.append_run_info_rows <- function(xlsx_fp, rows) {
+  if (!file.exists(xlsx_fp)) return(invisible(FALSE))
+  wb <- openxlsx::loadWorkbook(xlsx_fp)
+  if (!"run_info" %in% openxlsx::sheets(wb)) return(invisible(FALSE))
+  existing <- openxlsx::readWorkbook(wb, sheet = "run_info")
+  keep <- !existing[[1]] %in% rows$field
+  if (!all(keep)) {
+    existing <- existing[keep, , drop = FALSE]
+    openxlsx::deleteData(wb, "run_info", cols = 1:2, rows = 2:(length(keep) + 1),
+                         gridExpand = TRUE)
+    openxlsx::writeData(wb, "run_info", existing, startRow = 2, colNames = FALSE)
+  }
+  openxlsx::writeData(wb, "run_info", rows, startRow = nrow(existing) + 2,
+                      colNames = FALSE)
+  openxlsx::saveWorkbook(wb, xlsx_fp, overwrite = TRUE)
+  invisible(TRUE)
+}
+
 # Source the v1_8 module set inside the BLSMM working directory.
 # Restores cwd via on.exit so a failing source() can't strand the
 # caller inside the BLSMM tree; the sourced functions persist in the
@@ -140,6 +207,8 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
 
   cli::cli_inform("BLSMM debt/GDP step: BLSMM_DIR = {.path {blsmm_dir}}")
   ai_fiscal_root <- getwd()
+  blsmm_pin <- .check_blsmm_pin(blsmm_dir)
+  cli::cli_inform("BLSMM pin: {.val {blsmm_pin$ref}} = {blsmm_pin$commit} ({blsmm_pin$ref_source})")
   r_ai_annual_by_variant <- .load_karger_r_ai_annual()
   .source_blsmm(blsmm_dir)
 
@@ -272,6 +341,8 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
     stringsAsFactors = FALSE
   )
   results_df <- rbind(baseline_row, results_df)
+  results_df$blsmm_ref    <- blsmm_pin$ref
+  results_df$blsmm_commit <- blsmm_pin$commit
 
   # Restore cwd for the writes (paths under AI-Fiscal repo).
   setwd(ai_fiscal_root)
@@ -307,7 +378,9 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
     blsmm_debt_year_B                = "Debt ($B)",
     blsmm_gdp_nominal_year_B         = "Nominal GDP ($B)",
     blsmm_debt_to_gdp_year_pct       = "Debt-to-GDP (%)",
-    delta_debt_to_gdp_vs_baseline_pp = "Δ Debt-to-GDP vs Baseline (pp)"
+    delta_debt_to_gdp_vs_baseline_pp = "Δ Debt-to-GDP vs Baseline (pp)",
+    blsmm_ref                        = "BLSMM Ref",
+    blsmm_commit                     = "BLSMM Commit"
   )
   hit <- names(results_pub) %in% names(.PUB_COLS)
   names(results_pub)[hit] <- .PUB_COLS[names(results_pub)[hit]]
@@ -328,6 +401,19 @@ assemble_blsmm_debt_gdp <- function(year      = NULL,
                      })
       if (isTRUE(ok))
         cli::cli_inform("Appended {.field blsmm_debt_to_gdp} sheet to {.path {fp}}")
+      ok_info <- tryCatch(
+        .append_run_info_rows(fp, data.frame(
+          field = c("BLSMM ref", "BLSMM commit"),
+          value = c(sprintf("%s (%s)", blsmm_pin$ref, blsmm_pin$ref_source),
+                    blsmm_pin$commit)
+        )),
+        error = function(e) {
+          cli::cli_warn(c("Failed to add BLSMM rows to {.field run_info} in {.path {fp}}.",
+                          x = conditionMessage(e)))
+          FALSE
+        })
+      if (isTRUE(ok_info))
+        cli::cli_inform("Recorded BLSMM commit in {.field run_info} of {.path {fp}}")
     }
   }
 

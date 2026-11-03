@@ -24,6 +24,15 @@ baseline_year: 2030
 baseline_year_status: choice
 baseline_year_source: "Match Karger 5-yr horizon; microsim aged to 2030."
 
+# BLSMM version for the optional debt/GDP step (code/15_blsmm_debt_gdp.R).
+# The step stops unless the BLSMM_DIR clone is checked out at this ref with
+# no local edits under model/ or data/. The BLSMM_REF env var overrides it
+# for a deliberate run against another version; the resolved commit is
+# recorded in the outputs either way.
+blsmm_ref: v1.8.0
+blsmm_ref_status: choice
+blsmm_ref_source: "BLSMM tag v1.8.0 (65df894), the model version behind Figure A4 of v1.0.0 and v1.0.1."
+
 # ---------------------------------------------------------------------
 # CBO baseline real-GDP growth path (publication 62105: 2025 = 1.9%,
 # 2026 = 2.2%, 2027+ = 1.8% flat). The Tax-Simulator aging pipeline
