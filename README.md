@@ -145,6 +145,23 @@ point `BLSMM_DIR` at the working tree:
 export BLSMM_DIR=/path/to/Budget-Lab-Small-Macro-Model
 ```
 
+The step runs only against the BLSMM version pinned in
+`config/scenario_params.yaml` (`blsmm_ref`, currently `v1.8.0`, the
+version behind Figure A4). Check the clone out at that ref:
+
+```bash
+git -C "$BLSMM_DIR" checkout v1.8.0
+```
+
+If the clone is on another commit, the step stops with a message
+naming both commits; if it has uncommitted edits under `model/` or
+`data/`, the message lists the changed files. Either failure stops the
+whole pipeline, so BLSMM outputs from an earlier run are never left
+looking current. To run against another BLSMM version on purpose, set
+`BLSMM_REF` (a tag, branch, or commit). The BLSMM ref and commit are
+written to the `blsmm_debt_to_gdp` CSV and sheet and to the workbook's
+`run_info` sheet.
+
 Upstream: <https://github.com/Budget-Lab-Yale/Budget-Lab-Small-Macro-Model>.
 If `BLSMM_DIR` is unset (or doesn't point at a valid clone), the
 step skips with a warning and the rest of the pipeline finishes
@@ -159,6 +176,7 @@ The pipeline reads these env vars (CLI flags override where noted):
 |---|---|---|
 | `TAX_SIMULATOR_DIR` | `code/07_run_tax_sim.R` | Path to a Tax-Simulator working tree. Required. |
 | `BLSMM_DIR` | `code/15_blsmm_debt_gdp.R` | Path to a Budget Lab Small Macro Model clone. Optional — step skips with a warning when unset. |
+| `BLSMM_REF` | `code/15_blsmm_debt_gdp.R` | Overrides the pinned `blsmm_ref` for a deliberate run against another BLSMM version. Optional. |
 | `AI_FISCAL_SCRATCH_ROOT` | `code/08_aggregate.R` | Scratch root configured in your local Tax-Simulator `config/interfaces/output_roots.yaml`. Read only by the standalone aggregator entry point (`Rscript code/08_aggregate.R`); the orchestrator passes the resolved output root directly and doesn't require this var. |
 | `MC_CORES` | `code/07_run_tax_sim.R` | Forwarded to the Tax-Simulator subprocess so the local-fork `mclapply` patch can read it. Set explicitly under SLURM. |
 

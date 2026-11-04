@@ -5,6 +5,20 @@ All notable changes to AI-Fiscal are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **BLSMM version pin.** The debt/GDP step (`code/15_blsmm_debt_gdp.R`)
+  now checks that the `BLSMM_DIR` clone is at the ref pinned in
+  `config/scenario_params.yaml` (`blsmm_ref: v1.8.0`) with no local
+  edits under `model/` or `data/`, and stops the pipeline otherwise
+  (a missing `BLSMM_DIR` still skips the step with a warning). `BLSMM_REF`
+  overrides the pin. The BLSMM ref and commit are recorded in the
+  `blsmm_debt_to_gdp` CSV and sheet and in `run_info`. Against
+  `v1.8.0` the step reproduces the v1.0.1 debt/GDP results to within
+  1e-7 percentage points.
+
 ## [1.0.1] — 2026-10-09
 
 Erratum release. Corrects two input errors; see
