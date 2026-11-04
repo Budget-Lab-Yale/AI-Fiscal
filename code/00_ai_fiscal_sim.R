@@ -487,6 +487,7 @@ build_ai_fiscal_runs <- function(specs,
   # the Budget Lab Small Macro Model to recover scenario-specific 2030
   # debt/GDP. Skips with a warning if BLSMM_DIR is unset or the BLSMM repo
   # isn't reachable, so the rest of the pipeline doesn't depend on it.
+  # Stops if the clone is not at the pinned BLSMM version (blsmm_ref).
   run_blsmm_step(
     agg_dir        = "results/aggregates",
     runscript_path = runscript_path

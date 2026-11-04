@@ -153,9 +153,11 @@ version behind Figure A4). Check the clone out at that ref:
 git -C "$BLSMM_DIR" checkout v1.8.0
 ```
 
-If the clone is on another commit, or has uncommitted edits under
-`model/` or `data/`, the step stops with a message naming both
-commits. To run against another BLSMM version on purpose, set
+If the clone is on another commit, the step stops with a message
+naming both commits; if it has uncommitted edits under `model/` or
+`data/`, the message lists the changed files. Either failure stops the
+whole pipeline, so BLSMM outputs from an earlier run are never left
+looking current. To run against another BLSMM version on purpose, set
 `BLSMM_REF` (a tag, branch, or commit). The BLSMM ref and commit are
 written to the `blsmm_debt_to_gdp` CSV and sheet and to the workbook's
 `run_info` sheet.

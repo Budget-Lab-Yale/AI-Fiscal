@@ -80,6 +80,8 @@ source("code/10_figures.R")
 }
 
 # Run git in the BLSMM clone; abort with git's own message on failure.
+# Pin-check failures carry class `blsmm_pin_error`, which run_blsmm_step
+# re-raises instead of downgrading to a warning.
 .blsmm_git <- function(blsmm_dir, args) {
   out <- suppressWarnings(system2(
     "git", c("-C", shQuote(blsmm_dir), vapply(args, shQuote, "")),
@@ -90,7 +92,7 @@ source("code/10_figures.R")
     cli::cli_abort(c(
       "BLSMM pin check: {.code git {paste(args, collapse = ' ')}} failed in {.path {blsmm_dir}}.",
       x = paste(out, collapse = "\n")
-    ))
+    ), class = "blsmm_pin_error")
   }
   out
 }
@@ -106,7 +108,8 @@ source("code/10_figures.R")
     ref_source <- sprintf("%s (blsmm_ref)", yaml_path)
   }
   if (is.null(ref) || !nzchar(ref)) {
-    cli::cli_abort("BLSMM pin check: {.field blsmm_ref} is missing from {.path {yaml_path}} and {.envvar BLSMM_REF} is unset.")
+    cli::cli_abort("BLSMM pin check: {.field blsmm_ref} is missing from {.path {yaml_path}} and {.envvar BLSMM_REF} is unset.",
+                   class = "blsmm_pin_error")
   }
   head_commit <- .blsmm_git(blsmm_dir, c("rev-parse", "HEAD"))
   ref_commit  <- .blsmm_git(blsmm_dir, c("rev-parse", "--verify", paste0(ref, "^{commit}")))
@@ -114,14 +117,14 @@ source("code/10_figures.R")
     cli::cli_abort(c(
       "BLSMM pin check: {.path {blsmm_dir}} is at {head_commit}, but the pinned ref {.val {ref}} ({ref_source}) is {ref_commit}.",
       i = "Run {.code git -C {blsmm_dir} checkout {ref}}, or set {.envvar BLSMM_REF} to run against another version on purpose."
-    ))
+    ), class = "blsmm_pin_error")
   }
   dirty <- .blsmm_git(blsmm_dir, c("status", "--porcelain", "--", "model", "data"))
   if (length(dirty)) {
     cli::cli_abort(c(
       "BLSMM pin check: {.path {blsmm_dir}} has uncommitted changes under model/ or data/.",
       x = paste(dirty, collapse = "\n")
-    ))
+    ), class = "blsmm_pin_error")
   }
   list(ref = ref, ref_source = ref_source, commit = head_commit)
 }
@@ -525,9 +528,10 @@ assemble_blsmm_figures <- function(year       = NULL,
   invisible(written)
 }
 
-# Orchestrator entry point: run the BLSMM step end-to-end, swallowing
-# (and logging) any failure so the rest of the AI-Fiscal pipeline can
-# continue.
+# Orchestrator entry point: run the BLSMM step end-to-end. A failed pin
+# check (wrong BLSMM version or local edits) stops the pipeline, so
+# outputs from an earlier run cannot pass as current ones. Any other
+# failure is logged as a warning and the rest of the pipeline continues.
 run_blsmm_step <- function(year      = NULL,
                            agg_dir   = "results/aggregates",
                            fig_dir   = NULL,
@@ -546,6 +550,7 @@ run_blsmm_step <- function(year      = NULL,
     )
     invisible(res)
   }, error = function(e) {
+    if (inherits(e, "blsmm_pin_error")) stop(e)
     cli::cli_warn(c(
       "BLSMM step failed; continuing without BLSMM outputs.",
       x = conditionMessage(e)
